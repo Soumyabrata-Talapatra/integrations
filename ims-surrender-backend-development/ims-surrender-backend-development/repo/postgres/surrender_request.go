@@ -139,7 +139,7 @@ func (r *SurrenderRequestRepository) FindByPolicyNumber(ctx context.Context, pol
 
 //func (r *SurrenderRequestRepository) IndexSurrenderRequest(ctx context.Context, policyno string, channel string, ioid int, coid int, createdby int, modby int, remarks string) (string, error) {
 
-func (r *SurrenderRequestRepository) IndexSurrenderRequestRepo(ctx context.Context, req domain.IndexSurrenderRequestInput) (string, error) {
+func (r *SurrenderRequestRepository) IndexSurrenderRequestRepo(ctx context.Context, req domain.IndexSurrenderRequestInput2) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.cfg.GetDuration("db.QueryTimeoutLow"))
 	defer cancel()
 
@@ -147,14 +147,15 @@ func (r *SurrenderRequestRepository) IndexSurrenderRequestRepo(ctx context.Conte
 	istLocation, _ := time.LoadLocation("Asia/Kolkata")
 	currentTimeIST := time.Now().In(istLocation)
 
-	serviceReqID := "SUR-" + req.PolicyNumber + "-" + currentTimeIST.Format("20060102")
+	serviceReqID := "SUR-" + req.PolicyNumber + "-" + currentTimeIST.Format("20060102150405")
 	logger.Infof("Request: %s", serviceReqID)
 
 	batch := &pgx.Batch{}
 
 	queryInsert := dblib.Psql.Insert("finservicemgmt.surrender_requests").
 		Columns("surrender_request_id", "surrender_request_channel", "request_name", "policy_number", "stage_name", "indexing_office_id", "cpc_office_id", "created_by", "modified_by", "remarks", "temporal_workflow_id", "pm_service_request_id", "pm_policy_db_id").
-		Values(serviceReqID, "IT2", "Surrender", req.PolicyNumber, req.Stage_name, req.Indexing_office_id, req.Cpc_office_id, req.Created_by, req.Modified_by, req.Remarks, req.TemporalWorkflowID, req.PMServiceRequestID, req.PMPolicyDBID)
+		Values(serviceReqID, "IT2", "Surrender", req.PolicyNumber, req.Stage_name, req.Indexing_office_id, req.Cpc_office_id, req.Created_by, req.Modified_by, req.Remarks, req.TemporalWorkflowID, int64(req.PMServiceRequestID),
+			int64(req.PMPolicyDBID))
 
 	dblib.QueueExecRow(batch, queryInsert)
 

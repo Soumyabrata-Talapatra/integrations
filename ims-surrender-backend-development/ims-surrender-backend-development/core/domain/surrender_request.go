@@ -426,6 +426,39 @@ type IndexSurrenderRequestInput struct {
 	Def                       float64 `json:"def"`
 	Stage_name                string  `json:"stage_name"`
 }
+
+type IndexSurrenderRequestInput2 struct {
+	PolicyNumber              string  `json:"policy_number" validate:"required"`
+	Surrender_request_channel string  `json:"surrender_request_channel"`
+	Indexing_office_id        int     `json:"indexing_office_id"`
+	Cpc_office_id             int     `json:"cpc_office_id"`
+	Created_by                int     `json:"created_by"`
+	Modified_by               int     `json:"modified_by"`
+	Remarks                   string  `json:"remarks"`
+	// PM integration fields — populated when the workflow is dispatched by Policy Management
+	TemporalWorkflowID  string `json:"temporal_workflow_id"`
+	PMServiceRequestID  int64  `json:"pm_service_request_id"`
+	PMPolicyDBID        int64  `json:"pm_policy_db_id"`
+	Paidupvalue               float64 `json:"paidupvalue"`
+	Bonus                     float64 `json:"bonusvalue"`
+	Grossamount               float64 `json:"grossamount"`
+	Loanprincipal             float64 `json:"loanprincipal"`
+	Loaninterest              float64 `json:"loaninterest"`
+	Surrenderfactor           float64 `json:"surrenderfactor"`
+	Othercharges              float64 `json:"othercharges"`
+	Surrendervalue            float64 `json:"surrendervalue"`
+	Bonusrate                 float64 `json:"bonusrate"`
+	Bonusamount               float64 `json:"bonusamount"`
+	Sumassured                float64 `json:"sumassured"`
+	Paid_to_date              *time.Time  `json:"paid_to_date"`
+	Polissdate                *time.Time  `json:"polissdate"`
+	Maturitydate              *time.Time  `json:"maturitydate"`
+	Productcode               string  `json:"productcode"`
+	Dob                       *time.Time  `json:"dob"`
+	Unpaidprem                float64 `json:"unpaidprem"`
+	Def                       float64 `json:"def"`
+	Stage_name                string  `json:"stage_name"`
+}
 type SRStagingDetailsOutput struct {
 	Surrender_request_id      string    `json:"Surrender_request_id" select:"surrender_request_id"`
 	Surrender_request_channel string    `json:"Surrender_request_channel" select:"surrender_request_channel"`

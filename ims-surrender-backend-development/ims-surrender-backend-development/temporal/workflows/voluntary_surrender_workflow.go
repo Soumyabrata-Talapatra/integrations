@@ -101,6 +101,8 @@ func SurrenderProcessingWorkflow(ctx workflow.Context, input SurrenderProcessing
 	err = workflow.ExecuteActivity(ctx, activities.ValidateEligibilityActivity, activities.ValidateEligibilityInput{
 		PolicyID:           input.PolicyNumber,
 		SurrenderRequestID: surrenderRequestID,
+		ProductCode:        input.ProductCode,
+		MaturityDate:       input.MaturityDate,
 	}).Get(ctx, &eligibility)
 	if err != nil {
 		logger.Error("Step 2 failed: eligibility check error", "error", err)
