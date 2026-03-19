@@ -25,7 +25,7 @@ const (
 	SignalLoanRequest            = "loan-request"
 	SignalLoanRepayment          = "loan-repayment"
 	SignalRevivalRequest         = "revival-request"
-	SignalDeathNotification      = "death-notification"       // Preemptive; overrides SUSPENDED [BR-PM-112]
+	SignalDeathNotification      = "death-notification" // Preemptive; overrides SUSPENDED [BR-PM-112]
 	SignalMaturityClaimRequest   = "maturity-claim-request"
 	SignalSurvivalBenefitRequest = "survival-benefit-request"
 	SignalCommutationRequest     = "commutation-request"
@@ -90,8 +90,8 @@ const (
 // Passed as the input to the new workflow instance on Continue-As-New. [FR-PM-002]
 type PolicyLifecycleState struct {
 	PolicyNumber                   string               `json:"policy_number"`
-	PolicyID                       string               `json:"policy_id"`      // UUID from Policy Issue (audit cross-ref)
-	PolicyDBID                     int64                `json:"policy_db_id"`   // BIGINT from PM seq_policy_id [A13]
+	PolicyID                       string               `json:"policy_id"`    // UUID from Policy Issue (audit cross-ref)
+	PolicyDBID                     int64                `json:"policy_db_id"` // BIGINT from PM seq_policy_id [A13]
 	CurrentStatus                  string               `json:"current_status"`
 	PreviousStatus                 string               `json:"previous_status"`
 	PreviousStatusBeforeSuspension string               `json:"previous_status_before_suspension"` // AML revert [BR-PM-110/111]
@@ -110,42 +110,44 @@ type PolicyLifecycleState struct {
 	// Persisted so the goroutine can be respawned after Continue-As-New (goroutines
 	// are lost on CAN; without this field the FLC transition would never fire for
 	// policies that cross a CAN boundary during the free-look period). [D1]
-	FLCExpiryAt                    time.Time            `json:"flc_expiry_at,omitempty"`
+	FLCExpiryAt  time.Time `json:"flc_expiry_at,omitempty"`
+	ProductCode  string    `json:"product_code"`
+	MaturityDate time.Time `json:"maturity_date"`
 }
 
 // PolicyMetadata holds policy-level data needed by the workflow for state gate
 // decisions, eligibility checks, and activity calls. [§9.1]
 type PolicyMetadata struct {
-	CustomerID                  int64     `json:"customer_id"`
-	ProductCode                 string    `json:"product_code"`
-	ProductType                 string    `json:"product_type"`    // PLI or RPLI
-	SumAssured                  float64   `json:"sum_assured"`
-	CurrentPremium              float64   `json:"current_premium"`
-	PremiumMode                 string    `json:"premium_mode"`    // MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY
-	BillingMethod               string    `json:"billing_method"`  // CASH or PAY_RECOVERY [BR-PM-074]
-	IssueDate                   time.Time `json:"issue_date"`
-	MaturityDate                time.Time `json:"maturity_date"`
-	PaidToDate                  time.Time `json:"paid_to_date"`
-	AgentID                     *int64     `json:"agent_id,omitempty"`              // Nullable BIGINT [Review-Fix-5]
+	CustomerID                  int64      `json:"customer_id"`
+	ProductCode                 string     `json:"product_code"`
+	ProductType                 string     `json:"product_type"` // PLI or RPLI
+	SumAssured                  float64    `json:"sum_assured"`
+	CurrentPremium              float64    `json:"current_premium"`
+	PremiumMode                 string     `json:"premium_mode"`   // MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY
+	BillingMethod               string     `json:"billing_method"` // CASH or PAY_RECOVERY [BR-PM-074]
+	IssueDate                   time.Time  `json:"issue_date"`
+	MaturityDate                time.Time  `json:"maturity_date"`
+	PaidToDate                  time.Time  `json:"paid_to_date"`
+	AgentID                     *int64     `json:"agent_id,omitempty"` // Nullable BIGINT [Review-Fix-5]
 	LoanOutstanding             float64    `json:"loan_outstanding"`
 	AssignmentStatus            string     `json:"assignment_status"`
-	PremiumsPaidMonths          int        `json:"premiums_paid_months"`           // For paid-up calc [BR-PM-061]
+	PremiumsPaidMonths          int        `json:"premiums_paid_months"` // For paid-up calc [BR-PM-061]
 	TotalPremiumsMonths         int        `json:"total_premiums_months"`
-	RemissionExpiryDate         *time.Time `json:"remission_expiry_date,omitempty"` // Nullable [Review-Fix-5]
+	RemissionExpiryDate         *time.Time `json:"remission_expiry_date,omitempty"`          // Nullable [Review-Fix-5]
 	PayRecoveryProtectionExpiry *time.Time `json:"pay_recovery_protection_expiry,omitempty"` // Nullable, first_unpaid + 12mo [BR-PM-074, Review-Fix-5]
-	SBInstallmentsPaid          int       `json:"sb_installments_paid"`
-	NominationStatus            string    `json:"nomination_status"`
-	IsDistanceMarketing         bool      `json:"is_distance_marketing"` // 30d FLC for distance-marketing products [Review-Fix-9]
-	WorkflowID                  string    `json:"workflow_id"` // plw-{policy_number}
+	SBInstallmentsPaid          int        `json:"sb_installments_paid"`
+	NominationStatus            string     `json:"nomination_status"`
+	IsDistanceMarketing         bool       `json:"is_distance_marketing"` // 30d FLC for distance-marketing products [Review-Fix-9]
+	WorkflowID                  string     `json:"workflow_id"`           // plw-{policy_number}
 }
 
 // PendingRequest tracks a routed in-flight request waiting for a completion signal. [§9.1]
 type PendingRequest struct {
-	RequestID          string     `json:"request_id"`           // Dedup key (BIGINT as string or UUID)
-	ServiceRequestID   int64      `json:"service_request_id"`   // BIGINT from service_request table
+	RequestID          string     `json:"request_id"`         // Dedup key (BIGINT as string or UUID)
+	ServiceRequestID   int64      `json:"service_request_id"` // BIGINT from service_request table
 	RequestType        string     `json:"request_type"`
-	RequestCategory    string     `json:"request_category"`     // FINANCIAL or NON_FINANCIAL
-	DownstreamWorkflow string     `json:"downstream_workflow"`  // Child workflow ID
+	RequestCategory    string     `json:"request_category"`    // FINANCIAL or NON_FINANCIAL
+	DownstreamWorkflow string     `json:"downstream_workflow"` // Child workflow ID
 	RoutedAt           time.Time  `json:"routed_at"`
 	TimeoutAt          time.Time  `json:"timeout_at"`
 	SubmittedAt        *time.Time `json:"submitted_at,omitempty"` // Partition key for service_request [D4]
@@ -162,10 +164,10 @@ type FinancialLock struct {
 
 // EncumbranceFlags groups all encumbrance state; passed to isStateEligible(). [§9.1]
 type EncumbranceFlags struct {
-	HasActiveLoan  bool   `json:"has_active_loan"`  // Blocks new LOAN requests
-	AssignmentType string `json:"assignment_type"`  // NONE, ABSOLUTE, CONDITIONAL
-	AMLHold        bool   `json:"aml_hold"`         // true when SUSPENDED [BR-PM-110]
-	DisputeFlag    bool   `json:"dispute_flag"`     // Advisory only; never blocks [BR-PM-113, ADR-003]
+	HasActiveLoan  bool   `json:"has_active_loan"` // Blocks new LOAN requests
+	AssignmentType string `json:"assignment_type"` // NONE, ABSOLUTE, CONDITIONAL
+	AMLHold        bool   `json:"aml_hold"`        // true when SUSPENDED [BR-PM-110]
+	DisputeFlag    bool   `json:"dispute_flag"`    // Advisory only; never blocks [BR-PM-113, ADR-003]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -177,9 +179,9 @@ type EncumbranceFlags struct {
 // PolicyID is Policy Issue's own UUID — kept for audit trail only.
 // PM generates its own BIGINT policy_id via seq_policy_id. [A10.1.4]
 type PolicyCreatedSignal struct {
-	RequestID    string        `json:"request_id"`    // UUID — idempotency key for dedup
-	PolicyID     string        `json:"policy_id"`     // UUID from Policy Issue (audit cross-ref)
-	PolicyNumber string        `json:"policy_number"`
+	RequestID    string         `json:"request_id"` // UUID — idempotency key for dedup
+	PolicyID     string         `json:"policy_id"`  // UUID from Policy Issue (audit cross-ref)
+	PolicyNumber string         `json:"policy_number"`
 	Metadata     PolicyMetadata `json:"metadata"`
 }
 
@@ -198,13 +200,16 @@ type StartPMLifecycleInput struct {
 // ChildWorkflowInput is the input sent to all downstream service workflows via
 // ExecuteChildWorkflow. Exact field names required by A10.1B. [Constraint 1]
 type ChildWorkflowInput struct {
-	RequestID        string          `json:"request_id"`         // Idempotency key
+	RequestID        string          `json:"request_id"` // Idempotency key
 	PolicyNumber     string          `json:"policy_number"`
 	PolicyDBID       int64           `json:"policy_db_id"`       // BIGINT PM policy_id
 	ServiceRequestID int64           `json:"service_request_id"` // BIGINT from service_request
 	RequestType      string          `json:"request_type"`
-	RequestPayload   json.RawMessage `json:"request_payload"`    // Original JSONB from handler
+	RequestPayload   json.RawMessage `json:"request_payload"` // Original JSONB from handler
 	TimeoutAt        time.Time       `json:"timeout_at"`
+
+	ProductCode  string    `json:"product_code"`
+	MaturityDate time.Time `json:"maturity_date"`
 }
 
 // OperationCompletedSignal is sent by downstream services to PM on completion. [A10.1C]
@@ -232,10 +237,10 @@ type OperationCompletedSignal struct {
 // included in WHERE clauses to prevent cross-partition seq-scans. [D4, §8.3]
 // [Constraint 1, §9.5.2, Review-Fix-11, Review-Fix-3]
 type PolicyRequestSignal struct {
-	ServiceRequestID int64      `json:"request_id"`        // BIGINT from service_request table
-	IdempotencyKey   string     `json:"idempotency_key"`   // UUID from X-Idempotency-Key header [Review-Fix-11]
+	ServiceRequestID int64      `json:"request_id"`      // BIGINT from service_request table
+	IdempotencyKey   string     `json:"idempotency_key"` // UUID from X-Idempotency-Key header [Review-Fix-11]
 	RequestType      string     `json:"request_type"`
-	RequestCategory  string     `json:"request_category"`  // FINANCIAL or NON_FINANCIAL
+	RequestCategory  string     `json:"request_category"` // FINANCIAL or NON_FINANCIAL
 	SourceChannel    string     `json:"source_channel"`
 	SubmittedBy      *int64     `json:"submitted_by,omitempty"`
 	SubmittedAt      *time.Time `json:"submitted_at,omitempty"` // Partition key for service_request [D4]
@@ -321,9 +326,9 @@ type VoluntaryPaidUpSignal struct {
 
 // WithdrawalRequestSignal — cancels active downstream workflow + releases lock. [BR-PM-090]
 type WithdrawalRequestSignal struct {
-	RequestID         string `json:"request_id"`
-	TargetRequestID   string `json:"target_request_id"`  // The request being withdrawn
-	WithdrawalReason  string `json:"withdrawal_reason"`
+	RequestID        string `json:"request_id"`
+	TargetRequestID  string `json:"target_request_id"` // The request being withdrawn
+	WithdrawalReason string `json:"withdrawal_reason"`
 }
 
 // DisputeSignal — advisory flag set/clear. Never blocks requests. [BR-PM-113, ADR-003]
