@@ -1,0 +1,39 @@
+# System Integration Test environment overrides
+appname: "policy-management-sit"
+
+db:
+  username: "${DB_USER}"
+  password: "${DB_PASSWORD}"
+  host: "${DB_HOST}"
+  port: "5432"
+  database: "ims_pli_sit"
+  schema: "policy_mgmt"
+  maxconns: 20
+  minconns: 2
+
+temporal:
+  hostport: "${TEMPORAL_HOST}"
+  namespace: "pli-insurance"
+  taskqueue: "policy-management-tq"
+
+trace:
+  enabled: true
+  processor:
+    type: "otlp-grpc"
+    options:
+      host: "${OTEL_ENDPOINT}"
+
+cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS" 

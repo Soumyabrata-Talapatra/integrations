@@ -1,0 +1,2377 @@
+CONFIDENTIAL
+
+CONFIDENTIAL
+
+
+
+
+
+
+
+CONFIDENTIAL
+
+CONFIDENTIAL
+
+
+
+
+
+DEPARTMENT OF POSTS 
+
+MINISTRY OF COMMUNICATIONS & IT 
+
+GOVERNMENT OF INDIA
+
+
+
+System Requirements Specification (SRS)
+
+				Changes related to Implementation of Goods and Services Tax (GST)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Content
+
+Contents
+
+		1	Overview	2
+
+		2	Applicability	2
+
+		2.1	Applicable	2
+
+		3	GST Changes:	4
+
+		3.1	Premium Collection computation:	4
+
+		3.2	Premium Calculation Logic incorporating GST in System:	4
+
+	3.2.1 Changes in New Business Screen:	5
+
+	3.2.2 Illustrations	6
+
+		3.3	Rejection/Termination of PROPOSAL:	18
+
+		3.4	Collection Screen Changes:	19
+
+		3.5	Claims Processing Screen Changes:	19
+
+		3.6	Policy History & Summary Screen Changes:	20
+
+		3.7	Meghdoot Upload/bulk upload:	20
+
+		3.8	Report Changes:	22
+
+		3.9	GST Number Mapping:	22
+
+		3.10	List where UTGST/SGST is applicable:	22
+
+
+
+
+
+
+
+Overview
+
+
+
+ The purpose of the document is to outline the impact of Implementation of Goods and Services Tax (GST) 
+
+
+
+GST @ _____% of the gross premium (First year premium) and @ _______ % of the gross premium (in subsequent years) to be collected from the policy holders and consolidated (Premium + GST) receipt to be issued.
+
+
+
+Applicability
+
+Applicable 
+
+
+
+The Scope of GST taxation changes
+
+is applicable across PAN India 
+
+The rate of GST will be different for first year & subsequent policy years.
+
+GST rate will have two components – CGST, SGST/UTGST
+
+CGST , SGST/UTGST rate will be defined at HO, SO, BO Level
+
+
+
+The changes done will be restricted to below modules and are mentioned in the document in detail:
+
+Premium Calculation changes
+
+Meghdoot/Bulk Upload changes
+
+Accounting entries changes
+
+Reports
+
+Customer Portal Changes (including Screen level changes)
+
+
+
+
+
+GST Changes:
+
+Premium Collection computation:
+
+
+
+Following collections will be impacted ONLY:
+
+New Business Collection
+
+Renewal Collection
+
+Revival Collection
+
+
+
+Premium Calculation Logic incorporating GST in System:
+
+
+
+GST to be collected from customer will depend ONLY on:
+
+For the initial premiums, GST rate applicable will be of the office code of user who is login in the application and doing the indexing of the proposal.
+
+
+
+For Renewal Premiums, GST rate applicable will be of the office code of the user who is login in the application and doing the renewal collection.
+
+
+
+For Revival Premium Collection, 
+
+For Revival Quote: 
+
+For Revival Quote, GST Rate applicable will be that of Policy Issuance office code. 
+
+Revival Requests Indexed & not Approved (Quote Section of DE/QC/Approver) 
+
+GST Rate applicable will be of the user office code who is login in the application and doing the revival request Indexing.
+
+Revival Collection: 
+
+GST Rate applicable will be of the user office code who is login in the application and doing the revival collection.
+
+
+
+If the customer is making the renewal premium payment through the Self Service Portal, then GST rate of the state where NARO is situated will be applicable. 
+
+
+
+If the proposal is indexed through the customer portal, then GST rate will be of the state where NARO is situated will be applicable.
+
+
+
+Issuance Office code (office code from where the policy has been issued) will be checked for GST rate and other rates.
+
+
+
+In case the indexing of the proposal or collection of the renewal collection is done other than HO, SO or BO, then error message “GST not applicable for offices other than HO, SO or BO”.
+
+
+
+Accounting entry of suspense to be passed on the day of collection of initial premium and when proposal is accepted then, accounting entries are to be passed for collection of premium and tax against earlier suspense entry; and in case of rejection/ withdrawal/ termination of proposal, no tax is deducted out of initial premium.
+
+
+
+
+
+Year for which the premium is paid (First Year or Renewal Year)
+
+First year premium refers to premium payable till the first policy anniversary.
+
+Renewal premium refers to premium payable subsequent to the first policy anniversary.
+
+Effective date is the date of actual transaction ( Transaction date )
+
+
+
+The GST has to be applied on the Premium Due Amount paid as per the paid to date selected by the user. 
+
+The GST computation will not consider the Interest in case of Revival/Reinstatement.
+
+The GST computation will consider rebate if any applicable.
+
+
+
+Actual Amount Paid => Total Amount as derived in Collection screen
+
+Total Amount = 
+
+Premium Due Amount –Rebate (If any)
+
+Add GST (CGS + SGST/ UTGST) (to be rounded off to nearest rupee) on (a) above
+
+Add Interest/default (if any applicable)
+
+Subtract: Amount in suspense
+
+
+
+
+
+For cases where through one receipt, premium for First Year as well as Renewal Year has been paid, then Rounding off GST will be done after adding First Year GST and Renewal Year GST and not separately
+
+
+
+
+
+3.2.1 Changes in New Business Screen:
+
+On the UI wherever the labels reflect inclusive of taxes will include value inclusive of GST.
+
+GST calculation rules for various scenarios are mentioned below:
+
+Sr No
+
+Scenario:
+
+Rule
+
+1
+
+Indexing /Collections/ Approval in the same month and issuance and approval date is same.
+
+
+
+If the policy is backdated then on Approval Date, Service tax/GST Rate taken will be as of issuance date.
+
+If the approval date and the issuance date is same, then Service Tax/GST rate as on approval date can be taken.
+
+
+
+2
+
+Indexing / Collections/ Approval in the same month but there is a change in tax rate.
+
+Changes.
+
+If the policy is backdated then on Approval Date, Service tax/GST Rate taken will be as of issuance date.
+
+If the approval date and the issuance date is same, then Service Tax/GST rate as on approval date can be taken
+
+3
+
+Indexing & Approval in the different month and there is a change in modal premium without change in tax rate.
+
+If the policy is backdated then on Approval Date, Service tax/GST Rate taken will be as of issuance date.
+
+If the approval date and the issuance date is same, then Service Tax/GST rate as on approval date can be taken
+
+4
+
+Indexing & Approval in the different month and there is a change in modal premium with change in tax rate.
+
+Service Tax/GST Rate at the time of Proposal issuance will be considered for tax calculation (either service tax/GST) on the changed ‘” Premium payable” (as derived from modal premium) as determined at the time of approval.
+
+
+
+5
+
+Advance collection done & there is no change in tax rate
+
+Service Tax/GST Rate at the time of Proposal issuance will be considered for tax calculation (either service tax/GST) on the “Amount Paid” (as derived from modal premium and premium payable) as determined at the time of approval. Rebate will not be considered for initial premium
+
+
+
+6
+
+Advance collection done & there is a change in tax rate
+
+If the policy is backdated then on Approval Date, Rate taken will be as of issuance date.
+
+If the approval date and the issuance date is same, then rate as on approval date can be taken.
+
+
+
+7
+
+Backdating done & there is no change in tax rate.
+
+Service Tax/GST Rate at the time of Proposal issuance will be considered for tax calculation (either service tax/GST) on the changed ‘” Premium payable” (as derived from modal premium) as determined at the time of approval.
+
+
+
+8
+
+Backdating done & there is change in tax rate.(advance collection done for the same)
+
+Service Tax/GST Rate at the time of Proposal issuance will be considered for tax calculation (either service tax/GST) on the changed ‘” Premium payable” (as derived from modal premium) as determined at the time of approval.
+
+
+
+
+
+
+
+9
+
+Rebate applicable on the premium
+
+Rebate is not applicable at the time of issuance and hence, GST will be applied on modal premium and rate will be taken up as of Policy issuance date.
+
+
+
+10
+
+GST Rate applicable for HO, SO and BO
+
+In case the indexing of the proposal or collection of the renewal collection is done other than HO, SO or BO, then error message “GST not applicable for offices other than HO, SO or BO” will appear.
+
+ 
+
+
+
+
+
+Screens in NBF & changes if any applicable:
+
+Quote Screen:
+
+Disclaimer to be shown Exclusive of Taxes
+
+
+
+New Business Indexing:
+
+Premium inclusive of tax will include premium inclusive of GST.
+
+
+
+
+
+Processing screens (DE/QC/Approval screens):
+
+Premium inclusive of tax will include premium inclusive of GST/Service tax as applicable.
+
+Accounting entry of suspense is passed on the day of collection of initial premium and when proposal is accepted then, accounting entries are passed for collection of premium and tax against earlier suspense entry; and- in case of rejection/ withdrawal/ termination of proposal, no tax is deducted out of initial premium.
+
+
+
+
+
+
+
+3.2.2 Illustrations   
+
+Illustration Number
+
+Scenarios
+
+Illustrations
+
+Expected System Response
+
+IUD_1
+
+Indexing/collection and approval is done in same month and issuance date=approval date and this date is after GST is made effective.
+
+
+
+
+
+
+
+
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Premium collected as on indexing date.
+
+
+
+Indexing date: 10-July-2017
+
+Issuance/RCD: 10-July-2017
+
+Approval date: 25-July-2017
+
+
+
+GST made effective on 01-July-2017
+
+
+
+Office where indexing is done = Noida HO (Office Code = BR1000000000)
+
+User Office Code who has done the Indexing= BR1000000000
+
+
+
+GST rate applicable as on 10-July-2017 will be applicable.
+
+
+
+GST Rate applicable will be of Noida HO.
+
+IUD_2
+
+Indexing / Collections/ Approval in the same month and issuance date/approval date is before GST is made effective.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Premium collected as on indexing date.
+
+
+
+GST made effective  01-July-2017
+
+
+
+Indexing date: 10-Jun-2017
+
+Issuance/ RCD: 10-Jun-2017
+
+Approval date: 25-Jun-2017
+
+
+
+Issuance state: Rest ROI.
+
+
+
+	
+
+Service tax rate applicable as on 10-Jun-2017 will be applicable.
+
+	
+
+	Service tax rate applicable is that of ROI
+
+IUD_3
+
+Indexing / Collections/ Approval in different months and issuance date is when Service tax was effective and approval date is where GST was effective.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+Premium collected as on approval date.
+
+
+
+GST made effective  01-July-2017
+
+
+
+Service tax rate: 3.74%
+
+GST rate : 4.5%
+
+
+
+Indexing date: 10-Jun-2017
+
+Issuance/ RCD: 10-Jun-2017
+
+Approval date: 25-Jul-2017
+
+
+
+Issuance state: Rest ROI.
+
+
+
+	Service tax rate applicable as on 10-Jun-2017 will be applicable. 
+
+	
+
+	On Rs.1200 service tax will be collected with tax rate 3.74%.
+
+	
+
+	Rate applicable is that of ROI
+
+IUD_4
+
+Indexing / Collections/ Approval in the same month after GST is effective but policy is backdated to a date where service tax was effective.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+Premium collected as on approval date.
+
+GST made effective  01-July-2017
+
+
+
+Service tax rate: 1.87%
+
+GST rate : 4.5%
+
+
+
+Indexing date: 10-July-2017
+
+Approval date: 25-July-2017
+
+Issuance/RCD: 10-Jun-2017
+
+
+
+Issuance state: J&K.
+
+
+
+
+
+	Service tax rate applicable as on 10-Jun-2017 will be applicable. Rs.1200 will be collected with tax rate 1.87%.
+
+	
+
+	Rate applicable is that of ROI
+
+IUD_5
+
+Rounding off Logic - Indexing/collection and approval is done in same month after implementation of GST. 
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-July-2017
+
+Approval date: 25-July-2017
+
+Issuance/ RCD: 10-July-2017
+
+Issuance date: 10-July-2017
+
+
+
+Office where indexing is done = BURARI SO
+
+Office where approval is done = NOIDA HO
+
+
+
+Office Code of Noida HO = BR100200000
+
+User Office Name/Code who has done the Indexing=Burari  SO (BR100200001)
+
+
+
+	GST will be calculated as follows on modal premium Rs.1200
+
+	
+
+	First Year 
+
+	CGST @ 2.25% = 27
+
+	UTGST/SGST @ 2.25%= 27
+
+	GST @ 4.50% = 54
+
+	Rounded off value for GST = 54
+
+	
+
+	Rate applicable will be that of Burari SO.
+
+IUD_6
+
+Indexing/collection is done in same month and approval is done in different month after implementation of GST.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-Jun-2017
+
+Approval date: 05-July-2017
+
+Issuance/ RCD: 10-Jun-2017
+
+
+
+Service tax rate: 3.74%
+
+GST rate : 4.5%
+
+
+
+Issuance state: Rest ROI.
+
+
+
+	Service tax rate applicable as on 10-Jun-2017 will be applicable will be collected with tax rate 3.74%.
+
+	
+
+	Service tax Rate applicable is that of ROI
+
+IUD_7
+
+Indexing/collection and approval is done in same month after implementation of GST and RCD date is backdated.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-July-2017
+
+Approval date: 15-July-2017
+
+RCD: 10-Jun-2017
+
+Issuance Date: 10-Jun-2017
+
+
+
+Due to difference in indexing/approval months the modal premium to be collected is 1200*2=2400.
+
+
+
+Modal Premium to be collected Rs.2400.
+
+
+
+Issuance state: Rest ROI.
+
+	Service tax rate applicable as on 10-Jun-2017 will be applicable for premium Rs. 2400 will be collected with tax rate 3.74%.
+
+	
+
+	Service tax Rate applicable is that of ROI
+
+IUD_8
+
+Indexing/collection is done in same month and approval is done in different month after implementation of GST.
+
+
+
+ There is change in modal premium due to change in DOB. 
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-July-2017
+
+Premium collected Rs.1200 as on indexing date.
+
+Approval date: 25-Aug-2017
+
+Issuance/ RCD: 10-July-2017
+
+
+
+Due to change in date of Birth modal premium changed to Rs.1350 which is collected at the time of approval.
+
+
+
+Office where indexing is done = BURARI SO
+
+Office where approval is done = NOIDA HO
+
+
+
+User Office Code who has done Indexing = Mysore HO = SK084900000
+
+	GST will be calculated on modal premium Rs.1350 as follows:
+
+	
+
+	First Year 
+
+	CGST @ 2.25% = 30.375
+
+	UTGST/SGST @ 2.25%= 30.375
+
+	GST @ 4.50% = 60.75
+
+	Rounded off value for GST = 61
+
+	
+
+	GST Rate applicable will be that of Mysore HO.
+
+IUD_9
+
+Indexing/collection is done in same month and approval is done in different month after implementation of GST. 
+
+
+
+There is change in modal premium due to change in DOB. 
+
+
+
+RCD is backdated.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-Jun-2017
+
+Premium collected Rs.1200 as on indexing date.
+
+Approval date: 15-July-2017
+
+Issuance/RCD: 10-May-2017
+
+
+
+Due to change in date of Birth and change in RCD modal premium changed to Rs.2500
+
+
+
+Issuance state: Rest ROI.
+
+	Service Tax applicable as on issuance date i.e. 10-May-2017 will be applied on the modal premium Rs.2500.
+
+	
+
+	Service tax Rate applicable is that of ROI
+
+IUD_10
+
+Rejection or termination of new business proposal after implementation of GST
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+Premium collected Rs.1200 as on indexing date.
+
+Premium includes GST Rs.54.
+
+Medical fees Rs.150 collected
+
+Proposal is rejected by the approver.
+
+
+
+Indexing date: 10-July-2017
+
+Rejection date: 15-July-2017
+
+	GST Rs.54 thus collected will not be refunded along with the premium.
+
+	Premiums will be refunded after deducting medical fees.
+
+	
+
+	Same will happen in case of termination.
+
+IUD_11
+
+Rejection or termination of new business proposal after implementation of GST
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+Premium collected Rs.1220 as on indexing date.
+
+Premium includes service tax Rs.20.
+
+Proposal is rejected by the approver.
+
+
+
+Indexing date: 10-Jun-2017
+
+Rejection date: 15-July-2017
+
+	Service tax Rs.20 thus collected will not be refunded along with the premiums.
+
+	
+
+	Same will happen in case of rejection or termination.
+
+IUD_12
+
+Indexing/collection and approval is done in same month. 
+
+
+
+Advance premium is collected as on approval date.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-July-2017
+
+Premium collected Rs.1200 as on indexing date.
+
+Approval date: 15-June-2017
+
+Advance premium Rs.100 is collected on approval date.
+
+Issuance/ RCD: 10-July-2017
+
+
+
+GST made effective  01-July-2017
+
+
+
+Service tax rate: 3.74%
+
+GST rate : 4.5%
+
+
+
+Office where indexing is done = BURARI SO
+
+Office where approval is done = NOIDA HO
+
+
+
+User Office Code who has done Indexing = BURARI SO = SK084900000
+
+
+
+	GST applicable as on issuance date i.e. 10-July-2017 will be applied on the total premium Rs.1300.
+
+	
+
+	GST Rate applicable will be that of Burari SO.
+
+IUD_13
+
+Indexing/collection is done in same month and approval is done in different month. 
+
+
+
+Advance premium is collected as on approval date.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-Jun-2017
+
+Premium collected Rs.1200 as on indexing date.
+
+Approval date: 15-July-2017
+
+
+
+Premium Rs.2400 is collected on approval date.
+
+Issunace/RCD: 10-Jun-2017
+
+
+
+GST made effective  01-July-2017
+
+
+
+Service tax rate: 3.74%
+
+GST rate : 4.5%
+
+
+
+Issuance state: Rest ROI.
+
+
+
+	Service Tax will be calculated on Rs.2400 total premium.
+
+	
+
+	Service tax Rate applicable is that of ROI
+
+IUD_14
+
+Indexing/collection is done in same month and approval is done in different month and issuance date is backdated. 
+
+
+
+Advance premium is collected as on approval date.
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+
+
+Indexing date: 10-Jun-2017
+
+Premium collected Rs.1200 as on indexing date.
+
+Approval date: 15-July-2017
+
+
+
+Premium Rs.3000 is collected on approval date.
+
+Issuance/ RCD: 10-May-2017
+
+
+
+Indexing date: 10-Jun-2017
+
+
+
+	Service Tax will be calculated on Rs.3000 total premium collected.
+
+	
+
+	Service tax Rate applicable is that of ROI
+
+IUD_15
+
+Advance premium is collected for first and second policy year
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium: 525
+
+
+
+Indexing date: 10-July-2017
+
+Premium collected for first and second policy year Rs.12600 as on indexing date.
+
+Approval date : 15-July-2017
+
+Issuance/ RCD: 10-July-2017
+
+
+
+GST made effective  01-July-2017
+
+
+
+Service tax rate: 3.74%
+
+GST rate : 4.5%
+
+
+
+
+
+	GST will be calculated as follows on premiums collected.
+
+	
+
+	First Year 
+
+	From July-2017 to Jun 2018 on Rs.6300
+
+	CGST @ 2.25% = 141.75
+
+	UTGST/SGST @ 2.25%= 141.75
+
+	GST @ 4.50% = 283.50 (A)
+
+	
+
+	Renewal Year
+
+	From July 2018 to June 2019 on Rs.6300
+
+	CGST @ 2.25% = 141.75
+
+	UTGST/SGST @ 2.25%= 141.75
+
+	GST @ 4.50% = 283.50 (A)
+
+	
+
+	Total GST (A + B) =567
+
+	
+
+IUD_16
+
+Initial premium collected for the policy wherein sum assured rebate was given
+
+Proposal number XXXX00011, 
+
+Frequency: Monthly
+
+Modal premium (adjusted with SA  Rebate): 450
+
+
+
+Indexing date: 10-July-2017
+
+Approval date: 15-July-2017
+
+RCD: 10-July-2017
+
+Issuance date : 10-July-2017
+
+	GST will be calculated as follows on Premium Rs.450 
+
+	
+
+	First Year 
+
+	CGST @ 2.25% = 10.125
+
+	UTGST/SGST @ 2.25%= 10.125
+
+	GST @ 4.50% = 20.25
+
+	Rounded off value for GST = 20
+
+IUD_17
+
+Change in Issuance office
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jul-2017
+
+
+
+Before approval the circle has been change to Tamil Nadu with issuance HO as Pondicherry.
+
+
+
+User Office Code who has done Indexing = Dhule SO = SK084900100
+
+
+
+
+
+	GST Rate applicable will be that of Dhule SO.
+
+IUD_18
+
+Renewal premium collected in first policy year
+
+Policy number XXXX00011, 
+
+Modal Premium Rs.500
+
+Frequency: Monthly
+
+
+
+Policy issuance date is 15-Jan-2017
+
+Paid to date is 30-Jun-2017
+
+System date is 12-July-2017
+
+Premium collected Rs.500 as on 12 July 2017.
+
+
+
+Premium collection Office = Noida HO (Office Code = BR100200000)
+
+
+
+User Office Code who is doing the collection = Noida HO (Office Code = BR100200000)
+
+
+
+	GST Rate will be calculated as follows on modal premium Rs.500
+
+	
+
+	First Year 
+
+	CGST @ 2.25% = 11.25
+
+	UTGST/SGST @ 2.25%= 11.25
+
+	GST @ 4.50% = 22.50
+
+	Rounded off value for GST = 23
+
+	
+
+GST Rate applicable will be that of Noida HO
+
+
+
+IUD_19
+
+Reinstatement premium collected in case of revival wherein premium is to be collected for first and second policy years. Interest charged on the premium due.
+
+Policy number XXXX00011, 
+
+Policy issuance date is 01-May-2017
+
+Paid to date is 31-Mar-2018
+
+Frequency is monthly
+
+Premium 500
+
+System date is 01-July-2018
+
+Premium collected Rs.2000
+
+Interest Rs.200
+
+
+
+Premium collection Office = Noida HO
+
+Office Code = BR100200000
+
+User Office Code =BR100200000
+
+
+
+	GST will be calculated on Rs.3000 as follows on premiums due exclusive of interest.
+
+	
+
+	First Year 
+
+	For April 2018 at Rs.500
+
+	CGST @ 2.25% = 11.25
+
+	UTGST/SGST @ 2.25%= 11.25
+
+	GST @ 4.50% = 22.50 (A)
+
+	
+
+	Renewal Year
+
+	From May 2018 to July 2018 at Rs.1500
+
+	CGST @ 1.125% = 16.875
+
+	UTGST/SGST @ 1.125%= 16.875
+
+	GST @ 2.25% = 33.75 (B)
+
+	
+
+	Total GST (A + B) = 56.25
+
+	Rounded off GST value = Rs.56
+
+	
+
+	GST Rate applicable will be that of Noida HO
+
+IUD_20
+
+Revival premium collected in case of revival wherein premium is to be collected for first and second policy years. Interest charged on the premium due.
+
+Policy number XXXX00011, 
+
+
+
+Policy issuance date is 01-May-2017
+
+Paid to date is 31-Jan-2018
+
+
+
+Frequency is monthly
+
+Premium 500
+
+System date is 01-August-2018
+
+Premium collected Rs.3500
+
+
+
+Policy status is AL
+
+Interest Rs.200
+
+
+
+Premium collection Office = Noida HO
+
+Office Code = BR100200000
+
+User Office Code =BR100200000
+
+
+
+	GST will be calculated on Rs.3500 as follows on premiums due exclusive of interest.
+
+	
+
+	First Year 
+
+	From Feb 2018 to April 2018 at Rs.1500
+
+	CGST @ 2.25% = 33.75
+
+	UTGST/SGST @ 2.25%= 33.75
+
+	GST @ 4.50% = 67.50 (A)
+
+	
+
+	Renewal Year
+
+	From May 2018 to August 2018 at Rs.2000
+
+	CGST @ 1.125% = 22.5
+
+	UTGST/SGST @ 1.125%= 22.5
+
+	GST @ 2.25% = 45
+
+	
+
+	Total GST (A + B) =112.50
+
+	Rounded off GST value = 113
+
+	
+
+GST Rate applicable will be that of Noida HO
+
+	
+
+IUD_21
+
+Advance premium is collected on the policy
+
+Policy number XXXX00011, 
+
+Policy issuance date is 01-Jan-2016
+
+Paid to date is 30-June-2017
+
+System date is 12-July-2017
+
+
+
+Frequency is monthly
+
+Modal Premium is Rs.500
+
+
+
+Premium is paid from 01-July-2017 to 31-Jan-2018=3500
+
+
+
+Rebate Rs.50
+
+Rebate is calculated for advance premium paid for 7 months
+
+
+
+Premium collection Office = Noida HO
+
+Office Code = BR100200000
+
+User Office Code =BR100200000
+
+
+
+	GST will be calculated after deducting rebate from premium on Rs.3450 as follows 
+
+	
+
+	Renewal Year
+
+	CGST @ 1.125% = 38.81.375
+
+	UTGST/SGST @ 1.125%=38.81
+
+	GST @ 2.25% = 77.62
+
+	Rounded off value for GST = 78
+
+	
+
+GST Rate applicable will be that of Noida HO
+
+	
+
+IUD_22
+
+Renewal premium is collected in the state other than issuance state
+
+Policy is issued in J&K and renewal premium is collected in Maharashtra
+
+	Service tax at the rate applicable for J & K will be applied on the renewal premiums.
+
+IUD_23
+
+Cheque dishonour after renewal premium collection
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2017
+
+
+
+Paid to date is 31-Mar-2017
+
+System date is 12-July-2017
+
+Frequency is monthly
+
+
+
+Premium Rs.500 (including GST)  is collected through cheque. Cheque dishonour is intimated as on 20.07.2017.
+
+	GST thus collected on premiums will not be reversed in case of cheque dishonour.  
+
+	
+
+	However, the amount of GST so collected through dishonoured cheque will be reflected as minus balance in suspense and adjusted against subsequent collection from the insurant or Claim settlement, as the case may be, along with cheque dishonour charge.
+
+IUD_24
+
+Receipt Cancellation after renewal premium collection
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2017
+
+
+
+Paid to date is 31-Mar-2017
+
+System date is 12-July-2017
+
+Frequency is monthly
+
+
+
+Premium Rs.500 (including GST) is collected as on 12-July-2017 in policy number XXXX00012.
+
+Receipt is cancelled on the same day as premium is collected in the wrong policy.
+
+	GST thus collected on premiums will be reversed in case of receipt cancellation.
+
+IUD_25
+
+Meghdoot or Bulk upload
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2017
+
+Paid to date is 31-May-2017
+
+System date is 12-July-2017
+
+Frequency is monthly
+
+Premium Rs.500 
+
+
+
+Meghdoot upload is done as on 12-July-2017 and transaction date in the file is 01-June-2017.
+
+
+
+	GST will not be applicable on the premium collection as transaction date is prior to that of 01.07.2017. 
+
+	
+
+	In this case, service tax will be applicable.  System will validate this based on transaction date.
+
+	
+
+
+
+IUD_26
+
+Meghdoot or Bulk upload
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2017
+
+Paid to date is 30-June-2017
+
+System date is 12-July-2017
+
+Frequency is monthly
+
+Premium Rs.500 
+
+
+
+Meghdoot upload is done as on 12-July-2017 and transaction date in the file is 01-July-2017.
+
+
+
+Office  = NOIDA HO
+
+Office Code of the user uploading the file = Noida HO=BR100200000
+
+
+
+	GST will be applicable on the premium collection as transaction date is that of 01.07.2017. System will validate this based on transaction date.
+
+	
+
+	GST Rate applicable will be that of Noida HO.
+
+IUD_27
+
+Loan repayment
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2015
+
+
+
+Loan outstanding 5000
+
+Loan repayment done as on 12-July-2017.
+
+	GST will not be charged for loan repayment.
+
+IUD_28
+
+Miscellaneous collection-Duplicate Policy Bond
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2015
+
+
+
+Miscellaneous collection is done for duplicate policy bond 
+
+	GST will not be charged for miscellaneous collection.
+
+IUD_29
+
+Miscellaneous collection-Duplicate receipt book
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2015
+
+
+
+Miscellaneous collection is done for duplicate receipt book. 
+
+	GST will not be charged for miscellaneous collection.
+
+IUD_30
+
+Miscellaneous collection-cheque dishonour charges
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2015
+
+
+
+Cheque dishonour charges are collected. 
+
+	GST will not be charged for miscellaneous collection.
+
+itIUD_31
+
+Miscellaneous collection-Conversion charges
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2015
+
+
+
+Policy Converted from CWLA to EA. Conversion charges collected. 
+
+	GST will not be charged for miscellaneous collection.
+
+IUD_32
+
+GST in case of recovery of unpaid premiums in case of maturity or death claim
+
+Policy number XXXX00011, 
+
+Policy issuance date is 01-May-2010
+
+Paid to date is 31-Jan-2018
+
+Premium 500
+
+Maturity date is 01-May-2018
+
+
+
+Maturity claim is indexed on 05-April -2018
+
+Policy status is IL
+
+
+
+Claim indexing office code = Noida HO = BR100200000
+
+
+
+User office code indexing the claim = Noida HO = BR100200000
+
+
+
+	GST rate at the time of indexing of claim will be applied on unpaid premiums. 
+
+	
+
+	GST Rate applicable is that of Noida HO.
+
+IUD_33
+
+Renewal premium collected partly in cash and partly in cheque.
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2017
+
+
+
+Modal Premium Rs.500
+
+Frequency: Monthly
+
+Paid to date is 31-May-2017
+
+System date is 12-July-2017
+
+
+
+Total premium to be collected is Rs.1000.
+
+GST will be calculated as follows on modal premium Rs.1000
+
+
+
+First Year 
+
+CGST @ 2.25% = 22.5
+
+UTGST/SGST @ 2.25%= 22.50
+
+GST @ 4.50% = 45
+
+Rounded off value for GST = 45
+
+Premium to be collected with tax is Rs.1045.
+
+	
+
+	GST Rs.45 will be collected in cash.
+
+	System will take care of bifurcation of GST from Cash amount collected.
+
+	
+
+IUD_34
+
+If Renewal premium is paid through customer portal
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Jan-2017
+
+Modal Premium Rs.500
+
+Frequency: Monthly
+
+Paid to date is 30-Jun-2017
+
+System date is 12-July-2017
+
+Premium collected Rs.500
+
+
+
+
+
+
+
+	GST will be calculated as follows on modal premium Rs.500
+
+	
+
+	First Year 
+
+	CGST @ 2.25% = 11.25
+
+	UTGST/SGST @ 2.25%= 11.25
+
+	GST @ 4.50% = 22.50
+
+	Rounded off value for GST = 23
+
+
+
+Rate will be that of the Sansad Marg HO.
+
+IUD_34
+
+If indexing is done through the customer portal
+
+Proposal number XXXX00011, 
+
+Indexing date: 10-July-2017
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+Premium collected as on indexing date.
+
+Approval date: 25-July-2017
+
+RCD: 10-July-2017
+
+Issuance date: 10-July-2017
+
+
+
+Office where proposal is indexed on counter (In McCamish) = Noida HO
+
+Office Code = BR100200000
+
+User Office Code =BR100200000
+
+
+
+GST rate as on 10-July-2017 will be applicable.
+
+
+
+
+
+GST Rate applicable will be of Noida HO.
+
+IUD_35
+
+GST Rate applicable for HO, SO and BO
+
+Proposal number XXXX00011, 
+
+Indexing date: 10-July-2017
+
+Frequency: Monthly
+
+Modal premium: 1200
+
+Premium collected as on indexing date.
+
+Approval date: 25-July-2017
+
+RCD: 10-July-2017
+
+Issuance date: 10-July-2017
+
+
+
+User Office Code who is doing the indexing belongs to UTTAR PRADESH CO
+
+
+
+
+
+
+
+Error message should be displayed as “GST not applicable for offices other than HO, SO or BO”.
+
+IUD_36
+
+Impact of GST on reports.
+
+
+
+
+
+Report generated for period : 01 July to 02 July
+
+
+
+Details of Premium collection done as below:
+
+
+
+Details
+
+Initial Collection Proposal 1
+
+Renewal Collection Receipt 2
+
+Revival Collection Receipt 2
+
+Premium Paid
+
+1500
+
+2000
+
+500
+
+CGST 
+
+33.75
+
+22.5
+
+11.25
+
+SGST /UTGST
+
+33.75
+
+22.5
+
+11.25
+
+TOTAL GST
+
+68
+
+45
+
+23
+
+Cash
+
+0
+
+2000
+
+20
+
+Cheque
+
+1500
+
+0
+
+480
+
+
+
+
+
+
+
+In the report generated the GST bifurcation between cash & cheque as per the premium method is as follows where first GST will be recovered from cash and then from cheque.
+
+
+
+
+
+
+
+GST Recovery
+
+TOTAL GST
+
+Cash
+
+Cheque
+
+Initial Collection Proposal 1
+
+68
+
+0
+
+68
+
+Renewal Collection Receipt 2
+
+45
+
+45
+
+0
+
+Revival Collection Receipt 2
+
+23
+
+20
+
+3
+
+
+
+The summary will accordingly show the bifurcation as below:
+
+
+
+ First Year Premium
+
+1500
+
+ Renewal Premium
+
+2000
+
+ Revival Premium
+
+500
+
+ First Year CGST collected 
+
+33.75
+
+ First Year SGST Collected
+
+33.75
+
+ First Year UTGST Collected
+
+0
+
+ Renewal Year CGST Collected 
+
+22.5
+
+ Renewal Year SGST Collected
+
+22.5
+
+ Renewal Year UTGST Collected
+
+0
+
+ Total Amount Collected 
+
+4000
+
+ Total Premium paid by Cash and Cheque
+
+4000
+
+ Total Cancelled Amount
+
+0
+
+
+
+IUD_36
+
+GST Rate applicable for Revival Quote
+
+Policy number XXXX00011, 
+
+
+
+Policy issuance date is 01-May-2017
+
+Paid to date is 31-Jan-2018
+
+
+
+Frequency is monthly
+
+Premium 500
+
+System date is 01-August-2018
+
+
+
+Policy status is AL
+
+
+
+Revival Quote 01 Aug 2018
+
+
+
+Issuance office: Noida HO
+
+User ID who is doing Revival Quote generation: Mysore HO
+
+
+
+
+
+
+
+GST rate applicable will be of issuance office code which is Noida HO
+
+IUD_37
+
+GST Rate applicable for Revival Requests Indexed & not Approved (Quote Section of DE/QC/Approver) 
+
+
+
+Policy number XXXX00011, 
+
+
+
+Policy issuance date is 01-May-2017
+
+Issuance office: 
+
+Paid to date is 31-Jan-2018
+
+
+
+Frequency is monthly
+
+Premium 500
+
+System date is 01-August-2018
+
+
+
+Policy status is AL
+
+
+
+Revival Indexed on 01 Aug 2018 ; Request is not yet approved.
+
+
+
+Revival Indexing office: Noida HO
+
+User who is doing Revival Indexing: Mysore HO
+
+
+
+GST rate applicable will be of Mysore HO
+
+IUD_38
+
+GST Rate applicable for Revival Collection 
+
+
+
+Policy number XXXX00011, 
+
+
+
+Policy issuance date is 01-May-2017
+
+Issuance office: 
+
+Paid to date is 31-Jan-2018
+
+
+
+Frequency is monthly
+
+Premium 500
+
+System date is 01-August-2018
+
+
+
+Policy status is AL
+
+
+
+Revival Indexed on 01 Aug 2018 ; Request is not yet approved.
+
+
+
+Revival Indexing office: Noida HO
+
+User ID who is doing Revival Indexing: Noida HO
+
+User iD who is doing Revival Collection: Mysore HO
+
+
+
+GST rate applicable will be of Mysore HO
+
+Note: Defaults/ interest and rebates in the above calculations are not as per actuals and the same are just for understanding of calculation of Service Tax/GST.  In system these components should be as per actual.
+
+
+
+Rejection/Termination of PROPOSAL:
+
+Modal premium at the time of rejection will be considered for the rejection and Service tax/GST will be applied on the modal premium as per the rate applicable on issuance date. 
+
+If there is a change in tax (either service tax or GST) rate at issuance vis a vis rejection date the service tax/GST collected will not be reversed/refunded back to the customer. 
+
+If no premium amount is paid, there will be no reversal and no voucher will be generated. 
+
+In case of rejection/ termination/ withdrawal of proposal, Service Tax/ GST will not apply and premium will be refunded without deducting any tax/ GST
+
+
+
+Collection Screen Changes:
+
+Collection Screen:
+
+The field Service/Sales tax will reflect GST amount.
+
+Total Amount will be the amount including GST amount.
+
+
+
+
+
+Tax Rate at the time of Collection will be considered for tax calculation (either service tax/GST) on the Premium due amount as determined by the paid to date selected by the user.
+
+
+
+Revival Screen:
+
+There will be no changes in the screen.
+
+
+
+GST calculation is as per calculation formula/logic mentioned in the above section (3.2)
+
+Various scenarios on how GST will be calculated is mentioned as below:
+
+
+
+Sr No
+
+Scenario:
+
+Rule
+
+1
+
+Revival Collection 
+
+Tax Rate at the time of Collection will be considered for tax calculation (either service tax/GST) on the Premium due amount as determined at the time of approval.
+
+2
+
+Revival Collection with advance collection 
+
+Tax Rate at the time of Collection will be considered for tax calculation (either service tax/GST) on the Premium due amount as determined by the paid to date selected by the user.
+
+
+
+Office code where transaction is happening and that CGST, SGST or UTGST rate will be applicable. This office code will be of the user office code who is login in the application.
+
+
+
+
+
+Claims Processing Screen Changes:
+
+Death Claims:
+
+No changes in the screen, however the tax on unpaid premium will reflect be GST on unpaid premium is GST is effective as on the date of indexing of claim.
+
+
+
+
+
+Maturity Claim
+
+No changes in the screen, however the tax on unpaid premium will reflect be GST on unpaid premium is GST is effective as on the date of indexing of claim. 
+
+
+
+ GST Rate will be of that HO, SO or BO where the claim has been indexed. And this office code will be of the user office code who is login in the application and indexed the claim.
+
+
+
+
+
+Policy History & Summary Screen Changes:
+
+Policy search screen
+
+No changes on the screen
+
+
+
+
+
+Policy details screen
+
+Total Amount will be the amount including Service tax/GST amount. GST Rate will be of the HO, SO or BO where the proposal has been indexed. Therefore issuance office code will be considered and the office code will be of the user office code who is login in the application and indexed the proposal.
+
+
+
+
+
+Collection Tab 
+
+The field Service/Sales tax will reflect GST amount.
+
+Amount Collected will be the amount including GST amount.
+
+
+
+Income tax certificate:
+
+No changes in the screen.
+
+
+
+
+
+
+
+
+
+Field Properties of the new fields:
+
+
+
+
+
+Meghdoot Upload/bulk upload:
+
+
+
+fields needs to be added in the bulk upload file as follows:
+
+First Year CGST
+
+Renewal Year CGST
+
+First Year UTGST/ SGST
+
+Renewal Year UTGST/SGST
+
+
+
+CSV fields and UI validations
+
+Field Name
+
+Acceptable formats
+
+Mandatory/Optional
+
+Example
+
+UI Error messages
+
+First Year CGST
+
+
+
+Numbers up to two decimals.
+
+Optional
+
+Can be null or numeric
+
+1. If transaction date>= 1 Jul 2017 and FY CGST is not updated, then error message to be displayed- “FY CGST tax is required”
+
+2. On UI If data type is other than numeric or is blank – then error message to be displayed “Only numeric value accepted”.
+
+3. If the amount entered is incorrect as required by system then error message should be “ Incorrect First Year CGST”
+
+Renewal_Year_CGST
+
+Numbers up to two decimals.
+
+Optional
+
+Can be null or numeric
+
+1. If transaction date>=1 Jul 2017 and Renewal year CGST is not updated, then error message to be displayed- “Renewal Year CGST tax is required
+
+2. On UI If data type is other than numeric or is blank – then error message to be displayed “Only numeric value accepted”
+
+3. If the amount entered is incorrect as required by system then error message should be “Incorrect Renewal CGST”
+
+First Year UTGST/SGST
+
+
+
+Numbers up to two decimals.
+
+Optional
+
+Can be null or numeric
+
+1. If transaction date>= 1 Jul 2017 and FY UTGST/SGST
+
+is not updated, then error message to be displayed- “FY SGST/UTGST tax is required”
+
+2. On UI If data type is other than numeric or is blank – then error message to be displayed “Only numeric value accepted”
+
+3. If the amount entered is incorrect as required by system then error message should be “Incorrect First Year UTGST/SGST”
+
+Renewal_Year UTGST/SGST
+
+Numbers up to two decimals.
+
+Optional
+
+Can be null or numeric
+
+1. If transaction date >= 1 Jul 2017 and Renewal year UTGST/SGST
+
+is not updated, then error message to be displayed- “Renewal Year UTGST/SGST tax is required
+
+2. On UI If data type is other than numeric or is blank – then error message to be displayed “Only numeric value accepted”
+
+3. If the amount entered is incorrect as required by system then error message should be “  Incorrect Renewal Year UTGST/SGST”
+
+Tax_Type
+
+Numeric
+
+Conditional Mandatory 
+
+(Required if first year tax/renewal year tax/both are present)
+
+1 for first year tax
+
+2 for renewal year tax
+
+3 for both
+
+1.If FY CGST/UTGST/SGST is updated and Tax Type is blank, then display error message -  “Tax Type is required”
+
+2 On UI If data type is other than numeric or is blank – then error message to be displayed “Only numeric value accepted”
+
+Total Receipt 
+
+In Rupee after round off
+
+Mandatory
+
+
+
+If the total Receipt amount is not an combination of “total receipt will be inclusive of total premiums + Interest – Rebate + Taxes on the premiums” then error message should be displayed as “Incorrect Total Receipt Amount”
+
+
+
+The total receipt will be inclusive of total premiums + Interest – Rebate +Taxes on the premiums
+
+
+
+  Accounting Entries for GST:
+
+New Accounts to be set up for CGST, SGST, UTGST and GST in Accounting
+
+Accounting Entries to be passed for CGST, SGST, UTGST and GST when the premium is applied towards the Policy premium due. 
+
+
+
+ Report Changes:
+
+GSTN No. will be displayed as a header for reports generated at HO/NARO level and will not be displayed for reports generated at Divisional/Regional/Circle/National level.
+
+
+
+New Format New format for counter and customer portal receipt to be devised including Tax components
+
+Duplicate receipt printed from Collection History screen should have Service tax/Sales tax value/GST (as applicable on the date of receipt generated) added to it in Taxes field.
+
+HRMS Pay Deduction Premium file will undergo changes in the Request File where new fields will be added related to GST.
+
+GL Integration CHANGES: In the GL Integration new chart of accounts will be added for CGST, SGST, UTGST and GST
+
+
+
+
+
+GST Number Mapping:
+
+GST Number Mapping to office code to be done in new solution.
+
+
+
+List where UTGST/SGST is applicable:
+
+The mapping will be done at HO Level.
+
+Mapping list will have identification.

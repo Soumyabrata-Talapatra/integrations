@@ -1,0 +1,173 @@
+> INTERNAL APPROVAL FORM
+
+**Project Name:** PAN/e-PAN
+
+**Version: 1.0**
+
+**Submitted on:**
+
+  ------------------------------------------------------------------------
+               **Name**                                 **Date**
+  ------------ ---------------------------------------- ------------------
+  **Approved                                            
+  By:**                                                 
+
+  **Reviewed                                            
+  By:**                                                 
+
+  **Prepared                                            
+  By: **                                                
+  ------------------------------------------------------------------------
+
+> VERSION CONTROL LOG
+
+  -------------------------------------------------------------------------------
+  **Version**   **Date**   **Prepared     **Remarks**
+                           By**           
+  ------------- ---------- -------------- ---------------------------------------
+  **1**                                   
+
+                                          
+
+                                          
+
+                                          
+
+                                          
+  -------------------------------------------------------------------------------
+
+# Table of Contents {#table-of-contents .TOC-Heading}
+
+[**1. Executive Summary** [4](#executive-summary)](#executive-summary)
+
+[**2. Project Scope** [4](#project-scope)](#project-scope)
+
+[**3. Business Requirements**
+[4](#business-requirements)](#business-requirements)
+
+[**4. Functional Requirements Specification**
+[5](#functional-requirements-specification)](#functional-requirements-specification)
+
+[4.1 Request Structure (IMS -\> PAN API)
+[5](#request-structure-ims---pan-api)](#request-structure-ims---pan-api)
+
+[4.2 Response Structure (PAN API -\> IMS)
+[5](#response-structure-pan-api---ims)](#response-structure-pan-api---ims)
+
+[4.3 Error Codes [6](#error-codes)](#error-codes)
+
+[**5. Attachments** [6](#attachments)](#attachments)
+
+## **1. Executive Summary**
+
+This document outlines the requirements to enable real-time PAN
+verification during customer onboarding, policy issuance, and KYC
+validation in the Insurance Management System. This ensures compliance
+with regulatory norms and enhances fraud prevention.
+
+## **2. Project Scope**
+
+This Integration will:
+
+- Validate PAN details via NSDL/Income Tax Department APIs.
+
+- Fetch PAN holder information securely.
+
+- Store verified PAN data in IMS.
+
+- Support bulk and individual PAN verification.
+
+## **3. Business Requirements**
+
+  ------------------------------------------------------------------------
+  **ID**       **Requirements**
+  ------------ -----------------------------------------------------------
+  FS_PAN_001   Ensure PAN verification and e-PAN retrieval for all
+               customers as per IRDAI and Income Tax norms.
+
+  FS_PAN_002   Validate PAN during onboarding, policy servicing, and
+               updates; prevent onboarding if PAN is invalid.
+
+  FS_PAN_003   Detect duplicate PAN usage, flag suspicious entries, and
+               maintain audit trails of all verification attempts.
+
+  FS_PAN_004   Real-time PAN validation using NSDL/Protean or API Setu
+               with TLS encryption, digital signatures, and secure
+               credentials.
+
+  FS_PAN_005   Store verified PAN details in IMS, encrypt data at rest and
+               in transit, and enforce role-based access control.
+
+  FS_PAN_006   Support high-volume PAN verification (bulk processing),
+               ensure response time \< 2 seconds, and handle API downtime
+               gracefully.
+
+  FS_PAN_007   Provide clear verification status messages, allow retries,
+               maintain logs, and generate compliance reports for audits.
+  ------------------------------------------------------------------------
+
+**Flow Diagram for PAN/e-PAN Integration:**
+![](media/image1.png){width="6.268055555555556in"
+height="4.178472222222222in"}
+
+## **4. Functional Requirements Specification**
+
+**Data Fields to be Created in IMS for Integration with PAN**
+
+### 4.1 Request Structure (IMS -\> PAN API)
+
+  ------------------------------------------------------------------------
+  Field Name      Type          Description
+  --------------- ------------- ------------------------------------------
+  requestId       String        Unique ID for the request (UUID)
+
+  pan             String        PAN number (10 characters, format:
+                                ABCDE1234F)
+
+  entityId        String        IMS identifier registered with NSDL/API
+                                Setu
+
+  timestamp       DateTime      Request timestamp in ISO format
+
+  signature       String        Digital signature for authentication
+
+  channel         String        Source of request (Web, Mobile, Bulk)
+  ------------------------------------------------------------------------
+
+### 4.2 Response Structure (PAN API -\> IMS)
+
+  --------------------------------------------------------------------------
+  Field Name         Type          Description
+  ------------------ ------------- -----------------------------------------
+  requestId          String        Same as request for mapping
+
+  pan                String        PAN number verified
+
+  name               String        Name as per PAN
+
+  status             String        Valid / Invalid / Not Found
+
+  dob                Date          Date of Birth from PAN
+
+  lastUpdated        Date          Last update in PAN database
+
+  errorCode          String        Error code if any
+
+  errorMessage       String        Error message if any
+
+  verificationTime   DateTime      Timestamp of verification
+  --------------------------------------------------------------------------
+
+### 4.3 Error Codes
+
+- 32: Invalid PAN format
+
+- 33: PAN not found
+
+- 15: Signature mismatch
+
+- 27: Timestamp expired
+
+## **5. Attachments**
+
+The following documents can be referred.

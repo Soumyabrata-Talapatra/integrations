@@ -1,0 +1,1553 @@
+Standard Document (Draft)
+Transactions posting in DoP Enterprise accounting module And
+Suspense Management
+1
+
+S. No. 1 2 3 4 5 6
+
+Contents
+Item Introduction Overall Description Process Description & Flow Charts System Architecture Data Requirements Annexures
+
+Page 3 4-6
+7-26 27 28 29-35
+
+2
+
+1. INTRODUCTION
+1.1 Purpose
+The purpose of this Software Requirement Specification (SRS) is to define the requirements for Transaction posting in DoP Enterprise accounting module. The system shall account, reconcile and post the financial transactions data i.e receipts and payments, maintain accurate records, automate financial reporting, and provide tools for analysis. This will replace a manual or fragmented accounting process to increase efficiency, accuracy, and compliance.
+1.2 Scope
+In scope: 1. Accounting, Reconciling and Posting of the figures of Receipts and Payments as
+reported by the IMS system in accordance with the figures reported by the Receipt/Payment Bank Accounts. 2. Generating various financial reports including collection reports, investible amount report, claims paid reports, incentive paid report, GST reports, TDS report at various levels of hierarchy of the offices operating IMS. 3. Ensuring compliance and maintaining an audit trail for transactions while accounting and posting of the figures.
+Out of scope: 1. Functions beyond core accounting activities and functions not specifically
+mentioned in this SRS document.
+1.3 Intended audience
+This document is intended for project managers, software developers, quality assurance (QA) testers, system administrators, business analysts, and financial stakeholders.
+3
+
+2. OVERALL DESCRIPTION
+2.1 User roles and characteristics
+1. Maker : Responsible for initiating receipt and payment transactions through IMS interface at collection/payment avenues.
+2. Approver : Competent authority responsible for approving and authorizing payments through IMS interface at collection/payment avenues and approving modifications done by system administrator.
+3. Accountant : Monitors and manages ledger and perform reconciliations and make manual entries to the ledger if required in specific cases.
+4. Auditor : Requires read-only access to transaction records and audit trails to verify financial accuracy and compliance.
+5. System Administrator : Responsible for system configuration, maintenance, and security. They can modify user accounts, access permissions, chart of accounts (approved by competent authority), mapping of ledger accounts and other technical aspects of the system.
+2.2 Functional requirements
+2.2.1 General Ledger (GL) management
+1. REQ-GL-1.0: The system shall allow System Administrators to set up and customize the chart of accounts (approved by competent authority) and mapping of ledger accounts as per standard accounting procedures as and when approved by the competent authority for implementation.
+2. REQ-GL-1.1: The system shall automatically account and post transaction data including IMS receipts and payment through double-entry bookkeeping to the appropriate ledger accounts (IT 2.0 Account Codes.)
+3. REQ-GL-1.2: The system shall allow users to post accounting entries in ledger accounts manually in specific cases, with an optional workflow for review and approval.
+4
+
+2.2.2 Banking and reconciliation
+1. REQ-BANK-2.0: The system shall initiate automatic payments to customer's/agent's bank accounts for incentives, loan and maturity values in accordance with the approved procedures deployed in IMS and as approved by the competent authority.
+2. REQ-BANK-2.1: The system shall manage remittance and drawing bank accounts of respective DDOs and reconcile bank statements with recorded transactions automatically.
+3. REQ-BANK-2.2: The system shall provide a workflow to reconcile bank statements with recorded transactions manually in specific cases.
+2.2.3 Financial reporting
+1. REQ-REP-3.0: The system shall generate standard financial statements as and when required, including: I. Detailed and Consolidated Receipt reports with requisite bifurcations. II. Detailed and Consolidated Payment reports with requisite bifurcations. III. Detailed and Consolidated GST and Tax Reports IV. Detailed and Consolidated Investible Funds Reports
+2. REQ-REP-3.1: The system shall allow users to export reports in common formats such as CSV, PDF, and Excel.
+3. REQ-REP-3.2: The system shall consist of drill-down functionality from summary reports to underlying transaction details.
+2.3 Non-functional requirements
+1. Performance (NFR-PERF-1.0): The system shall process financial transactions within 2 seconds, and generate standard financial reports within 10 seconds for standard data volumes.
+2. Security (NFR-SEC-2.0): The system shall protect all financial data using encryption both in transit and at rest. It must use role-based access control to restrict data
+5
+
+access based on user permissions. User authentication must support strong passwords and two-factor authentication (2FA). 3. Reliability (NFR-REL-3.0): The system must operate with 99.9% uptime, excluding planned maintenance. A robust backup and recovery system shall be in place to prevent data loss in the event of a system failure. 4. Usability (NFR-USABILITY-4.0): The user interface must be intuitive, with a clear and consistent navigation design that requires minimal training for typical accounting tasks. 5. Scalability (NFR-SCALE-5.0): The system architecture shall be scalable to accommodate an increase in transaction volume and the number of users as the transaction volume grows. 2.4 External interface requirements 1. User interfaces: The system shall provide a web-based user interface accessible via standard browsers on desktop and mobile devices. 2. Software interfaces: The system shall provide APIs to integrate with third-party software, such as banking portals, payment gateways, and management systems. 3. Communication interfaces: The system shall be capable of sending automated email notifications for financial activities, such as receipts, payments and requests.
+6
+
+3. PROCESS DESCRIPTION & FLOW CHARTS
+3.1 REQ-GL-1.0 Function 1 : Modification of Charts of Accounts Sub Function 1.1 : Description : Addition of Ledger Accounts in Chart of Accounts. User : System Administrator, Approver Sub Function 1.2 : Description : Deletion of Ledger Accounts in Chart of Accounts. User : System Administrator, Approver Function 2 : Mapping of Ledger Accounts Sub Function 2.1 : Description : Modification in mapping of Ledger Accounts. User : System Administrator, Approver
+7
+
+3.2 REQ-GL-1.1
+
+Prerequisite 1. Refer "Codes/Notations for Amount" table attached as Annexure 2. Refer "Account Codes Description" table attached as Annexure 3. Refer "General Abbreviations" table attached as Annexure 4. If the source of receipt is CBS SI, the RTB shall be replaced by PCC.
+
+Function 3 : Accounting & Posting of Receipts
+
+Sub Function 3.1 : New Policy Premium Receipts Step 1 : Premium payment received for new policy - Policy Indexed Description : AP received from customer ; Accounting Entries :
+
+Amount
+AP AP
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PIA
+
+If PT = RPLI RIA
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+If policy is not approved jump to Function 4, Sub Function 4.7 If policy is approved execute Function 4, Sub Function 4.3 and continue.
+
+Step 2 : Policy approved and Amount accounted (Free Look up period started) Description : AP received from customer ; AP = PF + AA + CPF + SPF - R 1. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 2. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount PF
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PFP(PDT)
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PIA_C
+
+8
+
+CPF
+
+PFCGST R
+
+SPF
+
+PFSGST
+
+AP
+
+AA
+
+SSH
+
+R
+
+PF
+
+If PT = RPLI RFP(PDT)
+
+CPF
+
+RFCGST
+
+SPF
+
+RFSGST
+
+AA
+
+SSH
+
+If PT = RPLI
+
+PR RIA_C RR
+
+If policy is cancelled by the customer within free look up period jump to Function 4, Sub-Function 4.7 If policy is not cancelled continue.
+
+Step 3 : Free look-up period ended. Description : Execute Function 4, Sub-Function 4.4 and Terminates.
+
+Sub Function 3.2 : Subsequent Premium Receipts Step 1 : Premium payment received from customer - Subsequent to Intial Payment Description : 1. AP is received from customer and AA from previous payments, if any is included to arrive at the Net payment amount against the concerned policy; AP + AA (Previous) = PF + PR + CPF + SPF + CPR + SPR + D + CDF + SDF - R 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount
+PF PR CPF SPF CPR SPR D
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PFP(PDT)
+
+PRP(PDT)
+
+PFCGST
+
+PFSGST
+
+PRCGST
+
+PRSGST
+
+PDF
+
+Amount
+AP AA R
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+RTB
+
+SSH_C
+
+PR
+
+9
+
+CDF
+
+PRCGST
+
+SDF
+
+PRSGST
+
+PF
+
+If PT = RPLI RFP(PDT) AP
+
+PR
+
+RRP(PDT) AA
+
+CPF
+
+RFCGST R
+
+SPF
+
+RFSGST
+
+CPR
+
+RRCGST
+
+SPR
+
+RRSGST
+
+D
+
+RDF
+
+CDF
+
+RRCGST
+
+SDF
+
+RRSGST
+
+If PT = RPLI
+
+RTB SH RR
+
+Execute Function 4, Sub-Function 4.4 and Terminates.
+
+Sub Function 3.3 : Loan Repayment Receipts Step 1 : Loan repayment received from customer Description : 1. AP is received from customer ; AP = LP + LI 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount
+LP LI LP LI
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PLP(PDT)
+
+PLI(PDT)
+
+If PT = RPLI RLP(PDT)
+
+RLI(PDT)
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+Function Terminates.
+
+Sub Function 3.4 : Revival Receipts Step 1 : Revival payment received from customer Description :
+
+10
+
+1. AP is received from customer ; AP = PF + PR + CPF + SPF + CPR + SPR + D + CDF + SDF 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries : Case 3.4.1: The Revival amount is paid in Lumpsump :
+
+Amount
+PF PR CPF SPF CPR SPR D CDF SDF PF PR CPF SPF CPR SPR D CDF SDF
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PFP(PDT)
+
+PRP(PDT)
+
+PFCGST
+
+PFSGST
+
+PRCGST
+
+PRSGST
+
+PDF
+
+PRCGST
+
+PRSGST
+
+If PT = RPLI RFP(PDT)
+
+RRP(PDT)
+
+RFCGST
+
+RFSGST
+
+RRCGST
+
+RRSGST
+
+RDF
+
+RRCGST
+
+RRSGST
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+Function Terminates.
+
+Case 3.4.1: The Revival amount is paid in installment : Step 1: The installment amount paid by the customer AP for revival shall be accounted as :
+
+Receipt Side
+
+Payment Side
+
+11
+
+Amount
+PF+PR+D CPF SPF CPR SPR CDF SDF PF+PR+D CPF SPF CPR SPR CDF SDF
+
+Condition for Accounting
+Entry If PT = PLI
+If PT = RPLI
+
+Account Code
+PIA PFCGST PFSGST PRCGST PRSGST PRCGST PRSGST RIA RFCGST RFSGST RRCGST RRSGST RRCGST RRSGST
+
+Amount AP
+
+Condition for Accounting
+Entry
+
+Account Code
+RTB
+
+Step 2 : On complete payment of the total revival amount including any extra amount arising from termination and re-requests of revival, the amount shall be accounted out from the advance head and along with the last installment amount it shall be accounted in the respective premiums and default fee heads as :
+
+Amount
+PF PR CPF SPF CPR SPR D CDF SDF PF PR
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PFP(PDT)
+
+PRP(PDT)
+
+PFCGST
+
+PFSGST
+
+PRCGST
+
+PRSGST
+
+PDF
+
+PRCGST
+
+PRSGST
+
+If PT = RPLI RFP(PDT)
+
+RRP(PDT)
+
+Amount
+AP PF+PR+D AP PF+PR+D
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+RTB
+
+PIA_C
+
+If PT = RPLI RTB
+
+RIA_C
+
+12
+
+CPF
+
+RFCGST
+
+SPF
+
+RFSGST
+
+CPR
+
+RRCGST
+
+SPR
+
+RRSGST
+
+D
+
+RDF
+
+CDF
+
+RRCGST
+
+SDF
+
+RRSGST
+
+Function Terminates
+
+Sub Function 3.5 : Miscellaneous Receipts Case 3.5.1 : Duplicate policy bond issuance Description : AP is received from customer ; AP = FDB Accounting Entries :
+
+Amount
+FDB FDB
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+FDPBP
+
+If PT = RPLI FDPBR
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+Function Terminates.
+
+Case 3.5.2 : Cheque Dishounor Charges Description : AP is received from customer ; AP = FCD Accounting Entries :
+
+Amount
+FCD FCD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PDF
+
+If PT = RPLI RDF
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+Function Terminates.
+
+13
+
+Case 3.5.3 : Fee for Subsequent conversions (other than Reduction, Discontinuance or Commutation) in policy terms Description : AP is received from customer ; AP = FCPT Accounting Entries :
+
+Amount
+FCPT FCPT
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PCCC
+
+If PT = RPLI RCCC
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+Function Terminates. Function 4 : Accounting & Posting of Payments
+
+Sub Function 4.1 : Loan Disbursements Step 1 : Loan amount disbursed to the customer Description : 1. AD is disbursed to the customer ; AD = LD 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+LD LD
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PLD(PDT)
+
+If PT = RPLI RLD(PDT)
+
+Function Terminates.
+
+Sub Function 4.2 : Surrender Payments Step 1 : Surrender Value paid to the customer
+
+14
+
+Description : 1. AD is disbursed/paid to the customer ; AD = SVP + BP 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+SVP BP SVP BP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PSV(PDT)
+
+PBP(PDT)
+
+If PT = RPLI RSV(PDT)
+
+RBP(PDT)
+
+Function Terminates.
+
+Sub Function 4.3 : Medical Charges Payments Step 1 : Medical Charges paid to the empanelled Doctor Description : AD is disbursed/paid to the receiver/doctor ; AD = M Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+M M
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PMC
+
+If PT = RPLI RMC
+
+Function Terminates.
+
+Sub Function 4.4 : Incentive Payments
+
+Step 1 : Incentives paid to the Sales force i.e Direct Agents, GDS, Departmental Employees.
+
+15
+
+Description : AD is disbursed/paid to the receiver/sales force; AD = ISF Accounting Entries : Case 4.4.1 : Incentive Payment to Development Officers :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+ISF ISF
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PIDO
+
+If PT = RPLI RIDO
+
+Case 4.4.2 : Incentive Payment to Field Officers :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+ISF ISF
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PIFO
+
+If PT = RPLI RIFO
+
+Case 4.4.3 : Incentive Payment to Agents/BPMs/Salesforce :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+ISF ISF
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PISF
+
+If PT = RPLI RISF
+
+Case 4.4.4: Incentive Payment to IPOs/ASPs/SPOs/SSPOs :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount ISF
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PIHO
+
+16
+
+ISF
+
+If PT = RPLI RIHO
+
+Function Terminates.
+
+Sub Function 4.5 : Survival Benefit Payments Step 1 : Survival Benefit paid to the customer Description : 1. AD is disbursed/paid to the customer ; AD = SBP + BP 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+SBP BP SBP BP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI
+
+PSBP(PDT)
+
+PBP(PDT)
+
+If PT = RPLI RSBP(PDT)
+
+RBP(PDT)
+
+Function Terminates.
+
+Sub Function 4.6 : Maturity Payments Step 1 : Maturity value paid to the customer Description : 1. AD is disbursed/paid to the customer ; AD = MBP + BP 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount
+
+Receipt Side Condition for Accounting
+
+Account Code
+
+Amount
+
+Payment Side Condition for Accounting
+
+Account Code
+
+17
+
+Entry
+
+Entry
+
+AD
+
+DFB
+
+MBP
+
+If PT = PLI PMBP(PDT)
+
+BP
+
+PBP(PDT)
+
+MBP
+
+If PT = RPLI RMBP(PDT)
+
+BP
+
+RBP(PDT)
+
+Function Terminates.
+
+Sub Function 4.7 : Refund Payments Case 4.7.1 : Refund for failed/non-captured/duplicate transactions Step 1 : Refund amount accounted out from Remittance to Bank Description : 1. AP is the amount paid to the customer ; Accounting Entries :
+
+Amount AP
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+SSH
+
+Amount AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+RTB
+
+Step 2 : Refund processed to the customer Description : 4. AD is disbursed/paid to the customer ; AD = AP Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount AD
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+SSH_C
+
+Function Terminates.
+
+Case 4.7.2 : Jump from Function 3, Sub Function 3.1, Step 1 Step 1 : Refund amount accounted out and refund issued to customer Description :
+
+18
+
+1. AP is the amount received from customer ; 2. AD is disbursed/paid to the customer ; AD = AP Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+AP AP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI PIA_C
+
+If PT = RPLI RIA_C
+
+Function Terminates.
+
+Case 4.7.3 : Jump from Function 3, Sub Function 3.1, Step 2 Step 1 : Refund amount accounted out from respective heads after deduction of Medical Fees and refund issued to the customer Description : 1. AP is the amount received from customer ; 2. AD is disbursed/paid to the customer ; AD = AP - M Accounting Entries :
+
+Amount AD=AP - M
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+PF - M CPF SPF AA PF - M CPF SPF AA
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI PFP(PDT)
+
+PFCGST
+
+PFSGST
+
+SSH_C
+
+If PT = RPLI RFP(PDT)
+
+RFCGST
+
+RFSGST
+
+SSH_C
+
+Function Terminates.
+
+19
+
+Sub Function 4.8 : Death Claim Payments Step 1 : Death Claim value paid to the customer Description : 1. AD is disbursed/paid to the customer ; AD = DBP + BP 2. Product wise account codes as mentioned in Table 2 of "Account Codes Description" annexure for respective values of "PDT" shall be used for accounting. 3. Accounting shall be done for "Non-Zero" values. Accounting Entries :
+
+Amount AD
+
+Receipt Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+DFB
+
+Amount
+DBP BP DBP BP
+
+Payment Side
+
+Condition for Accounting
+Entry
+
+Account Code
+
+If PT = PLI PDCP(PDT)
+
+PBP(PDT)
+
+If PT = RPLI RDCP(PDT)
+
+RBP(PDT)
+
+Function Terminates.
+
+3.3 REQ-GL-1.2
+
+Function 5 : Provision for Manual Accounting Entries in the IMS system Sub Function 5.1 : Manual Accounting entries posting functionalities for unaccounted transactions. Description : The IMS system shall provide a dashboard with provisions to manually push the accounting entries of unaccounted IMS transactions in the DoP Accounting module.
+
+Step 1 : The IMS system shall list all the unaccounted IMS transactions with bifurcations if applicable of the respective DDO in the Accountant's dashboard of that DDO. To account a certain transaction or part transaction (bifurcated figure) manually the accountant shall select that transaction or part transaction.
+
+20
+
+Step 2 : The Accountant shall not be able to insert any figure entry while making the accounting entry. The IMS transaction or part transaction to be accounted once selected shall show a drop down menu with the list of all either Receipt or Payment side account code depending on the nature of the transaction.
+Step 3 : After selecting the applicable account code the Accountant shall click on the "Initiate Posting" button to initiate the posting of that selected transaction or part transaction.
+21
+
+Step 4 : On initiation of the posting for the selected transaction, the transaction shall show on the DDO dashboard for approval, once approved by the DDO on clicking the "Approve Posting" button the transaction shall be posted in the DoP Accounts Module.
+22
+
+3.4 REQ-BANK-2.0 Function 6 : Automatic payments to Customers, Salesforce and Doctors Sub Function 6.1 : Automatic Payments to the Customers Description : The IMS system shall process automatic payments to the Customers of following amounts after due operational approvals if any needed. 1. Loan Disbursal Payments 2. Surrender Value Payments 3. Survival Benefit Payments 4. Maturity Value Payments 5. Death Claim Payment 6. Refund Payments for failed transactions
+Sub Function 6.2 : Automatic Payments to the Salesforce Description : The IMS system shall process automatic payments to the Salesforce of following amounts after due operational approvals if any needed. 1. Incentive Payments
+23
+
+Sub Function 6.3 : Automatic Payments to the Doctors Description : The IMS system shall process automatic payments to the Doctors of following amounts after due operational approvals if any needed. 1. Medical Fee Payments
+3.5 REQ-BANK-2.1 Function 7 : Automatic Reconciliation of Bank statements with IMS statement. Sub Function 7.1 : Automatic Reconciliation of Remittance and Drawing Bank accounts of respective DDOs with IMS receipts and payment statement. Description : The IMS system shall automatically reconcile the daily statements of the Remittances and Drawing bank accounts of the respective DDOs with the receipts and payment statement of IMS for that respective DDO. Step 1 : The IMS systems fetches the Remittance and Drawing bank statements of the respective DDO and the receipts and payment statement of IMS for that respective DDO. Step 2 : The IMS system reconciles the statements with corresponding transactions on both the statements and segregates the non-reconciled transactions in either of the statements for manual reconciliation. Step 3 : The non-reconciled transactions shall be displayed on the respective DDOs Accountant's dashboard for manual reconciliation.
+24
+
+3.6 REQ-BANK-2.2 Function 8 : Provision for posting Manual Reconciliation Entries in the IMS system Sub Function 8.1 : Manual Reconciliation entries posting functionalities for nonreconciled transactions. Description : The IMS system shall provide a dashboard with provisions to manually push the reconciliation entries of non-reconciled IMS transactions in APT 2.0. Step 1 : The IMS system shall list all the non-reconciled transactions on the Accountant's dashboard with bank statement's transaction at one side and the IMS transaction at the other side. The accountant shall be able to select corresponding transaction from both statements for performing reconciliation and no figure entries shall be permitted.
+Step 2 : The accountant can click on the "Initiate Reconciliation" once corresponding transactions are selected from both side statements to initiate the posting of the reconciliation entries.
+25
+
+Step 3 : The thus initiated reconciliation entry shall be displayed on the DDOs dashboard for approval, where the entry can be approved by selecting and clicking on "Approve Reconciliation" once approved the reconciliation entry shall be posted in the system.
+26
+
+4. SYSTEM ARCHITECTURE
+The system will be based on a micro service and client-server architecture with a modern web interface. Key components will include: 1. Presentation Layer : A web-based application built with a modern front-end framework. 2. Application Layer : A secure, scalable back-end that handles business logic and API requests. 3. Database Layer : A relational database to store and manage all financial data.
+27
+
+5. DATA REQUIREMENTS
+The database must store critical financial data, including: 1. User profiles and permissions. 2. A complete chart of accounts. 3. Transaction details (date, amount, description, source etc). 4. Salesforce, Doctors and customer information. 5. Receipt and payment records. 6. Financial reports and historical data. 7. All data fields will have defined validation rules to ensure data integrity.
+28
+
+6. ANNEXURES
+This section would includes information in form of annexures which are referenced in the document.
+
+1. Notations
+
+Codes/Notations for Amounts
+
+S. No. 1 2 3
+4
+5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+
+Code/Notation AP PF PR
+AA
+M CPF SPF CPR SPR R D CDF SDF LP LI FDB FCD FCPT LD AD BP SVP ISF SBP MBP DBP
+
+Description of Amount Amount paid by the customer
+First Year Premium Renewal Year Premium Amount excess to the due premium, which has to be adjusted against subsequent premiums payments.
+Medical Charges CGST on First Year Premium SGST on First Year Premium CGST on Renewal Year Premium SGST on Renewal Year Premium
+Rebate Default Fee CGST on Default Fee SGST on Default Fee Loan Principle Amount Loan Interest Amount Fee for Duplicate Bond issuance Fee for Cheque Dishonour Fee for Conversion in Policy Terms Loan Amount Disbursed Amount disbursed/paid to the customer/receiver Bonus Payment to the Policyholder Surrender Value (Premiums) Incentive Payments to Sales Force Survival Benefit (Premiums) Maturity Benefit (Premium) Death Claim Benefit (Premium)
+
+29
+
+Account Codes Description
+1. Non Product-wise Account Codes
+
+S. No. 1 2 3
+4
+5
+6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+
+Notation RTB DFB PIA
+
+IT 2.0 Account Code 8677000200 8670000100 8446015000
+
+PIA_C
+
+8446015100
+
+RIA
+
+8446015200
+
+RIA_C
+PMC RMC PFP RFP PRP RRP PR RR SSH SSH_C PFCGST PFSGST RFCGST RFSGST PRCGST PRSGST RRCGST RRSGST PDF RDF
+
+8446015300
+8016010000 8016010300 Product Wise Product Wise Product Wise Product Wise 8016008900 8016009500 8661004100 8661004200 8661001700 8661001800 8661002500 8661002600 8661008300 8661008400 8661009100 8661009200 8016006100 8016006500
+
+Description
+Remittance to Bank Drawing from Bank Initial Amount for PLI Proposal Receipts Initial Amount for PLI Proposal Payments/Adjustments Initial Amount for RPLI Proposal-Receipts Initial Amount for RPLI Proposal Payments/Adjustments PLI - Payment of Medical Charges RPLI - Payment Medical Charges PLI - 1st Year Premium RPLI - 1st Year Premium
+PLI - Renewal Premium
+RPLI - Renewal Premium
+PLI - Rebate
+RPLI - Rebate
+Settlement Suspense Head
+Settlement Suspense Head_DFC PLI - CGST on 1st Year Premium PLI - SGST on 1st Year Premium RPLI - CGST on 1st Year Premium RPLI - SGST on 1st Year Premium
+PLI - CGST on Renewal Premium
+PLI - SGST on Renewal Premium
+RPLI - CGST on Renewal Premium
+RPLI - SGST on Renewal Premium
+PLI - Default Fee
+RPLI - Default Fee
+
+30
+
+27
+
+PLP
+
+28
+
+PLI
+
+29
+
+RLP
+
+30
+
+RLI
+
+31
+
+FDPBP
+
+32
+
+FDPBR
+
+33
+
+PCCC
+
+34
+
+RCCC
+
+35
+
+PLD
+
+36
+
+RLD
+
+37
+
+PSV
+
+38
+
+RSV
+
+39
+
+PBP
+
+40
+
+RBP
+
+41
+
+PIDO
+
+42
+
+PIFO
+
+43
+
+PISF
+
+44
+
+PIHO
+
+45
+
+RIDO
+
+46
+
+RIFO
+
+47
+
+RISF
+
+48
+
+RIHO
+
+49
+
+PSBP
+
+50
+
+RSBP
+
+51
+
+PMBP
+
+52
+
+RMBP
+
+53
+
+PDCP
+
+Product Wise 8016000500 Product Wise 8016003400 8016005900 8016006300 8016006000 8016006400 Product Wise Product Wise Product Wise Product Wise Product Wise Product Wise 8016008600
+8016008700
+8016008800 8016009100 8016009200
+8016009300
+8016009400 8016009700 Product Wise Product Wise Product Wise Product Wise Product Wise
+
+PLI - Loan Principle
+PLI - Loan Interest
+RPLI - Loan Principle
+RPLI - Loan Interest
+Fee for issue of Duplicate Policy/pass books PLI RPLI Fee for issue of Duplicate Policy/pass books PLI Conversion/Commutation Charges RPLI Conversion/Commutation Charges
+PLI - Loan Disbursement
+RPLI - Loan Disbursement
+PLI - Surrender Value Payment
+RPLI - Surrender Value Payment
+PLI - Bonus to Policyholders
+RPLI - Bonus to Policyholders
+Payment of PLI incentive to Development officers Payment of PLI incentive/commission to field officers Payment of PLI commission to agents/BPMs/SPMs...etc Payment of PLI Incentive to IPOs,ASPs,SPOs,SSPOs Payment of RPLI incentive to Development officers Payment of RPLI incentive/commission to field officers Payment of RPLI commission to agents/BPMs/SPMs...etc Payment of RPLI Incentive to IPOs,ASPs,SPOs,SSPOs
+PLI - Survival Benefit Payment
+RPLI - Survival Benefit Payment
+PLI - Maturity Benefit Payment
+RPLI - Maturity Benefit Payment
+PLI - Death Claim Payment
+
+31
+
+54
+
+RDCP
+
+55
+
+PCC
+
+Product Wise 8671002300
+
+RPLI - Death Claim Payment PLI to CBS Cleared
+
+2. Product-wise Account Codes
+
+S. No.
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+20
+21 22 23 24 25 26
+
+Notation
+PFP(WLA) PFP(CWLA)
+PFP(EA) PFP(AEA) PFP(JEA) PFP(CP) RFP(WLA) RFP(CWLA) RFP(EA) RFP(AEA) RFP(CP) RFP(GP) PRP(WLA) PRP(CWLA) PRP(EA) PRP(AEA) PRP(JEA) PRP(CP) RRP(WLA)
+RRP(CWLA)
+RRP(EA) RRP(AEA) RRP(CP) RRP(GP) PLP(WLA) PLP(CWLA)
+
+IT 2.0 Account Code
+8014000100 8014000500 8014000900 8014001400 8014001800 8014002300 8014003000 8014003400 8014003800 8014004300 8014004700 8014007400 8014006400 8014006500 8014006600 8014006700 8014006800 8014006900 8014007000
+8014007100
+8014007200 8014007300 8014007900 8014007500 8014002900 8014005700
+
+Description
+1st Year Premium - PLI - WLA 1st Year Premium - PLI - CWLA 1st Year Premium - PLI - EA 1st Year Premium - PLI - AEA 1st Year Premium - PLI - JEA 1st Year Premium - PLI - CP 1st Year Premium - RPLI - WLA 1st Year Premium - RPLI - CWLA 1st Year Premium - RPLI - EA 1st Year Premium - RPLI - AEA 1st Year Premium - RPLI - CP 1st Year Premium - RPLI - GP Renewal Premium - PLI - WLA Renewal Premium - PLI - CWLA Renewal Premium - PLI - EA Renewal Premium - PLI - AEA Renewal Premium - PLI - JEA Renewal Premium - PLI - CP Renewal Premium - RPLI - WLA Renewal Premium - RPLI CWLA Renewal Premium - RPLI - EA Renewal Premium - RPLI - AEA Renewal Premium - RPLI - CP Renewal Premium - RPLI - GP Loan Principle - PLI - WLA Loan Principle - PLI - CWLA
+
+32
+
+27
+
+PLP(EA)
+
+28
+
+PLP(JEA)
+
+29
+
+RLP(WLA)
+
+30
+
+RLP(CWLA)
+
+31
+
+RLP(EA)
+
+32
+
+PLD(WLA)
+
+33
+
+PLD(CWLA)
+
+34
+
+PLD(EA)
+
+35
+
+PLD(JEA)
+
+36
+
+RLD(WLA)
+
+37
+
+RLD(CWLA)
+
+38
+
+RLD(EA)
+
+39
+
+PSV(WLA)
+
+40
+
+PSV(CWLA)
+
+41
+
+PSV(EA)
+
+42
+
+PSV(JEA)
+
+43
+
+PSV(CP)
+
+44
+
+RSV(WLA)
+
+45
+
+RSV(CWLA)
+
+46
+
+RSV(EA)
+
+47
+
+RSV(CP)
+
+48
+
+PBP(WLA)
+
+49
+
+PBP(CWLA)
+
+50
+
+PBP(EA)
+
+51
+
+PBP(AEA)
+
+52
+
+PBP(JEA)
+
+53
+
+PBP(CP)
+
+54
+
+RBP(WLA)
+
+55
+
+RBP(CWLA)
+
+56
+
+RBP(EA)
+
+57
+
+RBP(AEA)
+
+58
+
+RBP(CP)
+
+8014005800 8014005900 8014005300 8014006200 8014006300 8014002800 8014005400 8014005500 8014005600 8014005200 8014006000 8014006100 8014000300 8014000700 8014001100 8014002000 8014002500 8014003200 8014003600 8014004000 8014004900 8016007500 8016007600 8016007700 8016007800 8016007900 8016008000 8016008100 8016008200 8016008300 8016008400 8016008500
+
+Loan Principle - PLI - EA Loan Principle - PLI - JEA Loan Principle - RPLI - WLA Loan Principle - RPLI - CWLA Loan Principle - RPLI - EA Loan Disbursed - PLI - WLA Loan Disbursed - PLI - CWLA Loan Disbursed - PLI - EA Loan Disbursed - PLI - JEA Loan Disbursed - RPLI - WLA Loan Disbursed - RPLI - CWLA Loan Disbursed - RPLI - EA Surrender Value - PLI - WLA Surrender Value - PLI - CWLA Surrender Value - PLI - EA Surrender Value - PLI - JEA Surrender Value - PLI - CP Surrender Value - RPLI - WLA Surrender Value - RPLI - CWLA Surrender Value - RPLI - EA Surrender Value - RPLI - CP Bonus - PLI - WLA Bonus - PLI - CWLA Bonus - PLI - EA Bonus - PLI - AEA Bonus - PLI - JEA Bonus - PLI - CP Bonus - RPLI - WLA Bonus - RPLI - CWLA Bonus - RPLI - EA Bonus - RPLI - AEA Bonus - RPLI - CP
+
+33
+
+59
+
+PMBP(WLA)
+
+60 PMBP(CWLA)
+
+61
+
+PMBP(EA)
+
+62
+
+PMBP(AEA)
+
+63
+
+PMBP(JEA)
+
+64
+
+PMBP(CP)
+
+65
+
+RMBP(WLA)
+
+66 RMBP(CWLA)
+
+67
+
+RMBP(EA)
+
+68
+
+RMBP(AEA)
+
+69
+
+RMBP(CP)
+
+70
+
+RMBP(GP)
+
+71
+
+PDCP(WLA)
+
+72 PDCP(CWLA)
+
+73
+
+PDCP(EA)
+
+74
+
+PDCP(AEA)
+
+75
+
+PDCP(JEA)
+
+76
+
+PDCP(CP)
+
+77
+
+RDCP(WLA)
+
+78 RDCP(CWLA)
+
+79
+
+RDCP(EA)
+
+80
+
+RDCP(AEA)
+
+81
+
+RDCP(CP)
+
+82
+
+RDCP(GP)
+
+8014000400 8014000800 8014001200 8014001600 8014002100 8014002600 8014003300 8014003700 8014004100 8014004500 8014005000 8014007700 8014000200 8014000600 8014001000 8014001500 8014001900 8014002400 8014003100 8014003500 8014003900 8014004400 8014004800 8014007600
+
+Maturity Benefit - PLI - WLA Maturity Benefit - PLI - CWLA Maturity Benefit - PLI - EA Maturity Benefit - PLI - AEA Maturity Benefit - PLI - JEA Maturity Benefit - PLI - CP Maturity Benefit - RPLI - WLA Maturity Benefit - RPLI - CWLA Maturity Benefit - RPLI - EA Maturity Benefit - RPLI - AEA Maturity Benefit - RPLI - CP Maturity Benefit - RPLI - GP Death Claim - PLI - WLA Death Claim - PLI - CWLA Death Claim - PLI - EA Death Claim - PLI - AEA Death Claim - PLI - JEA Death Claim - PLI - CP Death Claim - RPLI - WLA Death Claim - RPLI - CWLA Death Claim - RPLI - EA Death Claim - RPLI - AEA Death Claim - RPLI - CP Death Claim - RPLI - GP
+
+34
+
+S. No. 1 2 3 4 5 6 7 8 9 10 11
+
+Notation PLI RPLI PT PDT WLA
+CWLA EA AEA JEA CP GP
+
+General Abbreviations
+Description Postal Life Insurance Rural Postal Life Insurance
+Policy Type Product Type Whole Life Assurance Convertible - Whole Life Assurance Endowment Assurance Anticipated Endowment Assurance Joint Endowment Assurance Children Policy Gram Priya
+
+35
+
+

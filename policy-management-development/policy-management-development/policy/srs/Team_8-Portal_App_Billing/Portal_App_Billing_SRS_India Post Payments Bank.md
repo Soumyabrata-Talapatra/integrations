@@ -1,0 +1,442 @@
+> INTERNAL APPROVAL FORM
+
+**Project Name:** India Post Payments Bank (IPPB)
+
+**Version: 1.0**
+
+**Submitted on:**
+
+  ------------------------------------------------------------------------
+               **Name**                                 **Date**
+  ------------ ---------------------------------------- ------------------
+  **Approved                                            
+  By:**                                                 
+
+  **Reviewed                                            
+  By:**                                                 
+
+  **Prepared                                            
+  By: **                                                
+  ------------------------------------------------------------------------
+
+> VERSION CONTROL LOG
+
+  -------------------------------------------------------------------------------
+  **Version**   **Date**   **Prepared     **Remarks**
+                           By**           
+  ------------- ---------- -------------- ---------------------------------------
+  **1**                                   
+
+                                          
+
+                                          
+
+                                          
+
+                                          
+  -------------------------------------------------------------------------------
+
+# Table of Contents {#table-of-contents .TOC-Heading}
+
+[**1. Executive Summary** [4](#executive-summary)](#executive-summary)
+
+[**2. Project Scope** [4](#project-scope)](#project-scope)
+
+[**3. Business Requirements**
+[4](#business-requirements)](#business-requirements)
+
+[**4. Functional Requirements Specification**
+[6](#functional-requirements-specification)](#functional-requirements-specification)
+
+[4.1 Standing Instructions
+[6](#standing-instructions)](#standing-instructions)
+
+[4.2 IPPB Mobile Banking
+[7](#ippb-mobile-banking)](#ippb-mobile-banking)
+
+[4.3 IPPB Micro-ATM [8](#ippb-micro-atm)](#ippb-micro-atm)
+
+[**5. Attachments** [9](#attachments)](#attachments)
+
+## **1. Executive Summary**
+
+The purpose of this document is to define the requirements for
+integrating the Postal Life Insurance (PLI) Insurance Management System
+(IMS) Billing and Collection Module with India Post Payments Bank
+(IPPB). The integration will enable premium collection and loan
+repayment through IPPB's digital and assisted channels, including
+Standing Instructions (SI), Mobile Banking (M-Banking), and Micro-ATM.
+
+## **2. Project Scope**
+
+This Integration aims to:
+
+- Facilitate seamless premium and loan repayment transactions.
+
+- Provide real-time policy validation and payment acknowledgment.
+
+- Enhance customer experience through notifications, multilingual
+  support, and offline capabilities.
+
+## **3. Business Requirements**
+
+  -------------------------------------------------------------------------
+  **ID**        **Functionality**   **Requirements**
+  ------------- ------------------- ---------------------------------------
+  FS_IPPB_001   Standing            Customers must be able to register
+                Instructions (SI)   Standing Instructions for PLI/RPLI
+                                    premium payments through IPPB Mobile
+                                    App.
+
+  FS_IPPB_002   Standing            System should fetch and validate policy
+                Instructions (SI)   details in real-time from IMS using
+                                    Policy Number and Date of Birth.
+
+  FS_IPPB_003   Standing            Customers should be able to set SI
+                Instructions (SI)   validity period and first debit date
+                                    (configurable options: 5/10/15/20).
+
+  FS_IPPB_004   Standing            Provide confirmation of SI registration
+                Instructions (SI)   with reference number and timestamp.
+
+  FS_IPPB_005   Standing            Enable auto-renewal of SI post-expiry
+                Instructions (SI)   based on customer consent.
+
+  FS_IPPB_006   Standing            Display summary of active SIs on IPPB
+                Instructions (SI)   dashboard.
+
+  FS_IPPB_007   Standing            Send push notifications for SI
+                Instructions (SI)   activation, upcoming debit reminders,
+                                    and expiry alerts.
+
+  FS_IPPB_008   Premium Payment via Customers must be able to pay PLI/RPLI
+                Mobile Banking      premiums and loan repayments through
+                                    IPPB Mobile App.
+
+  FS_IPPB_009   Premium Payment via System should fetch policy/loan details
+                Mobile Banking      in real-time from IMS using Policy
+                                    Number/Loan Account and Date of Birth.
+
+  FS_IPPB_010   Premium Payment via Provide options for full or partial
+                Mobile Banking      loan repayment and premium advance
+                                    payments.
+
+  FS_IPPB_011   Premium Payment via Generate and share payment receipts via
+                Mobile Banking      SMS, Email, and in-app download.
+
+  FS_IPPB_012   Premium Payment via Implement real-time premium due alerts
+                Mobile Banking      and missed payment notifications.
+
+  FS_IPPB_013   Premium Payment via Support multi-language interface (via
+                Mobile Banking      Bhashini) for rural customers.
+
+  FS_IPPB_014   Premium Payment via Integrate DigiLocker for document
+                Mobile Banking      submission for claims or service
+                                    requests.
+
+  FS_IPPB_015   Assisted            IPPB Agents must be able to process
+                Transactions via    PLI/RPLI premium and loan payments
+                Micro-ATM           through Micro-ATM.
+
+  FS_IPPB_016   Assisted            Customer authentication should support
+                Transactions via    biometric (fingerprint, iris, face),
+                Micro-ATM           OTP, or Aadhaar-based verification.
+
+  FS_IPPB_017   Assisted            Enable offline transaction mode with
+                Transactions via    auto-sync when connectivity is
+                Micro-ATM           restored.
+
+  FS_IPPB_018   Assisted            Standardize biometric authentication
+                Transactions via    across all agents.
+                Micro-ATM           
+
+  FS_IPPB_019   Assisted            Implement GPS tagging for transaction
+                Transactions via    origin tracking and fraud prevention.
+                Micro-ATM           
+  -------------------------------------------------------------------------
+
+## **4. Functional Requirements Specification**
+
+**Use Case Diagram for Integration with IPPB:**
+![](media/image1.png){width="6.268055555555556in"
+height="4.178472222222222in"}
+
+### 4.1 Standing Instructions
+
+- **Purpose:** To allow customers to automate recurring premium payments
+  for PLI/RPLI policies through IPPB Mobile App, ensuring timely
+  payments without manual intervention.
+
+- **Flow Chart for Standing Instructions**
+
+  -------------------------------------------------------------------
+  **Step 1: Customer logs in to IPPB Mobile App.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 2: Selects \'Post Office Services\' tab from the IPPB
+  dashboard.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 3: Chooses \'Postal Life Insurance\' → \'Standing
+  Instructions\'.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 4: Clicks on \'Add Standing Instruction\'.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 5: Enters PLI/RPLI Policy Number and Date of Birth in the
+  Fetch Policy screen.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 6: Verifies displayed policy details (Policy No., Product,
+  Frequency, Premium Amount).**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 7: Selects SI Validity Period (From Date, To Date) and First
+  Debit Date (5/10/15/20).**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 8: Confirms entered data and authorizes Standing Instruction
+  via MPIN.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 9: System displays confirmation message with SI Reference
+  Number and timestamp.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+### 4.2 IPPB Mobile Banking
+
+- **Purpose:** To enable customers to make one-time premium payments or
+  loan repayments through IPPB Mobile App with instant confirmation and
+  receipt generation.
+
+- **Flow Chart for M-banking App:-**
+
+  -------------------------------------------------------------------
+  **Step 1: Customer logs in to IPPB Mobile App.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 2: Selects \'Post Office Services\' → \'Postal Life
+  Insurance\'.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 3: Chooses \'Pay Premium/Loan Repayment\' option from the
+  list.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 4: Reads and accepts on-screen instructions before
+  proceeding.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 5: Enters Policy Number/Loan Account no. and Date of Birth
+  to fetch policy details for premium payment/Loan repayment**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 6: Verifies premium details and selects number of
+  installments/Loan Repayment full/partial (if applicable).**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 7: Confirms payment details and authorizes transaction via
+  MPIN.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 8: System processes payment and displays \'Premium Paid/Loan
+  Repayment Successfully\' message.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 9: Customer can view/download receipt or opt for SMS/Email
+  confirmation.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+### 4.3 IPPB Micro-ATM
+
+- **Purpose:** To provide assisted premium and loan payment services for
+  customers who prefer in-person transactions at Post Offices or through
+  IPPB agents equipped with Micro-ATM.
+
+- **Flow Chart for Micro-ATM:-**
+
+  -------------------------------------------------------------------
+  **Step 1: Customer visits Post Office or IPPB Agent equipped with
+  Micro-ATM.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 2: IPPB Agent logs in to Micro-ATM App and selects \'Post
+  Office Services\'.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 3: Agent searches customer by Account Number, Aadhaar, or
+  Mobile Number.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 4: Customer authenticates using Fingerprint/OTP/Eye
+  Scan/Face Scan.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 5: Agent verifies customer's ID proof
+  (Aadhaar/Passport/Voter ID, etc.).**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 6: Agent selects \'Postal Life Insurance\' → \'Pay
+  Premium/Loan Repayment\'.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 7: Explains transaction instructions and obtains customer
+  consent.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 8: Customer enters Policy Number/Loan Account No. & Date of
+  Birth to fetch policy/Loan details.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 9: Agent confirms details and proceeds with payment
+  authorization.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 10: System authenticates transaction and displays \'Premium
+  Paid/Loan Repayment Successfully\' message.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+- ↓
+
+  -------------------------------------------------------------------
+  **Step 11: Receipt is generated with options for SMS, Email, and
+  Download.**
+  -------------------------------------------------------------------
+
+  -------------------------------------------------------------------
+
+## **5. Attachments**
+
+The following documents can be referred.

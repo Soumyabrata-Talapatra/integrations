@@ -1,0 +1,3842 @@
+______________________________________________________________________
+
+		
+
+		
+
+	
+
+DEPARTMENT OF POSTS 
+
+MINISTRY OF COMMUNICATIONS & IT 
+
+GOVERNMENT OF INDIA
+
+
+
+	
+
+System Requirements Specification (SRS)
+
+
+
+Assignment /Reassignment
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Brief Description
+
+
+
+The purpose of this document is to detail the policy  Assignment process 
+
+
+
+
+
+Process Flow
+
+Data  Indexer (Request Indexing at Post office)
+
+Document Scanner (for scanning the documents received at the CPC)
+
+Data Entry Operator (Verifies the details against the pre populated details by OCR.
+
+Non-Financial Transaction Approver (Who approves all  Non-financial requests)
+
+
+
+
+
+
+
+
+
+
+
+Use Case/Activity Diagram
+
+
+
+The Use case/Activity Diagram below depicts how the Assignment process  will be carried out
+
+
+
+	
+
+	
+
+Policy Assignment Use Case / Activity Diagram 
+
+
+
+Use case Table – Policy Assignment:
+
+Use case ID
+
+02
+
+Use case title
+
+Policy Assignment
+
+Objective/ Purpose
+
+Processing a change of assignment request received
+
+Assumption
+
+None
+
+Initiating Actor
+
+Customer
+
+Initiating Event
+
+Assignment  request  Submitted along with the required documents
+
+Pre-conditions
+
+Applicant has filled the required details in the application and attaches the required documents.
+
+Post-conditions
+
+Decision is taken either to accept  or decline the assignment request
+
+Associated Use case
+
+None
+
+Error/Success conditions
+
+Certain documents are not provided along with the request.
+
+Frequency
+
+Whenever the requirements are found missing
+
+Criticality
+
+Major
+
+Risk
+
+High
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Missing Requirements: Use Case/Activity Diagram:
+
+
+
+Use Case Table – Missing Requirements:
+
+Use case ID
+
+03
+
+Use case Name
+
+Use Case – Activity Diagram_ DoP_ Missing Requirements
+
+Use case title
+
+Missing Requirements
+
+Objective/ Purpose
+
+Missing requirement or information for assignment request
+
+Assumption
+
+There are a few missing requirement identified while processing the request
+
+Initiating Actor
+
+CPC
+
+Initiating Event
+
+Approver identifies if any requirements are missing before a request is approved.
+
+Pre-conditions
+
+There are a few missing requirement identified while processing the request
+
+Post-conditions
+
+Missing requirement have been received
+
+Associated Use case
+
+None
+
+Error/Success conditions
+
+Missing requirement received is success condition.
+
+Frequency
+
+Whenever the requirements are found missing
+
+Criticality
+
+Medium
+
+Risk
+
+High
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Use Case – Activity Diagram_ DoP_ Missing Requirements
+
+
+
+
+
+
+
+
+
+
+
+
+
+Requirements
+
+
+
+S.No
+
+RFP  Requirement No.
+
+Requirement Description
+
+Solution
+
+
+
+SR-ASG-1
+
+Must generate a unique customer id for every policy owner, life insured, nominee/ beneficiary/ assignee and for every person who submitted a proposal and was entered in the IMA
+
+Unique Customer ID for Policy owner, life insured, nominee, assignee, appointee would be generated 
+
+
+
+SR-ASG-2
+
+Must have functionality to enable endorsements on a policy like
+
+
+Change in address
+Assignment of a policy
+
+Physical Endorsement is a manual process. IMA should be capable of providing alterations mentioned through policy alterations, assignment.
+
+
+
+SR-ASG-3
+
+System must have ability to automatically send email & SMS reminders (through interface with CIM application) to the Insured/ for providing the pending documents (if any) or should have ability to send reminders to concerned authority to get in touch with the Customer
+
+System sends emails and sms reminder through integration to sent to the user who had requested through integration 
+
+
+
+SR-ASG-5
+
+System must have the ability to record all re-assignments/transfers in history.
+
+System captures task re-assignment or transfer in workflow
+
+
+
+SR-ASG-5
+
+Must validate the completeness of data.
+
+Field level validations to ensure the data entered is within the expected range.
+
+
+
+SR-ASG-6
+
+Must provide executive access to all policy details (e.g. Coverage, terms & condition, Nominee details, Guaranteed surrender value). 
+
+
+Non-Financial transaction  approver will be having executive access to the screens
+
+
+
+
+
+Functionality Description
+
+
+
+Policy Assignment is a process  that are carried out by a Policyholder during the Life cycle of a Policy. 
+
+
+
+
+
+What is Policy Assignment?
+
+
+Contrary to Nomination, Assignment of a Policy Transfers  rights, title and interest of the life insurance policy to a person or persons/Trust or trusts/Company or Companies.
+
+
+'Assignor' is the policyholder who transfers the title, and 'Assignee' is the person who gets the title from the assignor.  Therefore in an Assignment process there is a transfer of some or all of the financial interest from the Assignor to the Assignee.
+
+
+The assignment can be of two types — conditional and absolute. An absolute assignment /conditional assignment are usually done for a monetary consideration.  In absolute assignment the policyholder loses all his rights over the policy proceeds and the Policy can only be reassigned to him through a written consent of the Assignee.
+
+
+
+However under the Conditional Assignment the Assignment is contingent upon a Condition and the policy is reassigned to the Policyholder once the Condition is met.
+
+
+
+One can typically come across a conditional assignment where the policyholder is trying to use the life insurance policy as collateral against a loan he intends to raise. Once all dues are paid against the Policy the policy is automatically reassigned to the Assignor.
+
+
+
+ Assignment has to be in writing and a notice affecting the same has to be given to Life Insurance Company. 
+
+
+In the event of death of the absolute assignee the rights under the policy delve on the legal heirs of the assignee. It can only be reassigned. Assignment Section 38 of insurance act.
+
+
+
+Functional Specification
+
+
+
+Policy Assignment
+
+
+
+The Assignment Process begins when a customer decides to assign his Policy to an Assignee for a material consideration. At a time there can be only one Active Assignment for a Policy.
+
+
+
+Upon Screen Landing the user will be presented with the screen with Policy Summary along with Policy Assignment Section by selecting
+
+
+
+For the assignment requests also, Screen Indexing will remain same which is explained in section 7.1.1
+
+
+
+Data Entry Operator will navigate to the Assignment Change screen by selecting:
+
+
+
+Policy Maintenance  Assignment Change Option
+
+
+
+
+
+
+
+On the Policy user can add an Assignee if there was no prior assignment. Modification is applicable only on existing assignment.(Reassignment)
+
+
+
+Assignee Type drop down includes the following options:
+
+
+
+Individual
+
+Company
+
+Trust
+
+
+
+Upon selecting the Assignee Type, user will be enabled to enter the respective details accordingly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Add Assignee
+
+ Add Assignee-Individual
+
+
+
+
+
+
+
+
+
+
+
+The option “Individual” is selected by default. To enter the data on the Screen the User will double click on the empty row , then all the fields in the screen will be presented to the user.
+
+User will enter the details by looking at the documents using the View Documents button. The Click will allow the User to access Assignment form and any other forms which are scanned and saved in the File Server of Enterprise Content management.
+
+
+
+Following fields need to be filled:
+
+
+
+Customer ID
+
+First name 
+
+Last Name
+
+Assignment  Status
+
+Type of Assignment
+
+Consideration Amount(In case the assignment type is Conditional )
+
+Relationship to Insured
+
+Date of Birth
+
+UID Number
+
+PAN Number
+
+Assignee  Address(Multiple fields in Address are explained in the control table below.)
+
+Assignee  Email
+
+Assignee Phone Number
+
+Assignment  Effective date
+
+
+
+Control Table for Add Assignee Details- Individual:
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by System
+
+N/A.
+
+**First name 
+
+
+
+Text box
+
+
+
+Varchar
+
+Gives first name of the assignee
+
+Enabled and blank.
+
+N/A
+
+** Last Name
+
+Text box
+
+
+
+Varchar
+
+Gives last name of the assignee
+
+Enabled and blank.
+
+N/A
+
+Assignment Status
+
+
+
+Label
+
+Varchar
+
+Contains the status of the assignment on given date
+
+The fields include Assigned
+Reassigned
+
+Disabled and Populated by system.
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled and blank.
+
+N/A
+
+Consideration amount
+
+Text box
+
+
+
+Numeric
+
+Gives the amount  applicable to the assignee 
+
+Enabled only when Type of Assignment selected is Conditional
+
+N/A
+
+**Date of Birth*
+
+Text box
+
+Date
+
+Gives the Birth Date of the Nominee
+
+Enabled and blank.
+
+N/A
+
+UID Number
+
+
+
+Text Box
+
+String
+
+Gives the UID Number of the assignee
+
+Enabled and blank.
+
+N/A
+
+PAN Number
+
+Text Box
+
+String
+
+Givs the PAN number of the Assignee
+
+Enabled and Blank
+
+N/A
+
+Address
+
+**Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled and Blank.
+
+N/A
+
+**Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled and Blank.
+
+N/A
+
+**Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled and Blank.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If applicable)
+
+Enabled and Blank.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If applicable)
+
+Enabled and Blank.
+
+N/A
+
+**City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled and Blank.
+
+N/A
+
+**District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled and Blank.
+
+N/A
+
+**State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled and Blank.
+
+N/A
+
+**Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled and blank.
+
+N/A
+
+
+
+Email
+
+Textbox
+
+Multiple
+
+Gives the email address of the nominee
+
+Enabled and blank.
+
+N/A
+
+**Phone Number
+
+
+
+Text Box 
+
+Numeric
+
+Gives the phone number of the nominee including STD code (if available)
+
+Enabled and blank.
+
+N/A
+
+**Assignment Effective Date*
+
+Text box
+
+
+
+Date 
+
+Gives the date of effective date of the assignment
+
+Enabled and blank.
+
+N/A
+
+*Date format will be dd/mm/yyyy
+
+** Mandatory Fields
+
+
+
+
+
+Hyperlinks, Buttons and Options:
+
+
+
+Search – Button: Allows to search for any Customer details based on the search criteria (First  Name, Last Name etc) If the Customer record is present in the system it is tagged to the Customer ID and the same will be retrieved. If Customer ID is not present system will generate the Customer ID for the respective Customer will be generated automatically by system once the Assignment is approved
+
+
+
+When user enters any of the details to search for the customer id. He can enter of the details   and click on “Search” button. Upon clicking on Search button, a pop up opens with available clients list as shown below.
+
+
+
+
+
+
+
+Save and Submit – Button- Allows saving and submitting for approval.
+
+
+
+View Documents – Button- Allows to view the documents (assignment form, the notice of assignment and the Policy Bond.)
+
+
+
+
+
+Assignment Approval Screen (Individual):
+
+
+
+Once the Non-financial Approver clicks on the work item, he will be navigated to the approval screen.
+
+
+
+Once the approval request comes to the Non-Financial Transaction approver, he can take a decision on the request received and can provide any comments in the Approver Comments Section. The below shown screen  is approval screen for Policy Assignment (Individual).The complete workflow on how the case is moved to Approver will be dealt in separate SRS. (SRS _OTH_001_Non Functional Requirements).
+
+Non-Financial Approver will be navigated to the respective screen through the Inbox (which is explained above)
+
+
+
+
+
+Control Table:
+
+The below control table shows what are the fields available for non-financial  Transaction approver to edit.
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by System
+
+N/A.
+
+First name 
+
+
+
+Text box
+
+
+
+Varchar
+
+Gives first name of the assignee
+
+Enabled 
+
+N/A
+
+ Last Name
+
+Text box
+
+
+
+Varchar
+
+Gives last name of the assignee
+
+Enabled.
+
+N/A
+
+Assignment Status
+
+
+
+Label
+
+Varchar
+
+Contains the status of the assignment on given date
+
+The fields include Assigned
+Reassigned
+
+Disabled and Populated by system.
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled
+
+N/A
+
+Consideration amount
+
+Text box
+
+
+
+Numeric
+
+Gives the amount  applicable to the assignee 
+
+Enabled only when Type of Assignment selected is Conditional
+
+N/A
+
+Date of Birth*
+
+Text box
+
+Date
+
+Gives the Birth Date of the Nominee
+
+Enabled
+
+N/A
+
+UID Number
+
+
+
+Text Box
+
+String
+
+Gives the UID Number of the assignee
+
+Enabled
+
+N/A
+
+PAN Number
+
+Text Box
+
+String
+
+Gives the PAN number of the Assignee
+
+Enabled
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled 
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled 
+
+N/A
+
+Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled 
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If applicable)
+
+Enabled 
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If applicable)
+
+Enabled 
+
+N/A
+
+**City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled 
+
+N/A
+
+**District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled 
+
+N/A
+
+**State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled 
+
+N/A
+
+**Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled 
+
+N/A
+
+
+
+Email
+
+Textbox
+
+Multiple
+
+Gives the email address of the nominee
+
+Enabled 
+
+N/A
+
+**Phone Number
+
+
+
+Text Box 
+
+Numeric
+
+Gives the phone number of the nominee including STD code (if available)
+
+Enabled 
+
+N/A
+
+**Assignment Effective Date*
+
+Text box
+
+
+
+Date 
+
+Gives the date of effective date of the assignment
+
+Disabled
+
+N/A
+
+
+
+Hyperlinks, Buttons and Options:
+
+
+
+Back – Button   : Allows going back to the Approver dashboard
+
+
+
+Approve – Button   : Clicking on Approve button, the Assignment request will be approved.
+
+
+
+Reject – Button: Allows rejecting the assignment request. In case of reject button is clicked, then system will give a message “Are you sure to reject the Assignment Request” with Yes and No Options. If Yes is clicked, then Assignment Rejection Letter generation trigger will be initiated.
+
+
+
+Send for Print - Button: Allows printing the Endorsement letter for Assignment .It will be enabled when the Assignment is approved or rejected.
+
+
+
+View Documents: Allows viewing the documents
+
+
+
+Request for Documents:  If the approver needs more documents, then he can request for further documents.
+
+Add Assignee -Company
+
+
+
+Selecting the option Company from the dropdown “Assignee Type”, allows user to enter the details of the Company. To enter the details user will click on the View Documents button. The Click will allow the User access to Assignment form which is scanned and saved in the File Server of Enterprise Content management.
+
+
+
+
+
+
+
+When user double clicks on the empty row, he will be allowed to enter the details in the screen:
+
+
+
+Following fields need to be filled:
+
+
+
+Customer ID
+
+Company Name
+
+Assignment  Status
+
+Type of Assignment
+
+Consideration Amount(In case of Conditional Assignment)
+
+Company Address (Multiple fields in Address are explained in the control table below.)
+
+Phone Number
+
+Company email
+
+Type of Company
+
+Assignment  Effective date
+
+
+
+
+
+Search – Button: Allows searching for any Customer details based on the search criteria (Company Name, etc). If the Customer record is present in the system it is tagged to the Customer ID and the same will be retrieved. If Customer ID is not present in the system, in that case once the assignment request is approved, then system auto assigns a Customer ID to the client.
+
+
+
+View Documents – Button- Allows to view the documents (like Assignment form etc.)
+
+
+
+Save and Submit –Button- Used to save the details and submit for approval
+
+
+
+Control Table for Add Assignee – Company
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by system
+
+N/A
+
+**Company name 
+
+
+
+Text Box
+
+
+
+Varchar
+
+Gives the company name.
+
+Enabled.
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date. The dropdown includes the following options :
+Assigned 
+Reassigned
+
+Disabled and Populated by system
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled.
+
+N/A
+
+Consideration amount
+
+Text Box
+
+
+
+Numeric
+
+Gives the amount applicable to the assignee in case of Conditional Assignment.
+
+Enabled when Type of Assignment is Conditional.
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled.
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+*Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If available)
+
+Enabled and Blank.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If available)
+
+Enabled and Blank.
+
+N/A
+
+**City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled and Blank.
+
+N/A
+
+**District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled and Blank.
+
+N/A
+
+**State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled and Blank.
+
+N/A
+
+**Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled and blank.
+
+N/A
+
+
+
+**Phone Number
+
+
+
+Text Box
+
+
+
+Numeric
+
+Gives the phone number details
+
+Enabled and blank.
+
+N/A
+
+**Company email
+
+
+
+Text Box
+
+
+
+Multiple
+
+Gives the Email address of the Company
+
+Enabled and blank.
+
+N/A
+
+**Type of Company
+
+
+
+Dropdown
+
+Varchar
+
+Describes the nature of company. Options include
+
+Public Company
+
+Private Company
+
+Partnership Firm
+
+Sole Proprietor ship
+
+Enabled and blank.
+
+N/A
+
+Assignment  Effective date*
+
+
+
+Text box
+
+Date 
+
+Gives the effective date of the assignment
+
+Enabled and blank.
+
+N/A
+
+*Date format will be dd/mm/yyyy
+
+** Mandatory fields.
+
+
+
+
+
+Approval Screen –Add Assignee – Company
+
+
+
+Once the Approver clicks on the work item from his dashboard. Non-Financial Transaction approver will be navigated to the approval screen where he can take the decision on the request received and provide comments in the Approver Comments section. The below shown is approval screen for Policy Assignment (Company). The complete workflow on how the case is moved to Approver will be dealt in separate SRS. (SRS _OTH_001_Non Functional Requirements.) Non-Financial Approver will be navigated to the approval screen through the Inbox (which is explained above)
+
+
+
+
+
+
+
+For the Non-Financial  Transaction Approver, the screen will be  in editable mode.
+
+Control Table :
+
+Below shown control table shows what are the fields are editable.
+
+
+
+The below control table gives what are the fields available for the Non-Financial  Transaction Approver.
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by system
+
+N/A
+
+**Company name 
+
+
+
+Text Box
+
+
+
+Varchar
+
+Gives the company name.
+
+Enabled.
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date. The dropdown includes the following options :
+Assigned 
+Reassigned
+
+Disabled and Populated by system
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled.
+
+N/A
+
+Consideration amount
+
+Text Box
+
+
+
+Numeric
+
+Gives the amount applicable to the assignee in case of Conditional Assignment.
+
+Enabled when Type of Assignment is Conditional.
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled.
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If available)
+
+Enabled.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If available)
+
+Enabled.
+
+N/A
+
+City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled.
+
+N/A
+
+District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled.
+
+N/A
+
+State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled.
+
+N/A
+
+Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled.
+
+N/A
+
+
+
+Phone Number
+
+
+
+Text Box
+
+
+
+Numeric
+
+Gives the phone number details
+
+Enabled.
+
+N/A
+
+Company email
+
+
+
+Text Box
+
+
+
+Multiple
+
+Gives the Email address of the Company
+
+Enabled.
+
+N/A
+
+Type of Company
+
+
+
+Dropdown
+
+Varchar
+
+Describes the nature of company. Options include
+
+Public Company
+
+Private Company
+
+Partnership Firm
+
+Sole Proprietor ship
+
+Enabled.
+
+N/A
+
+Assignment  Effective date*
+
+
+
+Text box
+
+Date 
+
+Gives the effective date of the assignment
+
+Disabled.
+
+N/A
+
+
+
+
+
+Hyperlinks, Buttons and Options :
+
+
+
+Back – Button   : Allows going back to the approver dashboard screen.
+
+
+
+Approve – Button   : Clicking on Approve button, the Assignment request will be approved.
+
+
+
+Reject – Button: Allows rejecting the assignment request. In case of reject button is clicked, then system will give a message “Are you sure to reject the Assignment Request” with Yes and No Options. If Yes is clicked, then Assignment Rejection Letter generation trigger will be initiated.
+
+
+
+Send for Print - Button: Allows printing the Endorsement letter for Assignment .It will be enabled in case the Assignment request   is approved or rejected.
+
+
+
+View Documents -Button: Allows viewing the documents submitted.
+
+
+
+Request for Documents – Button: Allows requesting for documents, if required.
+
+
+
+
+
+Add Assignee-Trust
+
+
+
+Selecting the option “Trust” from the “Assignee Type” drop down list allows user to enter  the trust details. To enter the data on the Screen the User will click on the View Documents button. The Click will allow the User access to Assignment form which is scanned and saved in the File Server of Enterprise Content management.
+
+
+
+
+
+
+
+When user double clicks on the empty row, he will be allowed to enter the details in the screen:
+
+
+
+Following fields need to be filled:
+
+
+
+Customer ID
+
+Trust Name
+
+Assignment  Status
+
+Type of Assignment
+
+Consideration Amount(Applicable only when the Type of Assignment is Conditional)
+
+Trust registration Number
+
+Trust Address(Multiple fields in Address are explained in the control table below.)
+
+Policyholder Relationship to Trust
+
+Phone Number
+
+Assignment  Effective date
+
+
+
+Search – Button: Allows searching for any Customer details based on the search criteria (Trust Name, etc.).. If the Customer record is present in the system it is tagged to the Customer ID and the same will be retrieved. If Customer ID is not present system will generate the Customer ID for the respective Customer by using Generate Customer ID. If customer ID is not present in the system, in that case once the Assignment request is approved, then system will auto assign Customer ID to the client.
+
+
+
+Save and Submit - Button- Used to save the details and submit for approval
+
+
+
+View Documents – Button- Allows to view the documents (like Assignment form etc.)
+
+
+
+Control Table for Add Assignee – Trust
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+UI Display
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by system
+
+N/A
+
+**Trust  name 
+
+
+
+Text Box
+
+
+
+Varchar
+
+Gives the trust name.
+
+Enabled and blank.
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date
+
+The fields include Assigned
+Reassigned
+
+
+Disabled and Populated by system
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled and blank.
+
+N/A
+
+Consideration amount
+
+Text Box 
+
+
+
+Numeric
+
+Gives the amount  applicable to the assignee in case of Conditional Assignment
+
+Enabled only when Type of Assignment is conditional.
+
+N/A
+
+**Trust Registration  Number
+
+
+
+Text Box 
+
+
+
+Multiple
+
+Gives unique Identification Number of the Trust
+
+Enabled and blank.
+
+N/A
+
+Address
+
+**Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled and Blank.
+
+N/A
+
+**Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled and Blank.
+
+N/A
+
+**Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled and Blank.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If available)
+
+Enabled and Blank.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If available)
+
+Enabled and Blank.
+
+N/A
+
+**City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled and Blank.
+
+N/A
+
+**District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled and Blank.
+
+N/A
+
+**State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled and Blank.
+
+N/A
+
+**Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled and blank.
+
+N/A
+
+**Policy holder relationship to trust
+
+Drop down
+
+Varchar
+
+Gives the relationship of the policyholder to the trust. The values would be   
+Settler ,Beneficiary  and Trustee
+
+Enabled and blank.
+
+N/A
+
+**Phone Number
+
+
+
+Text Box 
+
+Numeric
+
+Gives the phone number details
+
+Enabled and blank.
+
+N/A
+
+Assignment  Effective date*
+
+
+
+Text Box 
+
+
+
+Date 
+
+Gives the effective date of the assignment
+
+Enabled and blank.
+
+N/A
+
+*Date format will be dd/mm/yyyy
+
+** Mandatory fields
+
+
+
+Approval Screen –Add Assignee – Trust:
+
+Once the approval request comes to the Non-Financial Transaction approver, he can take decision on the request received and provide comments in the Approver Comments section. In the approval screen the screen will be in editable mode. The below shown is approval screen for Policy Assignment (Trust) The complete workflow on how the case is moved to Approver will be dealt in separate SRS. (SRS _OTH_001_Non Functional Requirements). Non-Financial Approver will be navigated to the approval  screen through the Inbox (which is explained above)
+
+
+
+
+
+
+
+For non-financial Transaction approver the fields are editable.
+
+
+
+Control Table:
+
+
+
+Below control table explains what are the fields available for editing:
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+UI Display
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by system
+
+N/A
+
+Trust  name 
+
+
+
+Text Box
+
+
+
+Varchar
+
+Gives the trust name.
+
+Enabled.
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date
+
+The fields include Assigned
+Reassigned
+
+
+Disabled and Populated by system
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled.
+
+N/A
+
+Consideration amount
+
+Text Box 
+
+
+
+Numeric
+
+Gives the amount  applicable to the assignee in case of Conditional Assignment
+
+Enabled only when Type of Assignment is conditional.
+
+N/A
+
+Trust Registration  Number
+
+
+
+Text Box 
+
+
+
+Multiple
+
+Gives unique Identification Number of the Trust
+
+Enabled.
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled.
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If available)
+
+Enabled.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If available)
+
+Enabled.
+
+N/A
+
+City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled.
+
+N/A
+
+District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled.
+
+N/A
+
+State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled.
+
+N/A
+
+Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled.
+
+N/A
+
+**Policy holder relationship to trust
+
+Drop down
+
+Varchar
+
+Gives the relationship of the policyholder to the trust. The values would be   
+Settler ,Beneficiary  and Trustee
+
+Enabled.
+
+N/A
+
+Phone Number
+
+
+
+Text Box 
+
+Numeric
+
+Gives the phone number details
+
+Enabled.
+
+N/A
+
+Assignment  Effective date*
+
+
+
+Text Box 
+
+
+
+Date 
+
+Gives the effective date of the assignment
+
+Disabled
+
+N/A
+
+*Date format would be “dd/mm/yyyy”
+
+
+
+Hyperlinks, Buttons and Options :
+
+
+
+Back – Button   : Allows going back to Approver’s Dashboard.
+
+
+
+Approve – Button   : Clicking on Approve button, the Assignment request will be approved.
+
+
+
+Reject – Button: Allows rejecting the assignment request. In case of reject button is clicked, then system will give a message “Are you sure to reject the Assignment Request” with Yes and No Options. If Yes is clicked, then Assignment Rejection Letter generation trigger will be initiated.
+
+
+
+Send for Print - Button: Allows printing the Endorsement letter for Assignment .It will be enabled in case the Assignment request is approved or rejected.
+
+
+
+View Documents -Button: Allows viewing the documents submitted.
+
+
+
+Request for Documents – Button: Allows requesting for further documents
+
+Modifying Assignee Details(Reassignment)
+
+At a time there will not be more than one active assignment, Double clicking on the Assignment section will allow to edit the details.
+
+
+
+In case the Assignment type is “Absolute”, then a written consent from the Assignee is essential to perform another assignment.
+
+
+
+In case of conditional assignment, the policy will be reassigned back to the Insured.
+
+
+
+When the Assignment status is changed to Reassigned, System enables to add assignee on the policy 
+
+
+
+A new Assignment will only be allowed to be made if the policy assignment status is reassigned.
+
+
+
+7.2.2a Modifying Assignee Details –Individual(Reassignment)
+
+Upon double clicking on the existing row present in the Assignment Section, Data Entry Operator will be allowed to edit the details
+
+
+
+
+
+
+
+Following fields will be presented to the user to view/update:
+
+Customer ID
+
+First name 
+
+Last Name
+
+Assignment  Status
+
+Type of Assignment
+
+Consideration Amount
+
+Relationship to Insured
+
+Date of Birth
+
+UID Number
+
+PAN Number
+
+Address (Multiple fields in Address are explained in the control table below.)
+
+  Email
+
+Phone Number
+
+Assignment  Effective date
+
+
+
+Control Table for Modify Assignee Details – Individual 
+
+(Reassignment)
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer  ID number
+
+Populated by system
+
+N/A
+
+First name 
+
+
+
+Text Box
+
+Varchar
+
+Gives first name of the assignee
+
+Enabled 
+
+N/A
+
+Last Name 
+
+
+
+Text Box
+
+Varchar
+
+Gives last name of the assignee
+
+Enabled 
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date
+
+The fields include Assigned
+Reassigned
+
+
+Disabled and populated by system.
+
+N/A
+
+Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled.
+
+N/A
+
+Consideration amount
+
+Text Box
+
+Numeric
+
+Gives the amount  applicable to the assignee in case of Conditional Assignment 
+
+Enabled 
+
+N/A
+
+Relationship to Insured
+
+
+
+Drop down
+
+Varchar
+
+Gives the relationship of the nominee to the policyholder
+
+Enabled.
+
+N/A
+
+ Date of Birth*
+
+
+
+Text Box
+
+Date 
+
+Gives the date of birth of the assignee
+
+Enabled 
+
+N/A
+
+UID Number
+
+
+
+Text Box
+
+String
+
+Gives the Unique Identification Number of the assignee
+
+Disabled
+
+N/A
+
+PAN Number
+
+
+
+Text Box
+
+String
+
+Gives the PAN Number of the assignee
+
+Enabled
+
+N/A
+
+Email
+
+
+
+Text Box
+
+Multiple
+
+Gives the email address of the assignee
+
+Enabled.
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled.
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If applicable) 
+
+Enabled.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If applicable)
+
+Enabled.
+
+N/A
+
+City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled.
+
+N/A
+
+District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled.
+
+N/A
+
+State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled.
+
+N/A
+
+Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled.
+
+N/A
+
+ Phone Number
+
+
+
+Text Box
+
+Numeric
+
+Gives the phone number details.
+
+Enabled.
+
+N/A
+
+Assignment  Effective date*
+
+
+
+Text Box
+
+Date 
+
+Gives the date of expiry of the assignment
+
+Disabled
+
+N/A
+
+*Date format will be dd/mm/yyyy.
+
+
+
+Hyperlinks, Buttons and Options:
+
+
+
+Search –disabled
+
+
+Save and Submit: Allows saving the details and send for approval. (Approval screen as shown above)
+
+
+
+View Documents – Button- Allows to view the documents 
+
+
+
+Modifying Assignee Details – Company(Reassignment)
+
+
+
+Upon double clicking on the Assignment Section user will be presented with the Company details, if Company was added on the policy as assignee. To update the details user will double click on the row present in the Assignment Section, To update the details, user will click on the View Documents button (if required). The Click will allow the User to access documents like Request form which is scanned and saved in the File Server of Enterprise Content management. User then will update the details by referring the Request form etc. available.
+
+
+
+
+
+Following fields will be presented to the user to view/update:
+
+
+
+Customer ID
+
+Company Name
+
+Assignment  Status
+
+Type of Assignment
+
+Consideration  Amount(In case of Assignment type is Conditional)
+
+Company Address (Multiple fields in Address are explained in the control table below.)
+
+Phone Number
+
+Company email
+
+Type of Company
+
+Assignment  Effective date
+
+
+
+Control Table for Modify Assignee Details – Company(Reassignment)
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer ID number
+
+Populated by system
+
+N/A
+
+**Company name 
+
+
+
+Text Box
+
+
+
+Varchar
+
+Gives the company name.
+
+Enabled.
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date. The dropdown includes the following options :
+Assigned 
+Reassigned
+
+Disabled and populated by system
+
+N/A
+
+**Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled.
+
+N/A
+
+Consideration amount
+
+Text Box
+
+
+
+Numeric
+
+Gives the amount applicable to the assignee in case of Conditional Assignment.
+
+Enabled only if the type of assignment is Conditional.
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the assignee.
+
+Enabled.
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address 
+
+Enabled.
+
+N/A
+
+Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (If applicable)
+
+Enabled.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name (If applicable)
+
+Enabled.
+
+N/A
+
+City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled.
+
+N/A
+
+District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled.
+
+N/A
+
+State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled.
+
+N/A
+
+Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled.
+
+N/A
+
+Phone Number
+
+
+
+Text Box
+
+
+
+Numeric
+
+Gives the phone number details.
+
+Enabled.
+
+N/A
+
+Company email
+
+
+
+Text Box
+
+
+
+Multiple
+
+Gives the Email address of the Company
+
+Enabled.
+
+N/A
+
+Type of Company
+
+
+
+Dropdown
+
+Varchar
+
+Describes the nature of company. Options include
+
+Public Company
+
+Private Company
+
+Partnership Firm
+
+Sole Proprietor ship
+
+Enabled.
+
+N/A
+
+Assignment  Effective date*
+
+Text box
+
+Date 
+
+Gives the effective date of the assignment
+
+Disabled.
+
+N/A
+
+
+
+*Date format will be dd/mm/yyyy
+
+
+
+Hyperlinks, Buttons and Options:
+
+
+
+Search – Disabled
+
+
+
+Save and Submit:  Allows saving the details and submitting for approval. (Approval screen as shown above)
+
+
+View Documents – Button- Allows to view the documents.
+
+
+
+
+
+
+
+Modify Assignee Details-Trust(Reassignment)
+
+
+
+Upon clicking on “Modify Assignee Details” user will be presented with the trust details, if trust was added on the policy. To update the details user will double click on the row present in the Assignment Section To update the details, user will click on the View Documents button (if required).The Click will allow the User to access documents like Request form which is scanned and saved in the File Server of Enterprise Content management. User then will update the details by referring the Request form etc. available.
+
+
+
+
+
+
+
+Following fields will be presented to the user to view/update:
+
+
+
+Customer ID
+
+Trust Name
+
+Assignment  Status
+
+Type of Assignment
+
+Consideration  Amount(In case of Conditional Assignment)
+
+Policyholder Relationship to Trust
+
+Trust registration Number
+
+Trust Address (Multiple fields in Address are explained in the control table below.)
+
+Trust Beneficiary
+
+Phone Number
+
+Assignment  Effective date
+
+
+
+Hyperlinks, Buttons and Options:
+
+
+
+Search – Disabled
+
+Save and Submit: Allows saving the details and send for approval. (Approval screen as shown above)
+
+
+
+View Documents – Button- Allows to view the documents 
+
+
+
+Control Table for Modify Assignee Details – Trust (Reassignment)
+
+
+
+Field Name
+
+Control Type
+
+Data Type
+
+Description
+
+Default State
+
+Default Value
+
+Customer ID
+
+
+
+Text Box
+
+
+
+String
+
+Gives the Customer ID number
+
+Disabled.
+
+N/A
+
+Trust  name 
+
+
+
+Text Box
+
+
+
+Varchar
+
+Gives the trust name.
+
+Enabled.
+
+N/A
+
+Assignment Status
+
+
+
+Dropdown
+
+Varchar
+
+Contains the status of the assignment on given date
+
+The fields include Assigned
+Reassigned
+
+
+Disabled and populated by system
+
+N/A
+
+Trust Registration  Number
+
+
+
+Text Box
+
+
+
+Multiple
+
+Gives unique Identification Number of the Trust
+
+Enabled.
+
+N/A
+
+Consideration amount
+
+Text Box
+
+
+
+Numeric
+
+Gives the amount  applicable to the assignee in case of Conditional Assignment
+
+Enabled.
+
+N/A
+
+Address
+
+Address Line 1
+
+Text Box
+
+Multiple
+
+Gives the address of the Trust.
+
+Enabled.
+
+N/A
+
+Address Line 2
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Address Line 3
+
+Text Box
+
+Multiple
+
+Gives the address
+
+Enabled.
+
+N/A
+
+Village
+
+Text Box
+
+Varchar
+
+Gives the Village name (if applicable)
+
+Enabled.
+
+N/A
+
+Taluka
+
+Text Box
+
+Varchar
+
+Gives the Taluka name(if applicable)
+
+Enabled.
+
+N/A
+
+City
+
+Text Box
+
+Varchar
+
+Gives the City name 
+
+Enabled.
+
+N/A
+
+District
+
+Textbox
+
+Varchar
+
+Gives the district name
+
+Enabled.
+
+N/A
+
+State 
+
+Dropdown
+
+Varchar
+
+Gives the List of States.
+
+Enabled.
+
+N/A
+
+Country
+
+Dropdown
+
+Varchar
+
+Gives the country name
+
+Enabled.
+
+N/A
+
+
+
+Policy holder relationship to trust
+
+
+
+Drop down
+
+Varchar
+
+Gives the relationship of the policyholder to the trust. The values would be   
+Settler ,Beneficiary  and Trustee
+
+Enabled.
+
+N/A
+
+Phone Number
+
+
+
+Text Box 
+
+Numeric
+
+Gives the phone number details.
+
+Enabled.
+
+N/A
+
+Type of Assignment
+
+
+
+Dropdown
+
+Varchar
+
+Dropdown with Type of assignment (Absolute/Conditional)
+
+Enabled.
+
+N/A
+
+Assignment  Effective date*
+
+
+
+Text Box 
+
+
+
+Date 
+
+Gives the effective date of the assignment
+
+Disabled.
+
+N/A
+
+*Date format will be dd/mm/yyyy
+
+
+
+
+
+
+
+View Past Assignments
+
+
+
+User can also have the option to view the past assignments (if made any). Once user clicks on the button “View Past Assignments”, a window opens which shows all the past assignment details (if present). If there are no Past Assignments, System will give a message “There are no past assignments present on this Policy”.
+
+
+
+Once user clicks on the “View Past Assignments” and if there are any past Assignee are present the new window shows the Past Assignments details.
+
+
+
+
+
+
+
+Hyperlinks, Buttons and Options:
+
+
+
+Back – Button:  This button is used to navigate back to the main screen where the Assignee details (added/modified.) can be viewed.
+
+
+
+
+
+Work Flow
+
+
+
+At Post Office:
+
+- Customer submits all the documents like change request forms   at the post office.
+
+-The Data Indexer will input the details in the service request screen and a request id will be generated
+
+   At CPC: 
+
+Scanning Executive scans all the documents and sends them to Data Entry Operator.
+
+Data Entry Operator verifies the details against the pre populated Data from OCR and modifies any details, if required.
+
+	The case is then forwarded to Non-Financial Transaction Approver for approving .Approver is authorised to approve the new nominee/assignee and any modifications to be approved.
+
+	
+
+
+
+
+
+
+
+Business Rules
+
+
+
+ASG-BR001-General Rules-  Assignment 
+
+
+
+The Post Office Life Insurance Fund/RPOLIF   does not prescribe any particular forms for assignment or for nomination, or for the notice thereof, and an application on plain paper can also be used for the purpose.
+
+		
+
+ASG-BR002-General Rules- Assignment
+
+
+
+The assignment must be dated and signed by the assignor in the presence of a witness.
+
+
+
+ASG-BR003-General Rules-Assignment 
+
+
+
+Assignment of policy as a whole may be made either in favour of one person or jointly in favour of two or more persons.
+
+
+
+ASG-BR004-Assignment as security
+
+
+
+No need be in form of separate deed   for the case of an assignment in favour of the President of India: It acts as security for the repayment of any loan granted out of the Fund, an assignment, otherwise complete, will be inoperative against the Fund, unless a notice in writing of the assignment has been delivered to the Postmaster General/ Head of Division.
+
+
+
+ASG-BR005 –Notice of assignment
+
+
+
+The notice of assignment must be accompanied by the policy duly endorsed or, where the assignment has been effected by a separate deed, by the deed or assignment or a copy thereof duly certified to be correct by both the assigner and the assigns or their duly authorized agents. 
+
+
+
+ASG-BR006-Priority of Assignment notices
+
+
+
+The priority of claim under a policy will be governed by the dates on which the notices of the assignments have been received by the Postmaster General/ Head of Division at his office.
+
+
+
+ASG-BR007-Rights of assignor
+
+
+
+After the assignment of a policy is once effected, the policy cannot be dealt with any further by the assignor.
+
+
+
+ASG-BR008-Re-assignment
+
+
+
+In order to enable the policy-holder to deal with the policy again he should have a re-assignment in writing in his own favour executed by the assigns, attested by one or more witnesses, and registered in the records of the Postmaster General/ Head of Division. 
+
+
+
+ASG-BR09- Special cases -Murder of the policy holder by the legal heir(s)
+
+	
+
+If any of the legal heir(s) or the nominee(s)/trustee of a policy holder has been charged with the murder of the policy holder, the policy money shall not be paid to him/her unless he/she is honourably acquitted of by the competent court of law.
+
+
+
+
+
+ASG-BR010-Transfer of Assignment
+
+
+
+	A transfer or assignment of a policy made in accordance with the provision of section 38 of the Insurance Act, 1938 shall automatically cancel a nomination (Section 39 (4)), provided that the assignment of a policy to the insurer who bears the risk on the policy at the time of the assignment.
+
+
+
+
+
+ASG-BR011-Registration of Assignment(s) 
+
+
+
+An assignment for valuable consideration should be registered in the office of the Postmaster General/ Head of Division under this rule. 
+
+
+
+ASG-BR012-Cases where assignees are more than one
+
+
+
+Assignment of policy as a whole may be made either in favour of one person or jointly in favour of two or more persons.
+
+
+
+ASG-BR013-Cases where Assignment is made in favour of President of India	
+
+
+
+A policy may be assigned to the President of India for the purpose of paying estate duty payable under the Estate Duty Act, 1953 (34 of 1953) in the form prescribed in Rule 31 of the Estate Duty Rules, 1953.
+
+	In the case of a policy assigned to the President of India for the purpose of paying estate duty, the assured shall surrender to the Controller of Estate Duty all former deeds of assignments or re-assignments, if any, in respect of the policy.
+
+
+
+ASG-BR014 –Cases of Material misrepresentation
+
+
+
+Wrong information furnished by a person or suppression of factual information by a person admitted to the benefits of the PLI Fund/RPLI Fund will, at the discretion of the Postmaster General, render voidable the contract concluded with that person and lead to forfeiture of all payments made by him. 
+
+
+
+
+
+ASG-BR015 Assignment Modification(Reassignment)
+
+
+
+At a time only one Active assignment exists. System Changes the Assignment status to Reassigned and on clicking the Add Assignment button or Screen exit the System pushes the expired assignment to the past Assignment screen.
+
+
+
+All past Assignments are listed on the screen in order with the latest expired assignment on top.
+
+
+
+
+
+References
+
+
+
+
+
+Serial No.
+
+Document
+
+Link
+
+1
+
+
+
+POLI Rules 2011
+
+ESankalan
+
+
+
+
+
+
+
+Reports/Interfaces
+
+
+
+
+
+
+
+Reports
+
+Reports for Assignment  to be decided by Business Team
+
+
+
+Letters and Documents:
+
+
+
+
+
+Document Number
+
+Letter/Document  Name
+
+Brief Description
+
+L001
+
+Assignment Letter
+
+Once the assignment is completed, assignment letter will be sent to the customer
+
+L002
+
+Assignment Rejection Letter	
+
+In case the assignment is not approved, Rejection letter will be sent to the customer
+
+
+
+
+
+
+
+
+
+
+
+Page 75 of 75

@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "Policy Management - Policy Query APIs",
+    "_postman_id": "1f47d5a1-7e2b-4c24-9c77-policy-query",
+    "description": "Real-time policy state query APIs using Two-Tier Temporal + DB fallback pattern",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/v1",
+      "type": "string"
+    },
+    {
+      "key": "policyNumber",
+      "value": "PLI123456789",
+      "type": "string"
+    },
+    {
+      "key": "requestType",
+      "value": "SURRENDER",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Policy Status",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["policies", "{{policyNumber}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "Get Policy Summary",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/summary",
+          "host": ["{{baseUrl}}"],
+          "path": ["policies", "{{policyNumber}}", "summary"]
+        }
+      }
+    },
+    {
+      "name": "Get State Gate",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/state-gate/{{requestType}}",
+          "host": ["{{baseUrl}}"],
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "state-gate",
+            "{{requestType}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Policy History",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/history?skip=0&limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["policies", "{{policyNumber}}", "history"],
+          "query": [
+            {
+              "key": "skip",
+              "value": "0"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Batch Policy Status",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/batch-status?policyNumbers=PLI123456789,PLI987654321",
+          "host": ["{{baseUrl}}"],
+          "path": ["policies", "batch-status"],
+          "query": [
+            {
+              "key": "policyNumbers",
+              "value": "PLI123456789,PLI987654321"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Dashboard Metrics",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/dashboard/metrics",
+          "host": ["{{baseUrl}}"],
+          "path": ["policies", "dashboard", "metrics"]
+        }
+      }
+    }
+  ]
+}

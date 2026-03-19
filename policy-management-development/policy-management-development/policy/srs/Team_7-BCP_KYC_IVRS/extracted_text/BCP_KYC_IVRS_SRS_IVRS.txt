@@ -1,0 +1,389 @@
+System Requirements Specification DocumentPLI Integration with IVR25/Feb/2015 14:00
+Ver 1.11
+
+
+(c) 2013 Infosys Limited. Strictly private and confidential. No part of this document should be reproduced or distributed without the prior permission of Infosys Limited. 
+
+
+Review List
+Sign Off Required:Role:Review Required: Role:Information Only: Role:
+Version History
+
+Document VersionDateAuthorReviewed ByChange Description0.324-01-2015Base documentShubangiInitial draft document0.625-01-2015Formatted DocumentVivek JainMajor Changes and service wise description.0.729-01-2015Updated document based on the review commentsShubangi,
+Davnit and VivekAdditional attributed added and updated with datatypes.s0.710.802-02-2015Shiv, HulinShiv, HulinUpdated the document with review comments and changes in track mode. 
+Marked the Futuristic items as being scoped out of This Document. 
+Added the table with only in-scope line items. 0.903-02-2015Shiv, HulinShiv, Hulin- Modifications as per Vivek's responses.
+- Moved Integration Flow diagram up one section. 
+- Moved table for in-scope requirements to Section 4, Business Process Flow. 
+- Added section numbers for each line item of in-scope requirements table. 
+- Removed sections on futuristic functionalities. 
+- Removed section on Claim Intimation, since it is applicable for Manual, not IVR.
+- Promoted section on Revival Document to Level 1
+- Promoted section on WSDL to Level 1. 
+- Renamed section on Approach to Web Service Specification1.004-02-2015VivekVivekAddressed the comments raised.1.104-02-2015Vivek, ShivVivek, ShivAddressed the comments raised. WSDL attachment removed.
+
+Pg 15, 5.1.1, Request Message
+N-13 : For Policy Number only.
+N-9 : For Proposal Number and service request number, only the numeric- 9 digit would be entered.
+Changed to : 
+N-13 : For Policy Number only.
+N-9 : For Proposal Number and Claim request number, only the numeric- 9 digit would be entered.
+
+In section 8. WSDL, restored the following sentence : 
+The WSDL provided herein will meet the functionality as per the table and entire content of Section 4, Business Process Flow. Any shortcoming in the functionality will be attended to within the prevailing timeframes of the activities dependent on This Document.1.1125/Feb/15Hulin, Shiv, NalinDineshComments from NISG. TCS response to comments from NISG. 2.09/Mar/15Vivek JainVivek JainUpdated the comment in the Open Section.
+
+
+
+
+
+
+
+
+
+Table of Contents
+1.	Overview	5
+2.	Scope and Assumptions	6
+3.	Intergration Flow Diagram	8
+4.	Business Process Flow	9
+4.1	Policy Servicing:	9
+4.2	Proposal Status	10
+4.3	Policy Status	10
+4.4	Premium Due Date.	10
+4.5	Premium Amount Check	11
+4.6	Sum Assured Check	11
+4.7	Surrender Value Check	11
+4.8	Loan Amount Check	12
+4.9	Rate of Interest of Loan	12
+4.10	Premium Updated Status	13
+4.11	Policy Maturity Date Info	13
+4.12	Maturity Amount Info	13
+4.13	Claim Status	14
+4.14	Agent License Expiry	14
+5.	Web Service Specifications	15
+5.1	pliSearchRequest - WSDL service signature	15
+5.1.1	Request Message	15
+5.1.2	Response Message	16
+5.1.3	Error Description:	17
+5.2	PliAgentRequest: Agent Search Service	17
+5.2.1	Request Message	18
+5.2.2	Response Message	18
+6.	Error Handling	19
+7.	Revival Document	20
+8.	WSDL	21
+9.	Open Items	22
+
+1. Overview
+
+Interactive voice response (IVR) is a technology that allows a computer to interact with humans through the use of voice and DTMF tones input via keypad.
+In Insurance Industry IVR systems can respond with prerecorded or dynamically generated audio to further direct users on how to proceed. IVR applications can be used to control almost any function where the interface can be broken down into a series of simple interactions. 
+This document provides an overview of the Services, which will be invoked once the customer is authenticated, IVR presents all the self service options to the customer, from which customer can choose a specific request for PLI System to respond to.
+ 
+
+
+2. Scope and Assumptions
+
+1. IVR will interact with PLI Solution via Biztalk using Web Service Route. 
+2. IVR System will be integrated with PLI solution's APIs using XML over HTTP mechanism.
+3. The authentication of customer requesting a specific Service will be handled by IVR System. PLI system will share the date of birth of customer in response to policy number given as request. The validation of date of Birth will be done by IVR system.
+4. In case of the technical/business error, IVR system is expected to send the same request again[HI1].[AG2]
+5. The table afore, gives a snapshot of IVR requirements and a column indicating whether they are in scope for this phase of the implementation.
+
+Refer to the following table for scope of IVR processes:
+No.ProcessNature of  TransactionTransaction DescriptionManual / IVRIn Scope of This Document1Postal InsuranceInquiryPolicy servicingBothYes2Postal InsuranceInquiryProposal statusBothYes3Postal InsuranceInquiryMedical Test Appointment statusBothFuturistic
+As per DoP, this item is futuristic, hence it has been scoped out.4Postal InsuranceInquiryPolicy statusBothYes5Postal InsuranceInquiryPremium due dateBothYes6Postal InsuranceInquiryPremium amount checkBothYes7Postal InsuranceInquirySum assured checkBothYes8Postal InsuranceInquiryFund value checkBothFuturistic
+As per DoP, this item is futuristic, hence it has been scoped out.9Postal InsuranceInquirySurrender value checkBothYes10Postal InsuranceInquiryPartial Withdrawal amountBothFuturistic
+As per DoP, this item is futuristic, hence it has been scoped out.11Postal InsuranceInquiryLoan amount checkBothYes12Postal InsuranceInquiryEMI for Loan takenBothFuturistic
+As per DoP, this item is futuristic, hence it has been scoped out.13Postal InsuranceInquiryTenure of loanBothFuturistic
+As per DoP, this item is futuristic, hence it has been scoped out.14Postal InsuranceInquiryRate of Interest of LoanBothYes15Postal InsuranceInquiryPremium updated statusBothYes16Postal InsuranceInquiryPolicy maturity date infoBothYes17Postal InsuranceInquiryMaturity amount infoBothYes18Postal InsuranceInquiryInformation about documents required to be submitted for policy renewalBothYes19Postal InsuranceInquiryClaim statusBothYes20Postal InsuranceInquiryAgent License expiry dateBothYes21Postal InsuranceInquiryProvide product related information[AG3][HI4]BothNo*22Postal InsuranceTransactionClaim intimationManualNo
+* : The Product Information related text will be provided by DoP. CSI will record this text and make it available on the IVR. 
+
+3. Intergration Flow Diagram
+
+
+
+
+4. Business Process Flow
+
+PLI system and the IVR System will interwork to provide the in-scope functionalities as per the following table. This table has been derived by removing the Manual and Futuristic line items  from the table in section 2 Scope and Assumptions. 
+No.ProcessNature of  TransactionTransaction DescriptionManual / IVRSection Number of This Document1Postal InsuranceInquiryPolicy servicingBoth4.12Postal InsuranceInquiryProposal statusBoth4.24Postal InsuranceInquiryPolicy statusBoth4.35Postal InsuranceInquiryPremium due dateBoth4.46Postal InsuranceInquiryPremium amount checkBoth4.57Postal InsuranceInquirySum assured checkBoth4.69Postal InsuranceInquirySurrender value checkBoth4.711Postal InsuranceInquiryLoan amount checkBoth4.814Postal InsuranceInquiryRate of Interest of LoanBoth4.8, 4.915Postal InsuranceInquiryPremium updated statusBoth4.1016Postal InsuranceInquiryPolicy maturity date infoBoth4.1117Postal InsuranceInquiryMaturity amount infoBoth4.1218Postal InsuranceInquiryInformation about documents required to be submitted for policy renewalBoth719Postal InsuranceInquiryClaim statusBoth4.1320Postal InsuranceInquiryAgent License expiry dateBoth4.14
+4.1 Policy Servicing: 
+Customer can use IVR Systems to send a Request to get their Servicing details .
+The IVR system will take policy number and the API that will return with the servicing details for that API. Refer to Section 5.1 for API details
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+policyStatus (Service_request_status) 
+4.2 Proposal Status
+Customer can use IVR System to request for proposal status. 
+The IVR system will take in the Proposal Number, in response to inputs the Proposal related information would be sent back. Refer to Section 5.1 for API details
+  
+Request PayloadSearch Parameter: <proposal Number>
+Search Type:  serviceRequestNumberResponse:validateParameter
+dob
+statusRequest : any one of the values defined in the WSDL.
+4.3 Policy Status
+Customer can use IVR system to inquire for Policy Status, The IVR system will take the Policy number and return with the Policy details. Refer to Section 5.1 for API details  	
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+policyStatus
+4.4 Premium Due Date.
+Customer can use IVR system to inquire for premium due date
+The IVR system will take the Policy number and return with the premium details. Refer to Section 5.1 for API details  	
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+premiumdueDate
+4.5 Premium Amount Check 
+Customer can use IVR system to inquire for premium amount check, The IVR system will take the Policy number and return with the premium details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestRespnse: validateParameter
+dob
+premiumAmount
+4.6 Sum Assured Check 
+Customer can use IVR system to inquire for sum assured check, The IVR system will take the Policy number and return with the sum assured details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+sumAssured
+4.7 Surrender Value Check 
+Customer can use IVR system to inquire for Surrender value check, The IVR system will take the Policy number and return with the surrender value details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+surrenderEligibility
+surrenderValue
+4.8 Loan Amount Check 
+Customer can use IVR system to inquire for loan amount check, The IVR system will take the Policy number and return with the loan details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+loanOutstandingAmount
+interestRateOnLoan
+loanEligibility
+loanAvailed
+4.9 Rate of Interest of Loan
+Customer can use IVR system to inquire for ROI for loan, The IVR system will take the Policy number and return with the ROI details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+interestRateOnLoan     
+4.10 Premium Updated Status 
+Customer can use IVR system to inquire for premium updated status, The IVR system will take the Policy number and return with the premium details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+premiumAmount
+premiumDueDate
+lastPremiumPaidDate
+lasPremiumPaidAmount
+4.11 Policy Maturity Date Info 
+Customer can use IVR system to inquire for policy maturity date, The IVR system will take the Policy number and return with the policy details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+maturityDate
+
+4.12 Maturity Amount Info 
+Customer can use IVR system to inquire for maturity amount, The IVR system will take the Policy number and return with the maturity details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <Policy Number>
+Search Type:  policyRequestResponse:validateParameter
+dob
+maturityAmount
+maturityDate
+4.13 Claim Status
+Customer can use IVR system to inquire for claim status, The IVR system will take the claim service Request Number and return with the claim details. Refer to Section 5.1 for API details. 
+Request PayloadSearch Parameter: <claim Status Request Number>
+Search Type:  serviceClaimRequestResponse:validateParameter
+dob
+statusRequest
+( enumerated values as per the WSDL )
+4.14 Agent License Expiry
+Customer can use IVR system to inquire for agent license details, The IVR system will take the Agent ID and return with the license details. Refer to Section 5.2 for API details. 
+Request PayloadSearch Parameter: <agentID>Response:validateParameter
+dob
+licenseExpiryDate
+agentStatus
+( enumerated values as per the WSDL )
+
+5. Web Service Specifications
+
+This section refers to the PLI-IVR Call Flow as per the file PLI- IVR v1.8b.xlsx. [AG5][HI6]
+The call flow is evolving, however, the touch points with Finacle will be as per This Document. 
+IVR will interact with BizTalk server and will be using webservices of BizTalk to interact with PLI Solution. The online integration touch points using PLI WS are mentioned below 
+The specifications provided herein will meet the functionality as per the table in Section 4, Business Process Flow. Any shortcoming in the functionality will be attended to within the prevailing timeframes of the activities dependent on This Document. 
+5.1 pliSearchRequest - WSDL service signature 
+
+This is a service signature for invoking a remote web service for PLI based IVR services. 
+5.1.1 Request Message
+Please enter the length against the type for each request and response parameter:
+
+TagTypeIVR Data TypeUsageDescriptionsearchParameterInteger : Size 13N-13
+For Policy Number only.
+
+N-9
+For Proposal Number and service request number, only the numeric- 9 digit would be entered.Requireda) Policy Number: 
+For polcies with non-numeric characters, the IVR will not be able to solicit the input, hence, such callers will be transferred to the CC Agent. [AG7][HI8]
+For policies with all numeric characters in the policy number, the IV Rwill be able to take the policy number and service the caller.
+It so happense that all new policies will have numeric characters from the policy number, and there will be 13 numeric characters. For legacy policies, migrated or non-migrated, since the policy numbers have non-numeric characters, the call will be transferred to the agent. The agent will be able to service only the policies that have been migrated to the new PLI system.  
+b) Proposal Number: 
+Only the numeric part would be entered: 9 digit.
+c)     Claim Request: Only the numeric part of the service request number: 9 digit.requestSearchTypeString : 
+Size 25C-25RequiredFollowing are the values that the IVR may populate for this parameter : 
+a) "policyRequest"
+This would be used for policy search
+b) "serviceRequest" 
+This would be used for proposal search and other non-financial service request.
+c) "serviceClaimRequest" 
+This attribute is primarily for financial requests.
+
+
+
+5.1.2 Response Message 
+
+TagTypeIVR Data TypeUsageDescriptionpliSearchResponseResponse payloadvalidateParameterBooleanC-1RequiredValidation field, indicating that the inquired field is available in the system. It is Boolean, indicating Y as the valid and N being invalid.dobString: Size 8
+ddmmyyyyyN-8RequiredData Of birth of the insurer in ddmmyyyy format. Status requestString: Size 15C-15NAFollowing are enumerated  values
+In case of policy search, this field will be nill. ( Policy Status is listed in a separate parameter further below ). 
+For requestSerarchType = "serviceRequest", or "serviceClaimRequest", this tag will be populated with one of the following enumerated values : .
+* Withdrawn
+* Terminated
+* Approved
+* Completed
+* Rejected
+* Pending
+* Approved-pending DisbursementpremiumAmountInteger: Size10N-10RequiredPremium Amount with interest if applicable.sumAssuredInteger:size10N-10RequiredSum Assured amount.loanEligibilityString: size 10C-10RequiredEnumerated values : 
+         Availed, 
+         Eligible, 
+         Not Eligible.premiumDueDateInteger:size 8
+DdmmyyyyN-8RequiredPremium Due Date: It is the next premium due date.
+Eight numeric characters, date format is ddmmyyyysurrenderValueInteger:size10N-10RequiredSurrender value would be 0, if Surrender is not eligible for the policy
+Else it will be the amount in Rupees. loanOutstandingAmountInteger:size 10N-10RequiredLoan Outstanding amount, this value would be defaulted to 0.interestRateLoandecimal : size 2,2N-2.2RequiredInterest Rate on LoanlastPremiumPaidDateInteger:Size 8
+DdmmyyyyN-8
+ddmmyyyyRequiredLast Premium Paid date lastPremiumPaidAmountInteger: Size 10N-10RequiredLast Premium Paid Amount DetailsmaturityAmountInteger: Size 10N-10RequiredMaturity Amount, this amount is 0 in case of WLA and CWLA.maturityDateString: Size 10N-8
+ddmmyyyyRequiredMaturity Date.premiumPaidTillMaturityBooleanC-1RequiredThis amount would be marked as y, if the payment is paid till maturity. 
+It will be marked as n if the payment is not paid till maturity. nextPremiumAmountInteger: Size 10N-10RequiredNext Premium amount: Consolidated amount.interestOnPremiumInteger: Size 10N-10RequiredInterest on Premium, this value will be marked NA if not applicable.[AG9][HI10]firstUnPaidDateInteger: Size 8
+Format: ddmmyyyyN-8
+ddmmyyyyRequiredFirst UnPaid Date.surrenderEligiblityBooleanC-1RequiredSurrender Eligibility:  True in case when there is an eligibility to surrender.
+y = Yes
+n= NopolicyStatusString: Size 20C-20RequireExpected values, as per the WSDL accompanying This Document, are : 
+Pending Surrender
+Active Conversion
+Terminated Death
+Active No Premium
+Death Claim Rejected
+Void
+Inactive
+Terminated Maturity
+Lapse
+Terminated Conversion
+Active
+Pending Maturity
+Pending Death
+Terminated Surrender
+Pending PremiumbounsAmountInteger: Size 10N-10RequiredThe amount will be defaulted to 0, wherever it is not applicable.loanAvailedInteger: Size 10N-10RequiredThe actual loan amount availed.
+5.1.3 Error Description: [AG11][HI12]
+TagTypeUsageDescriptionpliSearchRequestFaultRequired Fault Node.pliSearchRequestFaultDescriptionStringRequiredFollowing are the values expected:
+* Policy_not_found
+* Servicerequest_not_found
+* Claimrequest_not_foundpliSearchRequestFaultCodeStringRequiredFollowing are the corresponding mapped error codes:
+100: Policy_not_found
+200: ServiceRequest_not_found
+300: Claimrequest_not_found
+5.2 PliAgentRequest: Agent Search Service
+
+This service call would fetch Agent Details from the PLI application.
+5.2.1 Request Message 
+
+TagTypeIVR Data TypeUsageDescriptionagentIDInteger: Size 10N-4RequiredAgent Id of the Agent :  Last 4 digits
+5.2.2 Response Message 
+
+TagTypeIVR Data TypeUsageDescriptionpliAgentSearchResponseResponse payloadDobInteger: size 8: ddmmyyyyN-8
+ddmmyyyyRequiredData Of birth of the Agent.validationParameterbooleanC-1RequiredValidation field, indicating that the inquired field is available in the system. It is Boolean, indicating y as the valid and n being invalid.licenseExpiryDateString: Size 10N-8
+ddmmyyyyRequiredLicense expiry dateagentStatusString: Size 10C-10RequiredAgent Status = one of { Active,  Pending,  Suspended,  Terminated } 
+(as per the WSDL accompanying This Document)
+
+6. Error Handling
+
+Every service signature, has a corresponding soap fault associated. 
+The SOAP fault comprises of Code and Description correspondingly. 
+Refer the WSDL for more information.
+
+Error CodeError DescriptionValue100Policy Not foundpolicy_not_found200Service Request Not foundservicerequest_not_found300Claim Request not foundclaimerequest_not_found400Agent Not foundagent_not_found404 : Technical ErrorService Not Available / Service timing out. : This would not be part of the SOAP fault.
+7. Revival Document
+Revival Document list has been provided, however the documents needs to be voiced based on the following table:
+Renewal TypePolicy StatusDocumentsReinstatementIL or VL
+(Inactive or Void)Good Health Declaration CertificateRevival Revival Application Form, AL
+(Lapse)Employer Certificate ( Mandatory if the Billing Method is Pay recovery ), Medical Certificate for Renewal
+The above is valid only for the policy statuses listed herein. For rest of the policy statuses, the revival document advice is not to be provided. 
+
+8. WSDL
+
+WSDL version: 1.1.
+
+This has been packaged as a zip along with the SRS.
+
+The WSDL provided herein will meet the functionality as per the table and entire content of Section 4, Business Process Flow. Any shortcoming in the functionality will be attended to within the prevailing timeframes of the activities dependent on This Document.
+
+9. Open Items
+
+S. NoOpen Item DescriptionOwnerResolution1Policy Number of policies with non-numeric characters (migrated policies) : 
+During meeting at PLI directorate it was suggested that numeric characters of such policy number in combination with the DoB should identify the policy. FSI indicated that such combination will not be unique. This point is yet to be vetted and closed. Hence as of now the IVR flow caters to only the new (13 digit numeric) policy numbers.[AG13][HI14][VJ15]DOP / FSIOpen
+
+
+
+
+
+
+--- end of document : 'SRS - PLI Integration with IVR' ---
+
+
+
+
+
+
+
+[HI1]
+In case of business error the IVR will prompt the customer for 2 retries post which the call would be transferred to the call center agent. 
+In case of  technical error, 404, the IVR will play an appropriate wait message, retry the action. In case the technical error persists the call will be transferred to the agent. 
+In case of service response timeouts the IVR will play an appropriate wait message after a predefined wait time post which call will get transferred to agent. 
+
+The max limits can be configured accordingly.
+[AG2]What is the maximum limit for this error.  In case of technical error, what is the customer expected to do. 
+[AG3]Why this is not in the scope of this document. 
+[HI4]This is a static message (voice out).The script  for the recordings (static message) for product information is to be provided by DoP. Hence this is not in scope of FSI deliverable.
+Added *-prefixed text in This Document. 
+[AG5]Please provide the excel file.
+[HI6]
+The call flow is not yet finalised and is evolving. 
+The closure of SRS is not dependent on the Call Flow. 
+The Call Flow will be shared for signoff after the SRS is signed off.
+[AG7]It was earlier decided that the numeric part of the legacy policy number will be picked up along with the date of Birth for unique record. No solution provided for handling legacy policy 
+[HI8]FSI to comment on feasibility  of this approach. Accordingly the WSDL would need to be modified.
+
+[AG9]If not applicable, how the IVR system will define it? What will be the default value
+[HI10]As per WSDL shared the default value would be "NA". In case for this parameter "NA" IVR will announce the message accordingly
+[AG11]In case of Error occur, what is next action taken by the IVR system. Will it disconnect or pass it on to the Call Agent?
+[HI12]
+This section relates to only the business errors.
+The IVR will prompt the customer for 2 more retries post which the call would be transferred to the call center agent. 
+[AG13]It was already decided earlier that if unique record is not found then the call will be transferred to Call Agent. 
+[HI14]If numeric part of the legacy policy number can be picked up along with the Date of Birth then this approach can be followed on IVR. 
+FSI to check and confirm on feasibilty.
+
+[VJ15R14]For all migrated policies, this would route the request to CTI, because uniqueness cannot be derived. 
+[Type the document title]	[Type the company name]
+
+
+PLI Integration with IVR	Infosys Ltd
+
+
+Infosys Technologies Limited	Page 3 of 222
+
+
+Page 3 of 3
+
+
+
+
+
+

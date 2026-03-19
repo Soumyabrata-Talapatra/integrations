@@ -1,0 +1,35 @@
+# Development environment overrides
+appname: "policy-management-dev"
+
+db:
+  username: "postgres"
+  password: "postgres"
+  host: "localhost"
+  port: "5432"
+  database: "ims_pli_dev"
+  schema: "policy_mgmt"
+  maxconns: 10
+  minconns: 1
+
+temporal:
+  hostport: "localhost:7233"
+  namespace: "pli-insurance"
+  taskqueue: "policy-management-tq"
+
+trace:
+  enabled: false
+
+cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS" 

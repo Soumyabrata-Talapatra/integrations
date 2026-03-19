@@ -1,0 +1,4577 @@
+CONFIDENTIAL
+
+CONFIDENTIAL
+
+		
+
+	______________________________________________________________________
+
+	
+
+	                       
+
+	
+
+		
+
+DEPARTMENT OF POSTS 
+
+MINISTRY OF COMMUNICATIONS & IT 
+
+GOVERNMENT OF INDIA
+
+
+
+			System Requirement Specification (SRS)	
+
+
+
+Installment Revival
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+
+	1.	Overview	4
+
+		1.1	Brief Description	4
+
+		1.2	Users of this Document	4
+
+		1.3	Acronym/Abbreviation	4
+
+	2.	System Flows	4
+
+		2.1	Standard Flow	4
+
+		2.2	Sub-Standard Flows	4
+
+	3.	Assumptions	6
+
+	4.	Scope	6
+
+		4.1	In scope	6
+
+		4.2	Out of scope	6
+
+	5.	Business Rules and Logics	9
+
+	6.	Illustration and Understanding Document	18
+
+	7.	Screens and Navigation	48
+
+	8.	Events	52
+
+		8.1	Changes in Policy Status	52
+
+	9.	Accounting	52
+
+	10.	Reference	52
+
+	11.	Documents/Letters	53
+
+	12.	Application /Functionality Impact	53
+
+	13.	Appendix	53
+
+	14.	Issues / Constraints / Risk	53
+
+
+
+
+
+	Overview
+
+		
+
+	Brief Description
+
+This document is prepared to detail the functionality of instalment revival and its impact on other functionalities.
+
+
+
+	Acronym/Abbreviation
+
+
+
+Acronym/Term
+
+Abbreviation /Description
+
+PLI
+
+Postal Life Insurance
+
+RPLI
+
+Rural Postal Life Insurance
+
+PO
+
+Post Office 
+
+DoP PLI
+
+Department of Posts, Postal Life Insurance
+
+PAS
+
+Policy Administrative System
+
+IL
+
+Inactive Lapse
+
+AL
+
+Active Lapse
+
+PM
+
+Pending Maturity
+
+
+
+
+
+
+	Existing System Flows
+
+	
+
+	Standard Flow
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver → Letter Generation (Instalment revival acceptance) → Payment of first Installment amount → Letter Generation (Revival memo) → Policy Status changed to AP → Request status changed to approved
+
+
+
+Payment of subsequent instalments 
+
+Go to Collection module →Select Transaction Type as “Instalment Revival” → Enter Policy Number→ From date Auto Populated → To Date is Auto Populated → Enter Actual Amount Paid → Enter Payment Mode → Submit→ Receipt Number is generated→ Print receipt
+
+
+
+Advance payment of instalments
+
+Go to Collection module →Select Transaction Type as “Instalment Revival” → Enter Policy Number→ From date Auto Populated → To Date is Auto Populated → Enter Amount Paid (can be more than required amount) → Enter Payment Mode → Submit→ Receipt Number is generated→ Print receipt
+
+	Sub-Standard Flows
+
+     
+
+Rejected by Approver
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver rejected the request → Letter Generation (Reinstatement rejection letter) → Policy Status remains AL → Request status changed to Rejected.
+
+
+
+First instalment not paid within 60 days of approval
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver → Letter Generation (Instalment revival acceptance)  → First Installment amount not paid → Policy Status remains AL → Revival installment amount re-calculated
+
+
+
+              Default of second instalment
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver → Letter Generation (Instalment revival acceptance) → payment of first Installment amount → Policy Status changed to AP → Letter Generation (Revival memo)  → Request status changed to Approved → Default of 2nd installment amount → Policy status changed to Lapsed.
+
+
+
+Default of Premium Amount when all the instalments are not paid
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver → Letter Generation (Instalment revival acceptance) → payment of first Installment amount → Policy Status changed to AP → Letter Generation (Reinstatement rejection letter) → Request status changed to Approved → Default of Premium amount → Policy status changed to Lapsed.
+
+
+
+Redirected by Approver
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver redirected the request → Data Entry → Quality Checker → Approver → Letter Generation (Instalment revival acceptance) → Payment of first Installment amount → Letter Generation (Revival memo) → Policy Status changed to AP → Request status changed to approved
+
+
+
+Missing document by Data Entry
+
+Indexing of Revival Request → Data Entry → DE raises missing document → Missing document received → DE → QC→ Approver → Letter Generation (Instalment revival acceptance) → Payment of first Installment amount → Letter Generation (Revival memo) → Policy Status changed to AP → Request status changed to approved
+
+
+
+
+
+Missing document by Quality Checker
+
+Indexing of Revival Request → Data Entry → Quality Checker raises missing document → Missing document received → Quality checker → Approver → Letter Generation (Instalment revival acceptance) → Payment of first Installment amount → Letter Generation (Revival memo) → Policy Status changed to AP → Request status changed to approved
+
+
+
+Missing document by Approver
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver raises missing document → missing document received → Approver → Letter Generation (Instalment revival acceptance) → Payment of first Installment amount → Letter Generation (Revival memo) → Policy Status changed to AP → Request status changed to approved
+
+Withdrawal of Request
+
+Indexing of Revival Request → Data Entry → Quality Checker → Approver → withdrawal of request (after approval but before collection) → request status changed to withdrawn.
+
+
+
+
+
+
+
+
+
+
+
+	Business Rules and Logics
+
+Business Rule No
+
+Rule 
+
+Description
+
+Logic
+
+IR_1
+
+Product Eligibility
+
+Product eligible for Installment Revival request.
+
+Installment revival is allowed on all the products.
+
+IR_2
+
+Policy Status 
+
+Policy status at the time of indexing the request
+
+Installment Revival can be indexed only on policies with AL status.
+
+IR_3
+
+Minimum number of instalments
+
+Minimum number of instalments
+
+Minimum number of instalments are 2. 
+
+
+
+IR_4
+
+Maximum Number of Installments
+
+Maximum Number of Installments
+
+Maximum number of installments are 12.
+
+
+
+Error will populate on Revival processing screen in case due date of any instalment falls after or in the month of maturity.
+
+
+
+Error: “Due date of instalment is in or after maturity month. Please index new request”.
+
+
+
+IR_5
+
+Calculations
+
+Formula
+
+Revival calculation using formula: = [{(1+Interest) ^ No. of unpaid premium months) – 1} X 101] X Monthly Premium
+
+
+
+Revival interest to be calculated up to current months (Date of Indexing) – 1 month.
+
+
+
+Unpaid premiums to be calculated up to frequency before the current billing frequency paid to date. (monthly frequency)
+
+
+
+Unpaid premiums to be calculated up to the current billing frequency paid to date. (other than monthly frequency)
+
+
+
+
+
+Example:
+
+Paid to Date = 31 March 2018
+
+Revival Indexing Done on 15 Dec 2018
+
+Premium Frequency = Quarterly
+
+
+
+Unpaid premiums will be calculated from 1 April 2018 till Dec 2018 (09 months)
+
+
+
+For a policy with frequency other than monthly, Monthly premium as required for the above formula is to be determined by a dividing Total Unpaid Premium amount with number of months in current frequency.
+
+
+
+Instalment calculation using formula =  (Revival Amount X Interest) X [{(1+Interest) ^ No. of Installments opted} / {(1+Interest)^ No. of Installments opted -1}]
+
+
+
+
+
+First Due Amount after Approval of Revival request
+
+
+
+In case of monthly premium:
+
+Instalment Amount + Taxes on total unpaid premiums + Current month premium + taxes on modal premium
+
+
+
+IR_6
+
+Tax calculation
+
+Tax calculation and collection
+
+Tax on Total unpaid premiums will be paid at the time of first instalment.
+
+
+
+Tax Rate at the time of Collection will be considered for tax calculation (either service tax/GST).
+
+
+
+Office code where transaction is happening and that CGST, SGST or UTGST rate will be applicable. This office code will be of the user office code who is login in the application.
+
+
+
+No taxes will be paid on the subsequent instalment.
+
+
+
+IR_7
+
+Mode of Instalment Collection
+
+Mode of installment collection
+
+Instalments can be paid by cash, cheque, online
+
+
+
+Collection via Meghdoot/bulk upload is not allowed. 
+
+
+
+Error “Instalment payment not allowed through Meghdoot/bulk upload” will be displayed on the bulk upload screen on the click of the upload button.
+
+The same error will be displayed in the csv file.
+
+
+
+Part payment of installment amount is not allowed.
+
+
+
+If any instalment is paid by cheque and the cheque gets dishonored, then the policy status will be changed back to Lapse and any amount paid as a part of Revival will be sent to suspense for adjustment on subsequent revival or settlement of claim whichever is earlier.
+
+
+
+If any instalment is paid via cheque and cheque is not cleared until next due date, then next instalment is not allowed and policy will lapse and paid to date will be as before revival request.
+
+
+
+IR_8
+
+Installment Frequency
+
+Instalment Frequency
+
+Installment revival will be only in monthly installments irrespective of whether the policy has the premium frequency monthly, quarterly, half yearly or yearly.
+
+
+
+IR_9
+
+Grace period
+
+Grace period for installment revival
+
+There is no grace period for making installment revival payments. If installment is not paid on the due date then policy will lapse.
+
+
+
+For renewal collection there will be no change. It will be as existing.
+
+                  
+
+IR_10
+
+SLA for First Instalment
+
+SLA for First Instalment
+
+First Instalment need to be paid within 60 days from the date of Approval of the request. If it is not paid then:
+
+
+
+Policy status remains AL. 
+
+
+
+Installment Revival amount will be re-calculated.
+
+
+
+Paid to date will not change.
+
+
+
+IR_11
+
+Due date of instalments
+
+
+
+Due date of the 2nd and subsequent instalment will be done on the 1st day of the month following the month in which first instalment was paid.
+
+
+
+Example:
+
+Policyholder opted for 3 instalments
+
+First instalment collected on 25 Jan 2018
+
+Due date for 2nd instalment will be 1 Feb 2018.
+
+Due date for 3rd instalment will be 1 March 2018.
+
+
+
+
+
+In case of system failure if customer is unable to make payment of dues on the due date, then customer is allowed to make pending installments once issue is resolved.
+
+
+
+IR_12
+
+Payment of Premium
+
+Payment of Premium
+
+Premiums will be paid on every due date as per billing frequency.
+
+
+
+IR_13
+
+First Instalment payment
+
+Change in Policy status after collection – First Instalment
+
+When customer makes first Payment:
+
+
+
+Policy status will change to AP
+
+
+
+Paid to date will be updated as per current billing frequency paid to date.
+
+
+
+IR_14
+
+Advance Premiums
+
+Advance Premiums
+
+Customer is allowed to make advance premium payments. 
+
+Customer will have to change the ‘From Date’ in accordance to the advance collection.
+
+
+
+
+
+
+
+IR_15
+
+Advance Installments
+
+Advance Installments
+
+Customer has an option to make advance instalment payment. Amount paid can be more than total instalments.
+
+
+
+If amount paid is sufficient to accommodate certain number of instalments then user has an option to change the ‘To Date’.
+
+
+
+Any amount paid that is not sufficient to accommodate any instalment will be kept in suspense and can be adjusted against future instalments.
+
+
+
+Total amount paid cannot be more than all the instalments. If user pays more than total instalments error “Amount more than total instalments” will be displayed on the collection screen. 
+
+
+
+IR_16
+
+Default of subsequent Installment
+
+If any of the installment after 1st installment is not collected.
+
+If customer defaults any subsequent installment amount, then:
+
+
+
+Policy status changes back to AL.
+
+
+
+Any Instalment or Premium collected after approval of instalment revival request will move to suspense. 
+
+
+
+Tax component will not move to suspense.
+
+
+
+Paid to date will as of before Revival.
+
+IR_17
+
+Existing request
+
+Already existing Installment revival request
+
+New Installment revival request cannot be indexed when there is pending installment revival request or all the instalments are not paid. 
+
+
+
+Error will be displayed “Revival request already pending”
+
+
+
+IR_18
+
+Death Claim/Maturity Claim
+
+If /Death Claim/Maturity Claim request is indexed.
+
+Death/Maturity Claim request is allowed to be indexed even if Revival request is in progress and not yet approved. In this case instalment revival request will be auto terminated.
+
+
+
+In the event of death of the insurant, who has been depositing the installment of arrears as directed by the Postmaster General/ Head of Division besides the normal monthly premia regularly as and when due notwithstanding the fact that some arrears of premia remain unpaid at the time of death, the claim against the said policy shall be accepted subject to the deduction of such arrears of premia and interest thereon besides loan amount and interest thereon, if any, from the claim amount.
+
+
+
+ 
+
+Death/Maturity Claim request is allowed to be indexed even if all the instalments are not paid and claim amount will be paid based on AL policy status.
+
+Any amount collected after approval of installment revival request will move to suspense and will be treated as excess amount while disbursing the claim amount.
+
+
+
+IR_19
+
+Conversion/Commutation request
+
+Conversion/Commutation request indexed/Approval/Effective.
+
+Conversion/Commutation request is not allowed to be indexed/Approved and Effective until all the instalments are paid.
+
+Conversion/Commutation cannot be indexed/Approved and Effective if instalment revival request is in progress and not yet approved.
+
+
+
+IR_20
+
+Billing Method change
+
+Billing Method change
+
+Billing method change is allowed to change irrespective of all the instalments paid or not. Only exception to this is Cash to pay recovery or vice versa
+
+
+
+IR_21
+
+Survival Claim
+
+Survival Claim payment
+
+Survival Claim payment should not be allowed to be paid if Instalment revival is not completed and all installment are not paid. 
+
+
+
+Once all the instalments are paid then survival claim is allowed to be indexed for the previous due.
+
+IR_22
+
+Loan
+
+Loan Request Indexing
+
+Loan request Indexing/Approval/Disbursement will not be allowed until all the instalments are paid.
+
+
+
+Loan repayments are allowed even if all the revival instalments are paid or not.
+
+
+
+IR_23
+
+Policy Cancellation/Free look cancellation
+
+Policy Cancellation/Free Look Cancellation
+
+If Instalment revival request is in progress and not yet approved, Policy Cancellation will be allowed and instalment revival request will terminate.
+
+
+
+If all the instalments are not paid and Policy Cancellation, then policy cancellation is allowed, policy status will change to AL and all the instalments and premium collected after the approval of instalment revival request will move to suspense. This amount will be disbursed with the claim amount.
+
+
+
+IR_24
+
+Suspense
+
+Suspense Account
+
+Any advance instalment amount will be kept in policy suspense and should be identified as ‘IR’ in order to signify extra amount collected against instalment.
+
+
+
+Suspense entry should also be created for interest component included in instalment amount.
+
+
+
+Any advance instalment paid will be adjusted only against instalments.
+
+
+
+IR_25
+
+Letters
+
+Same as Existing Instalment Revival Letters
+
+In case of Approval of request:
+
+Instalment revival acceptance letter
+
+Revival memo
+
+
+
+      In case of Rejection of request:
+
+Reinstatement Rejection Letter
+
+
+
+IR_26
+
+Rebate
+
+Rebate on Premium and Instalment
+
+Rebate is given only in case of advance Premium collection. Rebate rule is as existing.
+
+
+
+Rebate is not applicable for instalment amount.
+
+
+
+IR_27
+
+Receipt Cancellation
+
+Instalment Revival receipt cancellation
+
+If receipt for subsequent instalment amount is cancelled, Policy status will remain AL.
+
+
+
+In case of first instalment:
+
+If collection is done and request is completed and in future any receipt with respect to that request is canceled, it will not have any impact on the request and no SLA will be applicable. No collection of first instalment will be allowed w.r.t that request.
+
+	
+
+IR_28
+
+Suspense Reversal
+
+Suspense Reversal
+
+Suspense reversal for the first collection should be restricted. Error “Suspense reversal not allowed for first collection”.
+
+
+
+IR_29
+
+Maximum Number of Revivals
+
+Maximum Number of Revivals
+
+Maximum number of revivals can be made Configurable. Policyholder can revive the policy at any number of times. 
+
+
+
+
+
+IR_30
+
+Receipt
+
+Receipt generated for instalment revival
+
+Receipt will be generated for instalments paid. Receipt format will be shared. Duplicate receipt will be generated as per the existing rules.
+
+IR_31
+
+SMS/Email
+
+SMS/Email
+
+Template for SMS and Email will be covered under SMS/Email SRS.
+
+
+
+IR_32
+
+Non-Financial
+
+Non-Financial
+
+Non-Financial request will take priority over Instalment Revival.
+
+
+
+Example: If there is address change request, then it will be approved irrespective of instalment revival request is approved or not or all instalments are paid or not.
+
+
+
+IR_33
+
+Reports
+
+Impact on reports
+
+Format of the reports will be covered under Reports SRS
+
+
+
+IR_34
+
+Billing Frequency Change
+
+Billing frequency Change
+
+User will not be allowed to change billing frequency if
+
+
+
+Instalment revival Request is pending for approval
+
+
+
+IR_35
+
+Suspense Transfer
+
+Suspense transfer of instalment suspense amount
+
+Suspense transfer of instalment suspense amount will not be allowed. 
+
+IR_36
+
+Collection 
+
+Collection screen
+
+First collection amount consist of Premium + Instalment amount + Taxes on unpaid Premium + Taxes on Premium. 
+
+
+
+Premium + Taxes on premium to be collected through ‘Renewal’ screen.
+
+
+
+Instalment + taxes on unpaid premiums to be collected through ‘Instalment Revival’ screen. 
+
+
+
+Only one transaction for Renewal and Instalment can be processed until Revival request collection stage is completed.
+
+
+
+In case user tries to execute multiple transaction for Renewal/Instalments, error “Revival request not completed” will be thrown.
+
+
+
+Collection stage should be marked as completed when both first instalment amount and required premium + taxes are collected.
+
+
+
+User should be given a message on collection screen that instalment is to be paid to avoid policy lapsation at the time of renewal collection, vice versa, at the time of instalment collection, a message should be given to collect renewal premium for current month as both instalment and monthly renewal premium are mandatory to avoid policy lapsation. 
+
+
+
+IR_37
+
+Withdrawal of Instalment Revival request
+
+Withdrawal of Instalment Revival request
+
+Instalment revival request can be withdrawn before collection of first instalment + required premium. 
+
+
+
+Otherwise error “Revival request cannot be withdrawn as collection is not done” will be thrown.
+
+
+
+Request status will change to ‘withdrawn’
+
+
+
+
+
+	Illustration and Understanding Scenarios
+
+
+
+Business Rule - No
+
+Illustration as per Policy Life Cycle
+
+Expected System Response
+
+IR_1
+
+Product Eligibility
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Current Date = 10 August 2018
+
+
+
+	Instalment Revival request is allowed to be indexed.
+
+IR_1
+
+Product Eligibility
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: EA
+
+Policy Status = AL
+
+
+
+Current Date = 10 August 2018
+
+
+
+	Instalment Revival request is allowed to be indexed.
+
+IR_2
+
+Policy Status
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Current Date = 06 August 2018
+
+Product: WLA
+
+Policy Status = AL
+
+
+
+	Instalment Revival request is allowed to be indexed.
+
+IR_2
+
+Policy Status
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 August 2018
+
+Current Date = 06 August 2018
+
+Product: EA
+
+Policy Status = AP
+
+
+
+	Instalment Revival request is not allowed to be indexed as policy status is AP.
+
+IR_2
+
+Policy Status
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Current Date = 06 August 2018
+
+Product: CWLA
+
+Policy Status = Pending Surrender
+
+
+
+	Instalment Revival request is not allowed to be indexed as policy status is not AL.
+
+IR_3
+
+Minimum number of instalments
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Current Date = 06 August 2018
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Customer opts for instalments
+
+
+
+	Minimum Number of instalments shown in the dropdown on the Revival screen is 2.
+
+IR_4
+
+Maximum Number of Installments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Current Date = 06 August 2018
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Customer opts for instalments
+
+
+
+	Maximum Number of instalments shown in the dropdown on the Revival screen is 12.
+
+IR_4
+
+Maximum Number of Installments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Instalment revival request Approved on 06 August 2018
+
+Customer opts 10 instalments
+
+
+
+Maturity Date =  15 June 2019
+
+
+
+Customer tries to make payment of first instalment on 15 Sep 2018
+
+
+
+
+
+
+
+	User will not allowed to pay the first instalment because per calculation the due date of 10th Instalment will fall on 1st June 2019 if the customer makes payment of 15 Sep 2019.
+
+	As per rule no instalment due date should fall in or after maturity month.
+
+	
+
+	Error “Due date of instalment is in or after maturity month. Please index new request” will be thrown on the instalment collection screen.
+
+	User need to withdraw and Index new request.
+
+IR_5
+
+Calculations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Policy Issue Date
+
+30/Jan/2014
+
+Paid to Date
+
+30/November/2017
+
+Revival Indexing Date (Current Date)
+
+30/November/2018
+
+Modal Premium
+
+500
+
+Number of unpaid Premium Months
+
+11
+
+Total Unpaid Premiums
+
+500*11 = 5500
+
+Number of installment
+
+5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	 Revival Amount =   { (1.01^11 – 1) * 101} * 500 = 5841.25
+
+	Instalment Revival Formula: (Revival Amount X Interest) X [{(1+Interest) No. of Instalments opted} / {(1+Interest) No. of Instalments opted -1}]
+
+	
+
+	Instalment Amount =  (5841.25 *0.01) * [ { (1.01)^5}  /   {(1.01)^5 – 1}] = 1203.53
+
+	
+
+	Tax on Total Unpaid Premiums:
+
+	GST Renewal Year @ 2.25% (on total unpaid Premiums) = 5500 * 2.25% = 123.75
+
+	Tax on Modal Premiums:
+
+	GST Renewal Year @ 2.25% (on Modal Premiums) = 500 * 2.25% = 11.25
+
+	First Instalment: 
+
+	 Amount to be paid at the time of first Instalment = Instalment Amount + Modal Premium for current month + GST on Total Unpaid Premium Amount + GST on Modal Premium.                                         
+
+	Amount to be paid at the time of first Instalment = 1203.53 + 500 + 123.75 + 11.25 = 1838.53
+
+	
+
+	Subsequent Instalments:
+
+	Amount to be paid as subsequent instalment = Instalment Amount + Modal Premium + Service Tax on Modal Premium.
+
+	Amount to be paid as subsequent instalment = 1203.53 + 500 + 11.25 = 1714.78
+
+	
+
+IR_5
+
+Calculation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Policy Issue Date
+
+30/Jan/2014
+
+Paid to Date
+
+
+
+31/August /2015
+
+Revival Indexing Date (Current Date)
+
+31/July/2018
+
+Number of installment
+
+5
+
+
+
+Billing Frequency change effective from Dec 2014 = Quarterly
+
+Billing Frequency change effective from March 2015 = Semi Annual
+
+Modal Premium changed from 2966 to 5852
+
+
+
+
+
+
+
+
+
+Revival quotation date = 31 July 2018
+
+Interest will be calculated up to current month – 1
+
+Therefore, Number of months for interest calculation = Sep 2015 till June 2018 = 34 Months
+
+Total unpaid Premiums
+
+Cycle
+
+   Year
+
+Modal Premium
+
+Sep-Feb
+
+2015-16
+
+5852
+
+Mar-August
+
+2016-16
+
+5852
+
+Sep-Feb
+
+2016-17
+
+5852
+
+Mar-August
+
+2017-17
+
+5852
+
+Sep-Feb
+
+2017-18
+
+5852
+
+Mar-Aug
+
+2018-18
+
+5852
+
+Total Unpaid Premium
+
+36
+
+35,112
+
+
+
+
+
+Monthly Premium = Unpaid Premiums/Number of unpaid months
+
+Monthly Premium = 35,112/36 = 975.33
+
+Revival Amount = {(1.01)^34 – 1} *101 * 975.33 = 39657.18
+
+
+
+Interest (for 34 months) = Monthly Premium x No. of Months for which interest to be charged - Revival Amount.
+
+975.33*34-39657.18=6495.96
+
+Total Revival Amount to be paid= Unpaid Premium (for 36 months)+ Interest (for 34 months).
+
+35112+6495.96=41607.97
+
+
+
+	Instalment Amount =  (41607.97*0.01) * [ { (1.01)^5}  /   {(1.01)^5 – 1}] = 
+
+8572.89
+
+
+
+
+
+	
+
+	Tax on Total Unpaid Premiums:
+
+	GST Renewal Year @ 2.25% (on total unpaid Premiums) = 35112* 2.25% = 790.02
+
+	First Instalment: 
+
+	 Amount to be paid at the time of first Instalment = Instalment Amount + GST on Total Unpaid Premium Amount 
+
+	Amount to be paid at the time of first Instalment = 8572.89 + 790.02 = 9363.00
+
+	*Premium as and when due as per frequency will have to be paid by the insurant.
+
+*This revival instalment calculation is valid till the end of current month i.e. 31st July 2018.
+
+IR_6
+
+Tax calculation
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 April 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+
+
+
+
+Revival Date = 01 July 2017
+
+
+
+Premium Amount = 1175
+
+
+
+	Number of unpaid months = 15
+
+	Total unpaid Premiums = 1175 * 15 = 17625
+
+	Taxes = 17625 * 2.25/100 = 396.56
+
+	Taxes for July Premium = 1175 * 2.25/100 = 26.43
+
+	Rs.422 (396 + 26)   will be paid as taxes at the time of first instalment.
+
+IR_6
+
+Tax calculation
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 30 April 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+
+
+
+
+Due date = 01 May 2017
+
+Revival Date = 01 June 2018
+
+
+
+Premium Amount = 1175
+
+
+
+	Total unpaid Premiums = 1175 * 13 = 15275
+
+	Taxes = 15275 * 2.25/100 = 343.687
+
+On July 2018 2nd instalment is paid
+
+
+
+	2nd instalment is paid. Taxes on 2nd instalment will not be paid. 
+
+IR_7
+
+Mode of Instalment Collection
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 01 April 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Due date = 01 May 2017
+
+Revival Date = 01 June 2018
+
+
+
+Premium Amount = 1175
+
+
+
+Instalment revival request approved on 25 June 2018
+
+
+
+Mode selected Cash
+
+
+
+1st Instalment collected on 11 July 2018
+
+
+
+
+
+	Collection through Cash is allowed.
+
+IR_7
+
+Mode of Instalment Collection
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 01 April 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Due date = 01 May 2017
+
+Revival Date = 01 June 2018
+
+
+
+Premium Amount = 1175
+
+
+
+Instalment revival request approved on 25 June 2018
+
+
+
+As on 26 June 2018, customer made the payment of first instalment through cheque and cash.
+
+
+
+Cash = 1000
+
+Cheque = 175
+
+
+
+Cheque dishonored on 1 July 2018
+
+
+
+	Request status will be ‘Approved’
+
+	Policy status will change to AL
+
+	Paid to Date will be 01 April 2017
+
+	Rs.1000 will move to suspense
+
+IR_7
+
+Mode of Instalment Collection
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 01 April 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Due date = 01 May 2017
+
+Revival Date = 01 June 2018
+
+
+
+Premium Amount = 1175
+
+
+
+Instalment revival request approved on 25 June 2018
+
+
+
+As on 26 June 2018, customer made the payment of first instalment through cheque and cash.
+
+
+
+Cash = 1000
+
+Cheque = 175
+
+
+
+Cheque not cleared till 1 July 2018
+
+
+
+	2nd instalment payment is not allowed.
+
+	Policy status will change to AL
+
+	Paid to Date will be 01 April 2017
+
+	Rs.1000 will move to suspense
+
+IR_7
+
+Mode of Instalment Collection
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 01 April 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+
+
+Due date = 01 May 2017
+
+Revival Date = 01 June 2018
+
+
+
+Premium Amount = 1175
+
+
+
+Instalment revival request approved on 25 June 2018
+
+
+
+As on 26 June – User tries to make payment of instalment through Meghdoot upload.
+
+
+
+	Error will be thrown “Instalment payment not allowed through Meghdoot upload/Employer portal”
+
+IR_8
+
+Installment Frequency 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+Collection(Rs. 1300) done on 10 August 2018
+
+ 
+
+	
+
+2nd Instalment will be due on 1st September 2018.
+
+3rd Instalment will be due on 1st October 2018.
+
+
+
+	
+
+IR_9
+
+Grace Period
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+Collection(Rs. 1300) done on 10 August 2018
+
+ 
+
+	There is no Grace period.(Not permissible under POLI rules)
+
+2nd Instalment will be due on 1st September 2018.
+
+If Instalment is not paid on 1st September 2018, then policy status will be AL and paid to date will be 31 March 2017.
+
+Rs.1300 will move to suspense
+
+
+
+	
+
+IR_10
+
+SLA for First Instalment
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: WLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection not done till 11 Oct 2018
+
+
+
+	As collection is not done, system will recalculate revival instalment amount and policy status and paid to date will remain as AL and 31 March 2017 respectively.
+
+IR_11
+
+Due Date
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+Collection(Rs. 1300) done on 10 August 2018
+
+ 
+
+	
+
+2nd Instalment will be due on 1st September 2018.
+
+3rd Instalment will be due on 1st October 2018.
+
+
+
+
+
+IR_12
+
+Payment of Premium 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = quarterly
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Premium Amount = 500 per quarter
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival Indexed on 1 August 2018
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection(Rs.1800) done on 10 August 2018
+
+ 
+
+	Premium of Rs.500 will be due on 1 Oct 2018.
+
+
+
+
+
+IR_12
+
+Payment of Premium 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Monthly
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Premium Amount = 500
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival Indexed on 1 August 2018
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection(Rs.1300) done on 10 September 2018
+
+ 
+
+	Premium of Rs.500 will be due for September 2018 along with the first instalment amount.
+
+	Next Premium will be due on 1st Oct 2018
+
+	
+
+
+
+
+
+IR_13
+
+First Instalment payment 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: WLA
+
+Policy Status = AL
+
+Frequency =  Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection not yet done.
+
+
+
+Current Date = 11  August 2018
+
+
+
+	Policy status will remain AL and Paid to Date will be 31 March 2017
+
+IR_13
+
+First Instalment payment 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: WLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August
+
+
+
+Current Date = 11  August 2018
+
+
+
+
+
+Policy status will change to AP and Paid to Date will be 31 August 2018
+
+IR_14
+
+Advance Premiums 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+Modal Premium = 200
+
+
+
+Revival Request Indexed on 01 August 2018.
+
+Instalment Revival request Approved on 06 August 2018.
+
+Collection done on 10 August 2018
+
+ 
+
+Paid to Date is updated as 31 August 2018.
+
+
+
+Premium paid on 01 September = 600.
+
+
+
+	
+
+Advance premium payment is allowed. User can opt to have ‘To Date’ as 30 October 2018.
+
+
+
+	
+
+IR_15
+
+Advance Instalments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+Collection(Rs.1300) done on 10 August 2018
+
+ 
+
+At the time of 2nd instalment on 01 September, policyholder paid = 1500
+
+
+
+	
+
+Policyholder is allowed to pay advance instalment. 
+
+1000 will be applied to 2nd instalment and 500 will be kept in suspense which will be adjusted against 3rd instalment.
+
+At the time of 3rd instalment user need to pay only 
+
+
+
+	
+
+IR_15
+
+Advance Instalments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection(Rs.3300) done on 10 August 2018
+
+ 
+
+
+
+	
+
+Policyholder is allowed to pay all the instalments at the time of first instalment only and needs to adjust ‘To date’ accordingly..
+
+
+
+IR_15
+
+Advance Instalments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection(Rs.3300) done on 10 August 2018
+
+
+
+As on 1st September customer paid 100 Rs. 
+
+As on 1st Oct 2018, customer paid 200 Rs. 
+
+
+
+	
+
+Policyholder is allowed to pay all the instalments at the time of first instalment only.
+
+
+
+This Extra Rs.300 will be kept in suspense and adjusted towards subsequent revival instalment. will be disbursed as excess amount at the time of claim.
+
+IR_15
+
+Advance Instalments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection(Rs.3300) done on 10 August 2018
+
+ 
+
+As on 1st September customer paid 100 Rs. 
+
+As on 1st Oct 2018, customer paid 200 Rs.
+
+2nd Instalment Revival request indexed on 5 Sep 2020.
+
+
+
+Instalment revival request approved on 10 Sep 2020.
+
+
+
+Instalment amount = 500
+
+Taxes on unpaid premiums = 50
+
+
+
+Customer makes 1st instalment as on 15 September 2020.
+
+
+
+	
+
+First instalment revival request completed.
+
+Policyholder is allowed to pay all the instalments at the time of first instalment only.
+
+
+
+.
+
+
+
+On the Collection screen amount of Rs.300 will be displayed under ‘Amount received’ field. This amount customer can use.
+
+
+
+Customer need to pay only  Rs.250 at the time of 1st instlament revival collection as on 15 September 2020.
+
+IR_15
+
+Advance Instalments 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+Instalment Amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+Collection(Rs.3300) done on 10 August 2018
+
+ 
+
+As on 1st September customer paid 100 Rs. 
+
+As on 1st Oct 2018, customer paid 200 Rs.
+
+
+
+2nd Revival request indexed on 5 Sep 2020.
+
+
+
+Revival request approved on 10 Sep 2020.
+
+
+
+Revival amount including taxes = 650
+
+
+
+Collection done on 15 Sep 2020
+
+
+
+	
+
+Policyholder is allowed to pay all the instalments at the time of first instalment only.
+
+
+
+
+
+On the Collection screen amount of Rs.300 will be displayed under ‘Amount received’ field. This amount customer can use.
+
+
+
+Customer need to pay only Rs.350 at the time of 1st instlament revival collection as on 15 September 2020..
+
+
+
+
+
+IR_16
+
+Default of subsequent Installment 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Instalment amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Collection of amount = 1300, done on 11 August 2018
+
+
+
+2nd instalment due on 01 September 2018
+
+
+
+Amount not paid for 2nd instalment
+
+
+
+Current Date = 2  Sep 2018
+
+
+
+	Policy Status will change to AL.
+
+	Paid to Date will change to 31 March 2017.
+
+	Rs.1000 will move to policy suspense account.
+
+	
+
+	Taxes will not move to suspense.
+
+	
+
+IR_17
+
+Existing request 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request not yet approved.
+
+
+
+User tried to index new instalment revival request.
+
+	New Revival instalment request will not be indexed as there is already pending revival request.
+
+	
+
+IR_18
+
+Surrender/Death Claim/Maturity Claim
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+Instalment amount = 1000
+
+Taxes on unpaid premiums = 300
+
+
+
+Collection done on 11 August = Rs.1300
+
+Number of instalments = 5
+
+
+
+Surrender Request Indexed on 10 October 2018
+
+
+
+
+
+	Surrender indexing is not allowed till all the instalments are paid.
+
+IR_18
+
+Surrender/Death Claim/Maturity Claim
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection not done yet
+
+Number of instalments = 5
+
+
+
+Surrender Request Indexed on 15 August 2018
+
+
+
+
+
+	Surrender indexing is not allowed till all the instalments are paid.
+
+IR_19
+
+Conversion/Commutation request 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August 2018
+
+Number of instalments = 5
+
+
+
+User tries to Index Conversion request as on 15 August 2018
+
+
+
+
+
+	User will not be allowed to index Conversion request. Error “Revival Instalments pending”
+
+IR_19
+
+Conversion/Commutation request 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+
+
+Conversion request Approved on 10 April 2016.
+
+
+
+Paid to Date = 30 April 2016
+
+
+
+Policy Status = AL
+
+
+
+Instalment Revival request Indexed on 10 Feb 2017.
+
+
+
+Instalment revival request not yet approved
+
+Conversion effective date  = 15 March 2017
+
+
+
+	Conversion request will not get effective as instalment revival request is pending.
+
+IR_19
+
+Conversion/Commutation request 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+
+
+Conversion request Approved on 10 April 2016.
+
+
+
+Paid to Date = 30 April 2016
+
+
+
+Policy Status = AL
+
+
+
+Instalment Revival request Approved on 10 Jan 2017.
+
+
+
+Policyholder opted for 5 instalments.
+
+
+
+Conversion effective date  = 15 March 2017
+
+
+
+Only 3 instalments are paid and 2 are pending
+
+
+
+	Conversion request will not get effective as all the instalments are not paid.
+
+IR_20
+
+Billing Method change 
+
+
+
+Policy number XXXX00011
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August 2018
+
+Number of instalments = 5
+
+
+
+2 instalments are paid
+
+
+
+Billing method change request indexed on 15 September 2018.
+
+
+
+	Billing Method change request will allowed to be indexed. 
+
+	
+
+IR_20
+
+Billing Method change 
+
+
+
+Policy number XXXX00011
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August 2018
+
+Number of instalments = 5
+
+
+
+2 instalments are paid
+
+
+
+Billing method change request Approved on 15 September 2018.
+
+
+
+
+
+	Billing Method change request will allowed to be approved and effective as on 15 Sep 2018.
+
+	
+
+	 
+
+	
+
+IR_21
+
+Survival Claim 
+
+
+
+Policy number XXXX00011
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August 2018
+
+Number of instalments = 5
+
+
+
+4 instalments are pending
+
+
+
+2nd Survival claim payment due date Sep 2018
+
+
+
+	User is not allowed to index Survival Claim request.
+
+IR_21
+
+Survival Claim 
+
+
+
+Policy number XXXX00011
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August 2018
+
+Number of instalments = 5
+
+
+
+4 instalments are pending
+
+
+
+2nd Survival claim payment due date Sep 2018
+
+
+
+All the instalments are paid by 1 Dec 2018
+
+
+
+	User is allowed to index Survival Claim request on any date after Dec 2018 for the due of Sep 2018.
+
+IR_22
+
+Loan
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Collection done on 11 August 2018
+
+Number of instalments = 5
+
+
+
+2 instalments are paid
+
+
+
+User tries to Index Loan request
+
+
+
+
+
+	Indexing of Loan Request will not be allowed as all the instalments are not paid. Error “Revival Instalments are pending” will populate.
+
+IR_23
+
+Policy Cancellation/Free look Cancellation
+
+
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Frequency = Monthly
+
+
+
+Instalment Revival request indexed on 06 August 2018.
+
+Instalment revival Request Approved on 10 August 2018.
+
+
+
+Instalment amount = 1000
+
+Taxes on unpaid 
+
+
+
+Collection done on 11 August 2018 = 1300
+
+Number of instalments = 5
+
+
+
+2 instalments are paid
+
+
+
+User tries to index Policy Cancellation request as on 15 Sep 2018
+
+
+
+	User will be allowed to index policy cancellation request.
+
+	Policy status will change to AL
+
+	Paid to Date will be 31 March 2017
+
+	
+
+IR_25
+
+Letters
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First instalment paid = 1300 as on 16 August 2018
+
+
+
+
+
+ After approval below letters will be generated:
+
+Instalment revival acceptance letter as on 06 August 2018
+
+
+
+Instalment revival Letter will be generated as on 16 August 2018
+
+
+
+
+
+IR_25
+
+Letters
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Rejected on 06 August 2018.
+
+
+
+
+
+
+
+Reinstatement Rejection Letter will be generated as on 06 August 2018
+
+
+
+IR_26
+
+Rebate
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000
+
+
+
+No Rebate will be given on advance instalment payment.
+
+
+
+IR_27
+
+Receipt Cancellation
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+Receipt Cancelled on 16 August 2018
+
+
+
+
+
+First Instalment need to be paid within 60 days from the date of Approval of the request. 
+
+IR_27
+
+Receipt Cancellation
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+Premium amount collected as on Oct 2018
+
+
+
+Receipt of Premium Cancelled on 1 Oct 2018
+
+Premium Collection not done till 31 Oct 2018
+
+
+
+
+
+Policy status will be AL and Paid to date will be 31 March 2017  and amount thus collected as first instalment will move to suspense
+
+IR_28
+
+Suspense Reversal
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+User tries to do suspense reversal on 20 August 2018
+
+
+
+
+
+Error “Suspense reversal not allowed for first collection” will be thrown.
+
+
+
+IR_28
+
+Suspense Reversal
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+Suspense Reversal (due to data entry error)  on 20 August 2018
+
+
+
+Error “Suspense reversal not allowed for first collection” will be thrown.
+
+
+
+IR_28
+
+Suspense Reversal
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+2nd instalment collected on 1 Sep 2018
+
+
+
+Suspense Reversal  of 2nd instalment on 20 Sep 2018
+
+
+
+Policy status will be AL and paid to date will be 31 March 2017 and amount paid towards first instalment will move to suspense
+
+IR_29
+
+Maximum number of Revivals
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+All the instalments paid by user by 1 Oct 2018
+
+
+
+User tries to index Revival request on 1 Jan 2020
+
+
+
+User will be allowed to index the Revival request as only one revival request has been completed.
+
+IR_29
+
+Maximum number of Revivals
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+1st Revival
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+All the instalments paid by user by 1 Oct 2018 and policy status is AP
+
+
+
+2nd Revival
+
+User tries to index Revival request on 1 Jan 2020
+
+Collection completed on 15 Jan 2020 and Policy status changed to AP.
+
+
+
+
+
+3rd Revival
+
+Policy status is AL on 20 Oct 2022
+
+User tries to Index Instalment revival Request on 1 Dec 2022.
+
+
+
+User will be allowed to Index Revival request 
+
+IR_29
+
+Maximum number of Revivals
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+1st Revival
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+All the instalments paid by user by 1 Oct 2018 and policy status is AP
+
+
+
+2nd Revival
+
+User tries to index Revival request on 1 Jan 2020
+
+Collection completed on 15 Jan 2020 and Policy status changed to AP.
+
+
+
+All the instalment are not paid and policy status changes to AL on 1 April 2020
+
+
+
+
+
+3rd Revival
+
+User tries to Index Instalment revival Request on 20 Oct 2020
+
+
+
+
+
+User will be allowed to Index Revival request 
+
+IR_30
+
+Receipt
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+
+
+Receipt will be generated as on 16 August 2018 with amount 2000
+
+IR_32
+
+Non-Financial
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+User tries to Index Address Change request as on 20 August 2018
+
+
+
+
+
+User will be allowed to index Address Change Request 
+
+IR_32
+
+Non-Financial
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+User tries to Approve Address Change request as on 20 August 2018
+
+
+
+
+
+User will be allowed to Approve Address Change Request even if all the instalments are not paid.
+
+IR_32
+
+Billing Frequency Change
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+First Instalment amount paid = 2000 as on 16 August 2018
+
+
+
+User tries to Index Billing frequency Change request as on 20 August 2018
+
+
+
+
+
+User will not be allowed to index billing frequency change request until all the instalments are paid.
+
+IR_34
+
+Collection 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection of 1820 done on 16 August 2018
+
+
+
+1300 will be collected through Instalment Revival screen.
+
+520 will be collected through renewal screen.
+
+IR_34
+
+Collection 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+1300 instalment amount paid through instalment revival screen on 10 August 2018.
+
+
+
+Premium (incl. taxes) of 520 is not paid yet.
+
+
+
+User tries to pay instalment amount again on 12 August 2018
+
+
+
+
+
+User will not be allowed to make instalment payment on 12 August 2018 as required premium (incl. taxes) are not paid yet which is required for completion of collection stage.
+
+Error “Revival request not completed-due premium not paid” will be thrown.
+
+
+
+IR_34
+
+Collection 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+
+
+Premium (incl. taxes) of 520 is paid on 10 August 2018.
+
+
+
+First instalment is not yet paid.
+
+
+
+User tries to pay Premium for next due on 12 August 2018
+
+
+
+
+
+User will not be allowed to make premium payment on 12 August 2018 as first instalment amount is not paid yet which is required for completion of collection stage.
+
+Error “Revival request not completed-revival instalment payment is pending” will be thrown.
+
+
+
+IR_34
+
+Collection 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+
+
+Collection of amount 1820 is done on 10 August 2018
+
+
+
+User tries to pay Premium for next due on 12 August 2018
+
+
+
+
+
+User will be allowed to make premium payment for next due as policy status is AP.
+
+IR_34
+
+Collection 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+
+
+Collection of amount 1820 is done on 10 August 2018
+
+
+
+Collection stage = completed
+
+
+
+User tries to pay advance instalment on 12 August 2018
+
+
+
+
+
+User will be allowed to make advance instalment payment.
+
+IR_35
+
+Withdrawal of Instalment Revival request 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+
+
+Collection of amount 1820 is not done yet 
+
+
+
+User tries to withdraw Revival request.
+
+
+
+
+
+Revival request will allowed to be withdrawn as collection is not done yet. 
+
+Request status will be withdrawn
+
+IR_35
+
+Withdrawal of Instalment Revival request 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+
+
+Collection of amount 1820 is done on 10 August 2018 
+
+
+
+User tries to withdraw Revival request on 15 August 2018
+
+
+
+
+
+User will not be allowed to withdraw revival request. 
+
+Error “Revival request cannot be withdrawn as collection is done” will be thrown.
+
+
+
+IR_36
+
+Collection 
+
+
+
+Policy number XXXX00011, 
+
+Policy issuance date is 15-Mar-1993
+
+Paid to Date = 31 March 2017
+
+Product: CWLA
+
+Policy Status = AL
+
+Premium Frequency = Semi Annual
+
+
+
+Instalment Amount = 1000
+
+Taxes on unpaid premium = 300
+
+
+
+Premium amount = 500
+
+Taxes on Premium = 20
+
+
+
+Customer opted 3 instalments
+
+
+
+Instalment Revival request Approved on 06 August 2018.
+
+
+
+Collection of  1820 (first instalment and premium)  done on 16 August 2018
+
+
+
+Collection of second instalment on 1st September 2018 done through ‘Renewal’ transaction type instead of ‘Instalment Revival’.
+
+
+
+Amount thus collected will move to suspense and policy will move to AL status for not receiving Instalment on the due date.
+
+
+
+
+
+
+			Screens and Navigation
+
+To accommodate the business rules for Instalment revival there would be few changes required on UI of Collection screen and Policy Search Screen. 
+
+First collection amount consist of Premium + Instalment amount + Taxes on unpaid Premium + Taxes on Premium (where applicable). Premium + Taxes on premium to be collected through ‘Renewal’ screen. Instalment + taxes on unpaid premiums to be collected through ‘Instalment Revival’ screen. 
+
+Subsequent instalments will be collected through instalment revival screen
+
+Subsequent premium will be collected through Renewal Premium screen. From Date and To Date on renewal screen will be current frequency date
+
+Example 2:
+
+Paid to Date = 31 March 2018
+
+Revival Indexing Done on 15 Dec 2018
+
+Premium Frequency = Quarterly
+
+
+
+From Date = 1 Oct 2018
+
+To Date will be 31Dec 2018
+
+
+
+
+
+The screens below show the navigation and changes:-
+
+
+
+Collection Icon on dashboard:-
+
+
+
+
+
+ On Clicking Collection Icon:-
+
+ One more transaction type will be added as Instalment Revival which will be a radio button.
+
+
+
+ On clicking the radio button for instalment revival below screen will open-
+
+
+
+
+
+Policy Search-View History-Collection Tab:-
+
+
+
+
+
+       Data Elements
+
+Field Name
+
+UI Display
+
+Properties
+
+Comments
+
+Installment Revival
+
+Label
+
+
+
+
+
+Policy Number
+
+  Text box
+
+Enabled
+
+Search the policy to make payment
+
+Installment Revival Details
+
+Label
+
+
+
+
+
+Policy Number
+
+Alphanumeric
+
+Read Only
+
+Policy Number will be displayed
+
+Insured Name
+
+Text box
+
+Read Only
+
+Full Name of the Insured will be displayed
+
+Agent ID
+
+Alphanumeric
+
+Read Only
+
+Name of the Agent as displayed on the Renewal screen.
+
+From (Date)
+
+Date
+
+Read Only
+
+It will be the due date from which premiums were due.
+
+
+
+Example:
+
+Paid to Date  31 March 2018
+
+Revival Indexing Done on 1 Dec 2018
+
+Premium Frequency = Monthly
+
+
+
+From Date will be 1 April 2018
+
+To (Date)_
+
+Date
+
+Enabled
+
+It will be 1 frequency before current Frequency. User has an option to change the ‘To date’ based on the number of instalments paid as advance
+
+
+
+Example 1:
+
+Paid to Date  31 March 2018
+
+Revival Indexing Done on 15 Dec 2018
+
+Premium Frequency = Monthly
+
+
+
+To Date will be 30 Nov 2018 will auto populate
+
+
+
+If number of instalments are 5 and each instalment is of amount 100. User paid 330RS. 30 is tax on unpaid premium.
+
+
+
+User has option to change the ‘To date’ based on current collection date.
+
+
+
+Current date = 20 Dec 2018.
+
+
+
+To Date can be changed to 28 Feb 2019.
+
+
+
+100 will be for Dec 2018
+
+100 will be for Jan 2019
+
+100 will be for Feb 2019
+
+
+
+Example 2:
+
+Paid to Date  31 March 2018
+
+Revival Indexing Done on 15 Dec 2018
+
+Premium Frequency = Quarterly
+
+
+
+To Date will be 30 Sep 2018 will be auto populated. User has an option to change the ‘To Date’.
+
+
+
+Installment revival amount
+
+Numeric
+
+Read Only
+
+Will display the instalment Amount
+
+Taxes on unpaid premium
+
+Numeric
+
+Read Only
+
+This field will display the taxes on total unpaid premium. It will be displayed only at the time of first instalment.
+
+
+
+From subsequent instalments this field will display Zero Value.
+
+Instalment Received
+
+Numeric
+
+Read Only
+
+This field will display the amount available in Policy suspense against instalment as an extra amount.
+
+Current instalment
+
+Numeric
+
+Read Only
+
+This will denote the number of instalments customer has paid + the instalment he is paying currently.
+
+If user is covering future instalments also, then it will be counted under current instalment.
+
+
+
+Example:
+
+Total instalments are 5.
+
+At the time of paying 2nd instalment, user is paying for 3rd instalment also. 
+
+Then current instalment will display as 3.
+
+
+
+Total Number of Instalments opted
+
+Numeric
+
+Read Only
+
+This will denote the number of instalments customer has opted at the time of instalment revival request
+
+Total Amount
+
+Numeric
+
+Read Only
+
+The amount customer needs to pay based on the ‘From and To date’ + taxes on unpaid premium (at the time of first instalment)
+
+
+
+Example:
+
+Paid to Date  31 March 2018
+
+Revival Indexing Done on 15 Dec 2018
+
+Premium Frequency = Monthly
+
+
+
+To Date will be 30 Nov 2018 will auto populate
+
+
+
+User has option to change the ‘To date’ based on current collection date.
+
+
+
+Current collection date = 20 Dec 2018.
+
+
+
+To Date changed to 28 Feb 2019.
+
+Each instalment amount = 100
+
+
+
+Taxes on unpaid premium = 50
+
+
+
+
+
+Total Amount will be displayed as 350.
+
+ 
+
+
+
+
+
+Actual Amount paid
+
+Text box
+
+Enabled
+
+Total amount customer is paying will be entered here
+
+
+
+
+
+
+
+Error Messages:
+
+Error and Edit Messages
+
+Description
+
+This field is required 
+
+If Add is clicked without entering Policy Number.
+
+Policy Number not found
+
+If incorrect policy number is entered.
+
+Instalment revival not in process
+
+If instalment Revival request is not indexed.
+
+When normal Revival request is indexed.
+
+If all the installments have been paid for the policy and the user is trying to add that policy for collection
+
+Error “Revival Instalments are pending”
+
+When user tries to index the conversion/commutation/Billing Method change request when all the instalments are not paid.
+
+Instalment amount insufficient
+
+If user tries to change the ‘To date’ but the instalment amount paid is not sufficient to cover the ‘To Date’
+
+
+
+
+
+	Documents/Letters
+
+Document required/Letter generated
+
+Trigger
+
+Template
+
+
+
+
+
+
+
+Revival Instalment Acceptance Letter
+
+Approval
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Page 3 of 58
+
+
+
+Page 8 of 58

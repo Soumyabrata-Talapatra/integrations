@@ -1,0 +1,619 @@
+SRS/FRS- Bulk Upload (Pay Recovery and Meghdoot)
+
+SRS/FRS- Bulk Upload (Pay Recovery and Meghdoot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Postal Life Insurance
+
+Department of Post
+
+
+
+
+
+Software Requirements Specification (SRS)/ Functional Requirements Specification (FRS)
+
+Bulk Upload (Pay Recovery and Meghdoot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INTERNAL APPROVAL FORM
+
+
+
+Project Name: Bulk Upload (Pay Recovery and Meghdoot)
+
+Version: 1.0
+
+Submitted on: 
+
+
+
+Name
+
+Date
+
+Approved By: 
+
+
+
+
+
+Reviewed By: 
+
+
+
+
+
+Prepared By:  
+
+
+
+
+
+
+
+
+
+VERSION CONTROL LOG
+
+Version
+
+Date
+
+Prepared By
+
+Remarks
+
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+
+
+
+	1. Executive Summary	4
+
+	2. Project Scope	4
+
+	3. Business Requirements	4
+
+	4. Functional Requirements Specification	5
+
+	4.1 Billing & Collection through Pay Recovery	5
+
+	4.2 Billing & Collection through Meghdoot Upload (for Individual Policy- where premium mode is cash)	8
+
+	5. Attachments	9
+
+
+
+
+
+
+
+
+1. Executive Summary
+
+The Bulk Upload feature in the Payroll Module of IMS enables uploading of policy-related data for premium recovery in cases where automated updates via APT 2.0 fail. It supports two sub-pages:
+
+Pay Recovery Bulk Upload (for APS policies and Non-Postal DDO cases)
+
+Meghdoot Upload (for individual policies with cash payment mode)
+
+
+
+2. Project Scope
+
+This Feature ensures:
+
+Recovery of failed records for APS and Non-Postal DDO policies.
+
+Upload of CSV files for policy updates after manual collection verification.
+
+OTP-based confirmation for Meghdoot uploads.
+
+
+
+3. Business Requirements
+
+
+
+ID
+
+Feature
+
+Requirements
+
+FS_BU_001
+
+Dashboard
+
+Enable Bulk Upload Dashboard to provide navigation to Pay Recovery Bulk Upload and Meghdoot Upload pages.
+
+FS_BU_002
+
+Pay Recovery Bulk Upload
+
+Allow upload of CSV files for APS and Non-Postal DDO policies after collection verification in APT 2.0.
+
+FS_BU_003
+
+Pay Recovery Bulk Upload
+
+Validate that collection amount exists under Special Group/DDO Code/Office Code before upload.
+
+FS_BU_004
+
+Pay Recovery Bulk Upload
+
+Reconcile suspense amount in APT 2.0 against total premiums in the uploaded file.
+
+FS_BU_005
+
+Pay Recovery Bulk Upload
+
+Display validation errors for incorrect or missing fields in the CSV file.
+
+FS_BU_006
+
+Pay Recovery Bulk Upload
+
+Log all upload attempts and validation results for audit purposes.
+
+FS_BU_007
+
+Meghdoot Upload
+
+Provide separate login for Divisional Head for Meghdoot uploads.
+
+FS_BU_008
+
+Meghdoot Upload
+
+Enable OTP-based confirmation before final submission of Meghdoot upload.
+
+FS_BU_009
+
+Meghdoot Upload
+
+Validate CSV file against prescribed template before processing.
+
+FS_BU_010
+
+Meghdoot Upload
+
+Update IMS accurately with uploaded data after successful validation.
+
+FS_BU_011
+
+Meghdoot Upload
+
+Generate success/failure report for Divisional Head post-upload.
+
+FS_BU_012
+
+General
+
+Log all actions (uploads, validations, approvals) for audit and compliance purposes.
+
+
+
+4. Functional Requirements Specification
+
+4.1 Billing & Collection through Pay Recovery
+
+Purpose: In the case of failed records through APT 2.0, recovery of premium payments pertaining to APS policies or Non-Postal DDO cases—where the DDO/HO has already collected the amount against Special Group/DDO Code/Office Code in APT 2.0 but the policy details not updated in IMS—should be processed accordingly to enable uploading of failed records for APS and Non-Postal DDO policies.
+
+
+
+Flow Diagram for the Pay Recovery Bulk Upload Process:
+
+
+
+
+
+
+
+* “Before initiating the collection process, the Counter PA must verify whether the collection amount for the particular month is already available under the respective Special Group/DDO Code/Office Code in APT 2.0. If the amount is not available, only then the collection may be carried out”
+
+
+
+Data Upload Process: Once the collection process for the Special Group/DDO Code/Office Code of APT 2.0 is completed, the user may initiate the data upload of policy wise against the respective Special Group/DDO Code/Office Code of APT 2.0, as illustrated in the flow chart below:
+
+
+
+
+
+
+
+CSV File Template: After confirmatory screen user may be able to upload the CSV file in the prescribed template with below field:
+
+Field Name
+
+Mandatory/Optional
+
+Acceptable formats
+
+Example
+
+Error messages
+
+CIRCLE_CODE
+
+Mandatory
+
+alphabets
+
+ UP, KT
+
+
+
+PAO_CODE (DDO Code/Office Code)
+
+Conditional Mandatory
+
+Mandatory if the file belongs to special group policies
+
+alpha-numeric
+
+ 
+
+
+
+POLICY_NO
+
+Mandatory
+
+alpha-numeric
+
+ 
+
+Policy number cannot be blank
+
+NAME
+
+Optional
+
+Only alphabets
+
+ 
+
+
+
+SUM_ASSD
+
+Optional
+
+Numeric
+
+ 
+
+
+
+PREM_AMNT
+
+Mandatory
+
+Numeric
+
+ 
+
+Premium amount can’t be blank
+
+DATE_MATURITY
+
+Optional
+
+Numeric
+
+ 
+
+
+
+DATE_ENTRY (Policy Issue Date )
+
+Optional
+
+Numeric
+
+ 
+
+
+
+FROM_DATE
+
+Mandatory
+
+Numeric
+
+dd-mm-yyyy
+dd-mmm-yyyy
+
+From date can’t be blank/
+
+Invalid date
+
+TO_DATE
+
+Mandatory
+
+Numeric
+
+dd-mm-yyyy
+dd-mmm-yyyy
+
+ TO date can’t be blank/
+
+Invalid date
+
+TOTAL_RECEIPT (Premium + Service Tax/GST)
+
+Mandatory
+
+Numeric
+
+ 
+
+Total receipt can’t be blank
+
+DATE_TRANSACTION
+
+Mandatory
+
+Numeric
+
+dd-mm-yyyy
+dd-mmm-yyyy
+
+Date_transaction can’t be blank/
+
+Invalid date
+
+Transaction date can’t future date
+
+TRANSACTION_TYPE (Cash/Pay)
+
+Mandatory
+
+alphabet
+
+ C/P
+
+Transaction Type cannot be blank
+
+REBATE_AMT
+
+Optional
+
+Numeric
+
+ 
+
+
+
+Tax_Type
+
+Conditional Mandatory 
+
+
+
+Conditional Mandatory 
+
+(Required if first year tax, GST/renewal year tax, GST is present)
+
+1 for first year tax/GST
+
+2 for renewal year tax/GST
+
+1.If FY tax/Renewal tax is updated and Tax Type is blank, then display error message -  Tax Type is required
+
+2. If data type is other than numeric – Only numeric value accepted
+
+First_Year_Tax
+
+Mandatory
+
+Numeric
+
+Can be null or numeric
+
+1. If transaction date>= 1 Jan 2015 and either FY tax or Renewal tax is not updated, then error message to be displayed- Service tax is required 
+
+2. If data type is other than numeric – Only numeric value accepted
+
+Renewal_Year_Tax
+
+Mandatory
+
+Numeric
+
+Can be null or numeric
+
+1. If transaction date>= 1 Jan 2015 and either FY tax or Renewal tax is not updated, then error message to be displayed- Service tax is required
+
+2. If data type is other than numeric – Only numeric value accepted
+
+First Year CGST
+
+Mandatory
+
+Numeric
+
+Can be null or numeric
+
+1. If transaction date>= 1 July 2017 and either FY GST or Renewal GST is not updated, then error message to be displayed- GST is required
+
+2. If data type is other than numeric – Only numeric value accepted
+
+First Year SGST/UTGST
+
+Mandatory
+
+Numeric
+
+Can be null or numeric
+
+1. If transaction date>= 1 July 2017 and either FY GST or Renewal GST is not updated, then error message to be displayed- GST is required
+
+2. If data type is other than numeric – Only numeric value accepted
+
+Renewal Year CGST
+
+Mandatory
+
+Numeric
+
+Can be null or numeric
+
+1. If transaction date>= 1 July 2017 and either FY GST or Renewal GST is not updated, then error message to be displayed- GST is required
+
+2. If data type is other than numeric – Only numeric value accepted
+
+Renewal Year SGST/UTGST
+
+Mandatory
+
+Numeric
+
+Can be null or numeric
+
+1. If transaction date>= 1 July 2017 and either FY GST or Renewal GST is not updated, then error message to be displayed- GST is required
+
+2. If data type is other than numeric – Only numeric value accepted
+
+RECEIPT_NUMBER
+
+Conditional Mandatory 
+
+
+
+Conditional Mandatory 
+
+(Required if Pay Recovery Policy)
+
+Can be null or numeric
+
+1. If receipt no is not updated for pay recovery policy, then error message to be displayed- Receipt no. is required against DDO Code/Office Code.
+
+2. If data type is other than numeric – Only numeric value accepted
+
+
+
+CSV File Validation: For pay recovery policies, the system will reconcile the total amount available under the DDO Code/Office Code in suspense against the total premiums in the file. If the suspense amount is less than the total premiums, a validation message will be displayed stating that the suspense amount for the DDO Code/Office Code is insufficient to cover the total premiums in the file.
+
+
+
+4.2 Billing & Collection through Meghdoot Upload (for Individual Policy- where premium mode is cash)
+
+Purpose: For policies belonging to individual customers with cash payment mode, where premiums for earlier months were not updated in IMS, a CSV file in the prescribed format will be prepared by the concerned CPC and verified by the Divisional Head. A separate login window will be provided to the Divisional Head in IMS to facilitate this activity. After thorough verification, the Divisional Head may upload the CSV file, and an OTP-based confirmation will be required prior to submission. Once submitted, the file will be processed in IMS and the output will be made available to the Divisional Head.
+
+
+
+Flow Diagram for the Meghdoot Bulk Upload Process for Individual Policies where payment mode is cash:
+
+
+
+
+
+
+
+CSV File Template: After confirmatory screen user may be able to upload the CSV file in the prescribed template (the same which was used for Bulk upload, format given in above section 4.1) for policy updation in IMS.
+
+
+
+5. Attachments
+
+The following documents can be referred.
+
+
+
+
+
+2

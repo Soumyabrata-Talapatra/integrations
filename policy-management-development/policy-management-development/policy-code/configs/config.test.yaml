@@ -1,0 +1,37 @@
+# Test environment overrides
+appname: "policy-management-test"
+
+db:
+  username: "postgres"
+  password: "postgres"
+  host: "localhost"
+  port: "5432"
+  database: "ims_pli_test"
+  schema: "policy_mgmt"
+  maxconns: 5
+  minconns: 1
+  QueryTimeoutLow: 10s
+  QueryTimeoutMed: 30s
+
+temporal:
+  hostport: "localhost:7233"
+  namespace: "pli-insurance"
+  taskqueue: "policy-management-tq"
+
+trace:
+  enabled: false
+
+cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS" 

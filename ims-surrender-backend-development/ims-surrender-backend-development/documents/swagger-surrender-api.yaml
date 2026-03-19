@@ -1,0 +1,1946 @@
+openapi: 3.0.3
+info:
+  title: Surrender & Forced Surrender Management API
+  version: 1.0.0
+  description: |
+    Comprehensive API for Policy Surrender and Forced Surrender management for PLI/RPLI systems.
+
+    **API Summary:**
+    - **Voluntary Surrender APIs**: 7 endpoints
+    - **Forced Surrender APIs**: 8 endpoints
+    - **Approval Workflow APIs**: 8 endpoints
+    - **Total APIs**: 23 endpoints
+
+    **Business Rules:** 69 rules implemented
+    **Functional Requirements:** 51 requirements addressed
+    **Validation Rules:** 34 rules enforced
+    **Temporal Workflows:** 6 workflows integrated
+  contact:
+    name: API Support
+    email: api-support@pli.gov.in
+
+servers:
+  - url: https://api.pli.gov.in/v1
+    description: Production Server
+
+tags:
+  - name: Voluntary Surrender
+  - name: Approval Workflow
+  - name: Documents
+  - name: Internal
+
+security:
+  - BearerAuth: []
+
+paths:
+  /surrender/validate-eligibility:
+    post:
+      summary: Validate Policy Surrender Eligibility
+      operationId: validateSurrenderEligibility
+      tags: [Voluntary Surrender]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateEligibilityRequest'
+      responses:
+        '200':
+          description: Eligibility validation completed
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EligibilityEligibleResponse'
+                  - $ref: '#/components/schemas/EligibilityIneligibleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+      x-business-rules: [BR-SUR-001, BR-SUR-002, BR-SUR-003, BR-SUR-004]
+      x-validation-rules: [VR-SUR-001, VR-SUR-002, VR-SUR-003, VR-SUR-004]
+      x-workflow-id: WF-SUR-001
+
+  /surrender/calculate:
+    post:
+      summary: Calculate Surrender Value
+      operationId: calculateSurrenderValue
+      tags: [Voluntary Surrender]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateSurrenderRequest'
+      responses:
+        '200':
+          description: Surrender value calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculateSurrenderResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      x-business-rules: [BR-SUR-006, BR-SUR-007, BR-SUR-008, BR-SUR-009, BR-SUR-010, BR-SUR-011]
+      x-workflow-id: WF-SUR-001
+
+  /surrender/confirm:
+    post:
+      summary: Confirm Surrender Request
+      operationId: confirmSurrender
+      tags: [Voluntary Surrender]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmSurrenderRequest'
+      responses:
+        '200':
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmSurrenderResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      x-business-rules: [BR-SUR-013]
+      x-workflow-id: WF-SUR-002
+
+  /surrender/documents/upload:
+    post:
+      summary: Upload Surrender Document
+      operationId: uploadSurrenderDocument
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadDocumentRequest'
+      responses:
+        '200':
+          description: Document uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadDocumentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+      x-validation-rules: [VR-SUR-007, VR-SUR-008, VR-SUR-009]
+      x-workflow-id: WF-SUR-003
+
+  /surrender/documents/status:
+    get:
+      summary: Get Document Upload Status
+      operationId: getDocumentUploadStatus
+      tags: [Documents]
+      parameters:
+        - name: surrender_request_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /surrender/submit-for-verification:
+    post:
+      summary: Submit for Verification
+      operationId: submitForVerification
+      tags: [Voluntary Surrender]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitForVerificationRequest'
+      responses:
+        '200':
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitForVerificationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      x-business-rules: [BR-SUR-017]
+      x-workflow-id: WF-SUR-004
+
+  /surrender/status:
+    get:
+      summary: Get Surrender Request Status
+      operationId: getSurrenderStatus
+      tags: [Voluntary Surrender]
+      parameters:
+        - name: surrender_request_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: include_details
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurrenderStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /internal/forced-surrender/trigger-monthly-evaluation:
+    post:
+      summary: Trigger Monthly Forced Surrender Evaluation
+      operationId: triggerMonthlyEvaluation
+      tags: [Internal]
+      responses:
+        '202':
+          description: Job initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlyEvaluationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-001, BR-FS-002, BR-FS-003, BR-FS-005, BR-FS-006]
+      x-workflow-id: TEMP-001
+
+  /internal/forced-surrender/evaluate-policy:
+    post:
+      summary: Evaluate Policy for Forced Surrender
+      operationId: evaluatePolicyForForcedSurrender
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluatePolicyRequest'
+      responses:
+        '200':
+          description: Evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluatePolicyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-001, BR-FS-002, BR-FS-003, BR-FS-005, BR-FS-017]
+      x-workflow-id: TEMP-001
+
+  /internal/forced-surrender/trigger-first-reminder:
+    post:
+      summary: Trigger First Reminder (95%)
+      operationId: triggerFirstReminder
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerReminderRequest'
+      responses:
+        '200':
+          description: Reminder sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerReminderResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-001]
+      x-workflow-id: TEMP-005
+
+  /internal/forced-surrender/trigger-second-reminder:
+    post:
+      summary: Trigger Second Reminder (98%)
+      operationId: triggerSecondReminder
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerReminderRequest'
+      responses:
+        '200':
+          description: Reminder sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerReminderResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-002]
+      x-workflow-id: TEMP-005
+
+  /internal/forced-surrender/trigger-third-reminder-and-create-request:
+    post:
+      summary: Trigger Third Reminder and Create Request
+      operationId: triggerThirdReminderAndCreateRequest
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateForcedSurrenderRequest'
+      responses:
+        '200':
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateForcedSurrenderResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-003, BR-FS-004, BR-FS-005, BR-FS-018]
+      x-workflow-id: TEMP-003
+
+  /internal/forced-surrender/auto-complete:
+    post:
+      summary: Auto-Complete Forced Surrender
+      operationId: autoCompleteForcedSurrender
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoCompleteRequest'
+      responses:
+        '200':
+          description: Auto-completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoCompleteResponse'
+        '404':
+          $ref: '#/components/responses/SurrenderRequestNotFound'
+      x-business-rules: [BR-FS-004]
+      x-workflow-id: TEMP-002
+
+  /internal/forced-surrender/forward-to-approval:
+    post:
+      summary: Forward to Approval
+      operationId: forwardToApproval
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForwardToApprovalRequest'
+      responses:
+        '200':
+          description: Forwarded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForwardToApprovalResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-004, BR-FS-009]
+      x-workflow-id: TEMP-002
+
+  /internal/forced-surrender/revert-status:
+    post:
+      summary: Revert Policy Status
+      operationId: revertPolicyStatus
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevertStatusRequest'
+      responses:
+        '200':
+          description: Status reverted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevertStatusResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SurrenderRequestNotFound'
+      x-business-rules: [BR-FS-014, BR-FS-015]
+      x-workflow-id: TEMP-004
+
+  /approval/surrender/queue:
+    get:
+      summary: Get Approval Queue
+      operationId: getApprovalQueue
+      tags: [Approval Workflow]
+      parameters:
+        - name: office_code
+          in: query
+          schema:
+            type: string
+        - name: request_type
+          in: query
+          schema:
+            type: string
+            enum: [VOLUNTARY_SURRENDER, FORCED_SURRENDER, ALL]
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Queue retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalQueueResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-business-rules: [BR-FS-013, BR-FS-016]
+
+  /approval/surrender/reserve:
+    post:
+      summary: Reserve Request
+      operationId: reserveSurrenderRequest
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReserveRequestRequest'
+      responses:
+        '200':
+          description: Reserved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReserveRequestResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      x-business-rules: [BR-FS-016]
+
+  /approval/surrender/request-detail:
+    get:
+      summary: Get Request Details
+      operationId: getSurrenderRequestDetail
+      tags: [Approval Workflow]
+      parameters:
+        - name: surrender_request_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurrenderRequestDetailResponse'
+        '404':
+          $ref: '#/components/responses/SurrenderRequestNotFound'
+      x-business-rules: [BR-FS-010, BR-FS-014, BR-FS-015]
+
+  /approval/surrender/approve:
+    post:
+      summary: Approve Request
+      operationId: approveSurrenderRequest
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveSurrenderRequest'
+      responses:
+        '200':
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveSurrenderResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      x-business-rules: [BR-FS-007, BR-FS-008, BR-SUR-012]
+      x-workflow-id: TEMP-006
+
+  /approval/surrender/reject:
+    post:
+      summary: Reject Request
+      operationId: rejectSurrenderRequest
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectSurrenderRequest'
+      responses:
+        '200':
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectSurrenderResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      x-business-rules: [BR-FS-007, BR-FS-012, BR-FS-018]
+
+  /approval/surrender/release:
+    post:
+      summary: Release Request
+      operationId: releaseSurrenderRequest
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseRequestRequest'
+      responses:
+        '200':
+          description: Released
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseRequestResponse'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+
+  /approval/surrender/escalate:
+    post:
+      summary: Escalate Request
+      operationId: escalateSurrenderRequest
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EscalateRequestRequest'
+      responses:
+        '200':
+          description: Escalated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscalateRequestResponse'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+      x-business-rules: [BR-FS-013]
+
+  /approval/forced-surrender/recalculate:
+    post:
+      summary: Recalculate Surrender Value
+      operationId: recalculateForcedSurrenderValue
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecalculateRequest'
+      responses:
+        '200':
+          description: Recalculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecalculateResponse'
+        '404':
+          $ref: '#/components/responses/SurrenderRequestNotFound'
+      x-business-rules: [BR-FS-010]
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ValidateEligibilityRequest:
+      type: object
+      required: [policy_number, initiated_by]
+      properties:
+        policy_number:
+          type: string
+          pattern: '^POL[0-9]{9}$'
+        initiated_by:
+          type: string
+          enum: [CUSTOMER, AGENT, SYSTEM]
+
+    EligibilityEligibleResponse:
+      type: object
+      required: [policy_id, eligible, product_type, current_status, premiums_paid_years, minimum_required_years]
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+        eligible:
+          type: boolean
+          example: true
+        product_type:
+          type: string
+        product_name:
+          type: string
+        current_status:
+          type: string
+        premiums_paid_years:
+          type: integer
+        minimum_required_years:
+          type: integer
+        has_active_loan:
+          type: boolean
+        loan_amount:
+          type: number
+        assignment_status:
+          type: string
+          enum: [ASSIGNED, NOT_ASSIGNED]
+          example: "NOT_ASSIGNED"
+        assignee_details:
+          $ref: '#/components/schemas/AssigneeDetails'
+        next_step:
+          type: string
+          example: "calculate_surrender_value"
+        warnings:
+          type: array
+          items:
+            type: string
+
+    EligibilityIneligibleResponse:
+      type: object
+      required: [eligible, reason_code, reason]
+      properties:
+        eligible:
+          type: boolean
+          example: false
+        reason_code:
+          type: string
+          enum: [MIN_PREMIUM_YEARS_NOT_MET, INVALID_POLICY_STATUS, PRODUCT_NOT_ELIGIBLE, POLICY_MATURED, GY_PRODUCT_INELIGIBLE]
+        reason:
+          type: string
+        current_years_paid:
+          type: integer
+        required_years:
+          type: integer
+        product_type:
+          type: string
+        maturity_date:
+          type: string
+          format: date
+
+    CalculateSurrenderRequest:
+      type: object
+      required: [policy_id, surrender_date, calculation_date]
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+        surrender_date:
+          type: string
+          format: date
+        calculation_date:
+          type: string
+          format: date
+
+    CalculationBreakdown:
+      type: object
+      required: [paid_up_value, gross_surrender_value, net_surrender_value]
+      properties:
+        paid_up_value:
+          type: number
+        bonus:
+          type: number
+        surrender_factor:
+          type: number
+        gross_surrender_value:
+          type: number
+        unpaid_premiums:
+          type: number
+        unpaid_premium_interest:
+          type: number
+        loan_principal_deduction:
+          type: number
+        loan_interest_deduction:
+          type: number
+        net_surrender_value:
+          type: number
+
+    CalculateSurrenderResponse:
+      type: object
+      required: [calculation_id, policy_id, surrender_date, calculation_breakdown, disbursement_options, disposition_prediction]
+      properties:
+        calculation_id:
+          type: string
+          example: "calc_001"
+        policy_id:
+          type: string
+          format: uuid
+          example: "pol_12345"
+        surrender_date:
+          type: string
+          format: date
+          example: "2026-01-31"
+        calculation_breakdown:
+          $ref: '#/components/schemas/CalculationBreakdown'
+        disbursement_options:
+          $ref: '#/components/schemas/DisbursementOptions'
+        disposition_prediction:
+          $ref: '#/components/schemas/DispositionPrediction'
+
+    DisbursementOptions:
+      type: object
+      properties:
+        methods_available:
+          type: array
+          items:
+            type: string
+            enum: [CASH, CHEQUE]
+          example: ["CASH", "CHEQUE"]
+        default_method:
+          type: string
+          enum: [CASH, CHEQUE]
+          example: "CASH"
+        payee:
+          type: string
+          enum: [POLICYHOLDER, ASSIGNEE]
+          example: "POLICYHOLDER"
+        payee_details:
+          $ref: '#/components/schemas/PayeeDetails'
+
+    PayeeDetails:
+      type: object
+      properties:
+        payee_name:
+          type: string
+          example: "John Doe"
+        payee_address:
+          type: string
+          example: "456 Oak Avenue, City"
+
+    DispositionPrediction:
+      type: object
+      properties:
+        predicted_status:
+          type: string
+          enum: [REDUCED_PAID_UP, TERMINATED_SURRENDER]
+          example: "REDUCED_PAID_UP"
+        new_sum_assured:
+          type: number
+          format: double
+          example: 10442.96
+        prescribed_limit:
+          type: number
+          format: double
+          example: 10000.00
+        reasoning:
+          type: string
+          example: "NSV exceeds prescribed limit"
+
+    ConfirmSurrenderRequest:
+      type: object
+      required: [calculation_id, disbursement_method, acknowledged_terms, customer_declaration]
+      properties:
+        calculation_id:
+          type: string
+        disbursement_method:
+          type: string
+          enum: [CASH, CHEQUE]
+        acknowledged_terms:
+          type: boolean
+        customer_declaration:
+          type: boolean
+
+    ConfirmSurrenderResponse:
+      type: object
+      required: [surrender_request_id, service_request_id, status, document_requirements]
+      properties:
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        service_request_id:
+          type: string
+          example: "SRV_2026_SURRENDER_001234"
+        status:
+          type: string
+          enum: [PENDING_DOCUMENT_UPLOAD]
+          example: "PENDING_DOCUMENT_UPLOAD"
+        policy_status:
+          type: string
+          example: "ACTIVE"
+        document_requirements:
+          $ref: '#/components/schemas/DocumentRequirements'
+        next_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextAction'
+
+    DocumentRequirements:
+      type: object
+      required: [required_documents]
+      properties:
+        required_documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentRequirement'
+        upload_deadline:
+          type: string
+          format: date-time
+          example: "2026-02-07T23:59:59Z"
+
+    DocumentRequirement:
+      type: object
+      properties:
+        document_type:
+          type: string
+          enum: [ORIGINAL_POLICY_BOND, ASSIGNMENT_DEED, ASSIGNEE_NOC, INDEMNITY_BOND]
+        mandatory:
+          type: boolean
+          example: true
+        condition:
+          type: string
+          enum: [if_assigned]
+          description: Conditional requirement
+        description:
+          type: string
+          example: "Original policy bond document"
+        format:
+          type: string
+          enum: [PDF, JPEG, PNG]
+        max_size_mb:
+          type: integer
+          example: 10
+
+    UploadDocumentRequest:
+      type: object
+      required: [surrender_request_id, document_type, file]
+      properties:
+        surrender_request_id:
+          type: string
+        document_type:
+          type: string
+          enum: [ORIGINAL_POLICY_BOND, ASSIGNMENT_DEED, ASSIGNEE_NOC, INDEMNITY_BOND]
+        file:
+          type: string
+          format: binary
+
+    UploadDocumentResponse:
+      type: object
+      required: [document_id, surrender_request_id, document_type, upload_status]
+      properties:
+        document_id:
+          type: string
+        surrender_request_id:
+          type: string
+        document_type:
+          type: string
+        file_name:
+          type: string
+        upload_status:
+          type: string
+          enum: [UPLOADED]
+        verification_status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED]
+        uploaded_at:
+          type: string
+          format: date-time
+
+    DocumentStatusResponse:
+      type: object
+      required: [surrender_request_id, overall_status, documents, can_submit_for_verification]
+      properties:
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        overall_status:
+          type: string
+          enum: [PENDING_UPLOAD, READY_FOR_VERIFICATION]
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentInfo'
+        can_submit_for_verification:
+          type: boolean
+        missing_mandatory_documents:
+          type: array
+          items:
+            type: string
+
+    DocumentInfo:
+      type: object
+      properties:
+        document_type:
+          type: string
+          enum: [ORIGINAL_POLICY_BOND, ASSIGNMENT_DEED, ASSIGNEE_NOC, INDEMNITY_BOND]
+        status:
+          type: string
+          enum: [PENDING_UPLOAD, UPLOADED]
+        verification_status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED, NA]
+        document_id:
+          type: string
+
+    SubmitForVerificationRequest:
+      type: object
+      required: [surrender_request_id]
+      properties:
+        surrender_request_id:
+          type: string
+
+    SubmitForVerificationResponse:
+      type: object
+      required: [surrender_request_id, status, verification_started]
+      properties:
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        status:
+          type: string
+          enum: [PENDING_VERIFICATION]
+          example: "PENDING_VERIFICATION"
+        verification_started:
+          type: boolean
+          example: true
+        submitted_at:
+          type: string
+          format: date-time
+          example: "2026-01-24T11:00:00Z"
+        estimated_completion_time:
+          type: string
+          format: date-time
+          example: "2026-01-24T11:30:00Z"
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        next_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextAction'
+
+    WorkflowState:
+      type: object
+      properties:
+        current_step:
+          type: string
+          enum: [DOCUMENT_VERIFICATION, INDEXING, APPROVAL]
+          example: "DOCUMENT_VERIFICATION"
+        workflow_id:
+          type: string
+          example: "WF-SUR-003"
+        step_started_at:
+          type: string
+          format: date-time
+
+    NextAction:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [wait_for_verification, check_status, upload_documents]
+          example: "wait_for_verification"
+        endpoint:
+          type: string
+          example: "/surrender/status"
+        priority:
+          type: string
+          enum: [HIGH, MEDIUM, LOW]
+          example: "HIGH"
+
+    SurrenderStatusResponse:
+      type: object
+      required: [surrender_request_id, policy_id, request_type, current_status, policy_status]
+      properties:
+        surrender_request_id:
+          type: string
+        policy_id:
+          type: string
+        policy_number:
+          type: string
+        request_type:
+          type: string
+          enum: [VOLUNTARY_SURRENDER, FORCED_SURRENDER]
+        current_status:
+          type: string
+        policy_status:
+          type: string
+        initiated_date:
+          type: string
+          format: date-time
+        last_updated:
+          type: string
+          format: date-time
+        completed_date:
+          type: string
+          format: date-time
+        workflow_stage:
+          type: string
+        assigned_to:
+          type: string
+        disposition_type:
+          type: string
+        net_surrender_value:
+          type: number
+
+    MonthlyEvaluationResponse:
+      type: object
+      required: [job_id, status, started_at, policies_with_loans_count]
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+        started_at:
+          type: string
+          format: date-time
+        policies_with_loans_count:
+          type: integer
+        evaluation_type:
+          type: string
+        estimated_completion:
+          type: string
+          format: date-time
+        workflow_id:
+          type: string
+
+    EvaluatePolicyRequest:
+      type: object
+      required: [policy_id, evaluation_date]
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+        evaluation_date:
+          type: string
+          format: date
+
+    EvaluatePolicyResponse:
+      type: object
+      required: [policy_id, evaluation_date, loan_capitalization_ratio, threshold_check, action_required]
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+          example: "pol_12345"
+        policy_number:
+          type: string
+          example: "POL123456789"
+        evaluation_date:
+          type: string
+          format: date
+          example: "2026-01-01"
+        loan_capitalization_ratio:
+          $ref: '#/components/schemas/LoanCapitalizationRatio'
+        threshold_check:
+          $ref: '#/components/schemas/ThresholdCheck'
+        loan_interest_defaults:
+          $ref: '#/components/schemas/LoanInterestDefaults'
+        action_required:
+          type: string
+          enum: [NO_ACTION, TRIGGER_1ST_REMINDER, TRIGGER_2ND_REMINDER, TRIGGER_3RD_REMINDER_AND_CREATE_REQUEST]
+        reminder_level:
+          type: integer
+          enum: [1, 2, 3]
+          nullable: true
+        forced_surrender_request_id:
+          type: string
+          nullable: true
+
+    LoanCapitalizationRatio:
+      type: object
+      required: [ratio, percentage]
+      properties:
+        ratio:
+          type: number
+          format: double
+          example: 0.9636
+        percentage:
+          type: number
+          format: double
+          example: 96.36
+        loan_principal:
+          type: number
+          format: double
+          example: 15000.00
+        loan_interest:
+          type: number
+          format: double
+          example: 900.00
+        gross_surrender_value:
+          type: number
+          format: double
+          example: 16500.00
+
+    ThresholdCheck:
+      type: object
+      properties:
+        ratio_95_percent_crossed:
+          type: boolean
+          example: true
+        ratio_98_percent_crossed:
+          type: boolean
+          example: false
+        ratio_100_percent_crossed:
+          type: boolean
+          example: false
+
+    LoanInterestDefaults:
+      type: object
+      properties:
+        default_count:
+          type: integer
+          example: 1
+        default_dates:
+          type: array
+          items:
+            type: string
+            format: date
+          example: ["2025-10-01", "2025-11-01", "2025-12-01"]
+
+    TriggerReminderRequest:
+      type: object
+      required: [policy_id, reminder_level]
+      properties:
+        policy_id:
+          type: string
+        reminder_level:
+          type: integer
+        loan_ratio:
+          type: number
+
+    TriggerReminderResponse:
+      type: object
+      required: [reminder_id, policy_id, reminder_level, notifications]
+      properties:
+        reminder_id:
+          type: string
+          example: "REM_2026_1ST_001234"
+        policy_id:
+          type: string
+          format: uuid
+        reminder_level:
+          type: integer
+          enum: [1, 2, 3]
+          example: 1
+        reminder_type:
+          type: string
+          enum: [FIRST_REMINDER, SECOND_REMINDER, THIRD_REMINDER]
+        threshold_percentage:
+          type: integer
+          example: 95
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        reminder_logged:
+          type: boolean
+          example: true
+        event_published:
+          type: boolean
+          example: true
+
+    Notification:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [LETTER, SMS]
+        template:
+          type: string
+          example: "FORCED_SURRENDER_1ST_REMINDER_LETTER"
+        status:
+          type: string
+          enum: [SENT, FAILED, PENDING]
+        sent_at:
+          type: string
+          format: date-time
+        reference:
+          type: string
+          example: "LETTER_2026_001234"
+
+    CreateForcedSurrenderRequest:
+      type: object
+      required: [policy_id, trigger_reason]
+      properties:
+        policy_id:
+          type: string
+        trigger_reason:
+          type: string
+        reminder_level:
+          type: integer
+        loan_ratio:
+          type: number
+
+    CreateForcedSurrenderResponse:
+      type: object
+      required: [surrender_request_id, request_created]
+      properties:
+        surrender_request_id:
+          type: string
+          example: "FS_REQ_2026_001234"
+        service_request_id:
+          type: string
+          example: "SRV_2026_FORCED_SURRENDER_001234"
+        request_created:
+          type: boolean
+          example: true
+        reminder_sent:
+          type: boolean
+          example: true
+        reminder_id:
+          type: string
+          example: "REM_2026_3RD_001234"
+        policy_status_update:
+          $ref: '#/components/schemas/PolicyStatusUpdate'
+        payment_window_monitoring:
+          $ref: '#/components/schemas/PaymentWindowMonitoring'
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+    PolicyStatusUpdate:
+      type: object
+      properties:
+        new_status:
+          type: string
+          enum: [PENDING_AUTO_SURRENDER]
+        previous_status_stored:
+          type: string
+          enum: [AP, IL, AL]
+        status_changed_at:
+          type: string
+          format: date-time
+
+    PaymentWindowMonitoring:
+      type: object
+      properties:
+        started:
+          type: boolean
+        payment_window_start:
+          type: string
+          format: date
+        payment_window_end:
+          type: string
+          format: date
+        workflow_id:
+          type: string
+          example: "TEMP-002"
+
+    AutoCompleteRequest:
+      type: object
+      required: [surrender_request_id, payment_id]
+      properties:
+        surrender_request_id:
+          type: string
+        payment_id:
+          type: string
+        payment_amount:
+          type: number
+
+    AutoCompleteResponse:
+      type: object
+      required: [auto_completed, surrender_request_id, actions_taken]
+      properties:
+        auto_completed:
+          type: boolean
+          example: true
+        surrender_request_id:
+          type: string
+          example: "FS_REQ_2026_001234"
+        payment_id:
+          type: string
+          example: "PAY_2026_001"
+        actions_taken:
+          type: array
+          items:
+            type: string
+            example: "MARK_REQUEST_AUTO_COMPLETED"
+        policy_reversion:
+          $ref: '#/components/schemas/PolicyReversion'
+        notifications_sent:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+    PolicyReversion:
+      type: object
+      properties:
+        old_status:
+          type: string
+          example: "PENDING_AUTO_SURRENDER"
+        new_status:
+          type: string
+          example: "ACTIVE"
+        reverted_at:
+          type: string
+          format: date-time
+
+    ForwardToApprovalRequest:
+      type: object
+      required: [surrender_request_id]
+      properties:
+        surrender_request_id:
+          type: string
+
+    ForwardToApprovalResponse:
+      type: object
+      required: [forwarded_to_approval, surrender_request_id, status_update]
+      properties:
+        forwarded_to_approval:
+          type: boolean
+          example: true
+        surrender_request_id:
+          type: string
+          example: "FS_REQ_2026_001234"
+        policy_id:
+          type: string
+          format: uuid
+        status_update:
+          $ref: '#/components/schemas/PolicyStatusUpdate'
+        workflow_task_created:
+          $ref: '#/components/schemas/WorkflowTask'
+        collections_blocked:
+          type: boolean
+          example: true
+        blocked_collection_types:
+          type: array
+          items:
+            type: string
+            example: "LOAN_PRINCIPAL_REPAYMENT"
+
+    ApprovalQueueResponse:
+      type: object
+      required: [total_items, page, limit, queue_items]
+      properties:
+        total_items:
+          type: integer
+          example: 45
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        queue_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItem'
+
+    QueueItem:
+      type: object
+      properties:
+        task_id:
+          type: string
+          example: "TASK_SURRENDER_001"
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        policy_number:
+          type: string
+          example: "POL123456789"
+        request_type:
+          type: string
+          enum: [VOLUNTARY_SURRENDER, FORCED_SURRENDER]
+        policyholder_name:
+          type: string
+          example: "Rahul Kumar"
+        net_surrender_value:
+          type: number
+          format: double
+          example: 10442.96
+        created_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, RESERVED]
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        assigned_to:
+          type: string
+          nullable: true
+        office_code:
+          type: string
+          example: "DELHI_001"
+        has_documents:
+          type: boolean
+        is_assigned:
+          type: boolean
+        days_in_queue:
+          type: integer
+          example: 3
+
+    WorkflowTask:
+      type: object
+      properties:
+        task_id:
+          type: string
+          example: "TASK_FS_2026_001"
+        created_for:
+          type: string
+          enum: [POSTMASTER_QUEUE]
+        created_date:
+          type: string
+          format: date
+        office_code:
+          type: string
+          example: "DELHI_001"
+
+    ReserveRequestRequest:
+      type: object
+      required: [task_id]
+      properties:
+        task_id:
+          type: string
+          description: Task ID from approval queue
+          example: "TASK_SURRENDER_001"
+
+    ReserveRequestResponse:
+      type: object
+      required: [reserved, task_id, surrender_request_id]
+      properties:
+        reserved:
+          type: boolean
+          example: true
+        task_id:
+          type: string
+          example: "TASK_SURRENDER_001"
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        assigned_to:
+          type: string
+          example: "POSTMASTER_001"
+        assigned_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [RESERVED]
+        reservation_expires_at:
+          type: string
+          format: date-time
+
+    SurrenderRequestDetailResponse:
+      type: object
+      required: [surrender_request_id, request_type, policy_details]
+      properties:
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        request_type:
+          type: string
+          enum: [VOLUNTARY_SURRENDER, FORCED_SURRENDER]
+        policy_details:
+          $ref: '#/components/schemas/PolicyDetails'
+        surrender_value_details:
+          $ref: '#/components/schemas/CalculationBreakdown'
+        disbursement_details:
+          $ref: '#/components/schemas/DisbursementDetails'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentInfo'
+        show_document_section:
+          type: boolean
+          description: Hide document section for forced surrender
+        loan_details:
+          $ref: '#/components/schemas/LoanDetails'
+        forced_surrender_details:
+          $ref: '#/components/schemas/ForcedSurrenderDetails'
+        request_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestHistoryItem'
+
+    PolicyDetails:
+      type: object
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+        policy_number:
+          type: string
+          example: "POL123456789"
+        product_type:
+          type: string
+          enum: [WLA, EA, CWLA, AEA, CHILD, JLA]
+        product_name:
+          type: string
+          example: "Santosh - Endowment Assurance"
+        sum_assured:
+          type: number
+          format: double
+          example: 20000.00
+        policy_status:
+          type: string
+        policy_term_years:
+          type: integer
+          example: 27
+        premiums_paid_years:
+          type: integer
+          example: 18
+        premium_mode:
+          type: string
+          enum: [MONTHLY, QUARTERLY, HALF_YEARLY, ANNUAL]
+        maturity_date:
+          type: string
+          format: date
+          example: "2035-05-15"
+
+    DisbursementDetails:
+      type: object
+      properties:
+        method:
+          type: string
+          enum: [CASH, CHEQUE]
+        payee_type:
+          type: string
+          enum: [POLICYHOLDER, ASSIGNEE]
+        payee_name:
+          type: string
+          example: "John Doe"
+        payee_address:
+          type: string
+          example: "456 Oak Avenue, City"
+
+    LoanDetails:
+      type: object
+      properties:
+        has_loan:
+          type: boolean
+        loan_id:
+          type: string
+        loan_principal:
+          type: number
+          format: double
+        loan_interest:
+          type: number
+          format: double
+        total_loan:
+          type: number
+          format: double
+
+    ForcedSurrenderDetails:
+      type: object
+      properties:
+        trigger_reason:
+          type: string
+          enum: [LOAN_CAPITALIZATION_100_PERCENT, THREE_LOAN_DEFAULTS]
+        loan_ratio:
+          type: number
+          format: double
+        reminder_level:
+          type: integer
+        third_reminder_date:
+          type: string
+          format: date
+        payment_window_expired:
+          type: boolean
+        loan_interest_defaults:
+          type: integer
+        loan_default_dates:
+          type: array
+          items:
+            type: string
+            format: date
+
+    RequestHistoryItem:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [REQUEST_CREATED, DOCUMENTS_UPLOADED, INDEXED, APPROVED, REJECTED]
+        timestamp:
+          type: string
+          format: date-time
+        user:
+          type: string
+          enum: [CUSTOMER, POSTMASTER, SYSTEM]
+
+    AssigneeDetails:
+      type: object
+      properties:
+        assignee_name:
+          type: string
+          example: "John Doe"
+        assignee_address:
+          type: string
+          example: "123 Main Street, City"
+        assignment_date:
+          type: string
+          format: date
+          example: "2020-06-15"
+
+    ApproveSurrenderRequest:
+      type: object
+      required: [surrender_request_id, remarks]
+      properties:
+        surrender_request_id:
+          type: string
+        remarks:
+          type: string
+
+    ApproveSurrenderResponse:
+      type: object
+      required: [approval_status, surrender_request_id, approved_by, disposition_details]
+      properties:
+        approval_status:
+          type: string
+          enum: [APPROVED]
+        surrender_request_id:
+          type: string
+          example: "SUR_REQ_2026_001234"
+        approved_by:
+          type: string
+          example: "POSTMASTER_001"
+        approved_at:
+          type: string
+          format: date-time
+        remarks:
+          type: string
+        disposition_details:
+          $ref: '#/components/schemas/DispositionDetails'
+        loan_closure:
+          $ref: '#/components/schemas/LoanClosure'
+        payment_details:
+          $ref: '#/components/schemas/PaymentDetails'
+
+    DispositionDetails:
+      type: object
+      properties:
+        disposition_type:
+          type: string
+          enum: [REDUCED_PAID_UP, TERMINATED_SURRENDER, TERMINATED_AUTO_SURRENDER]
+        new_policy_status:
+          type: string
+        new_sum_assured:
+          type: number
+          format: double
+        prescribed_limit:
+          type: number
+          format: double
+        net_surrender_value:
+          type: number
+          format: double
+
+    LoanClosure:
+      type: object
+      properties:
+        loan_closed:
+          type: boolean
+        loan_id:
+          type: string
+          example: "LOAN_12345"
+
+    PaymentDetails:
+      type: object
+      properties:
+        payment_initiated:
+          type: boolean
+        payment_reference:
+          type: string
+          example: "PAY_2026_001234"
+        payment_method:
+          type: string
+          enum: [CASH, CHEQUE]
+        amount:
+          type: number
+          format: double
+
+    RejectSurrenderRequest:
+      type: object
+      required: [surrender_request_id, rejection_reason]
+      properties:
+        surrender_request_id:
+          type: string
+        rejection_reason:
+          type: string
+
+    RejectSurrenderResponse:
+      type: object
+      required: [rejection_status, surrender_request_id, rejected_by, policy_reversion]
+      properties:
+        rejection_status:
+          type: string
+          enum: [REJECTED]
+        surrender_request_id:
+          type: string
+          example: "FS_REQ_2026_001234"
+        rejected_by:
+          type: string
+          example: "POSTMASTER_001"
+        rejected_at:
+          type: string
+          format: date-time
+        rejection_reason:
+          type: string
+        policy_reversion:
+          $ref: '#/components/schemas/PolicyReversion'
+        payment_demand:
+          $ref: '#/components/schemas/PaymentDemand'
+        notifications_sent:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+    PaymentDemand:
+      type: object
+      properties:
+        payment_required:
+          type: boolean
+        amount_due:
+          type: number
+          format: double
+        amount_breakdown:
+          type: object
+          properties:
+            loan_principal:
+              type: number
+              format: double
+            loan_interest:
+              type: number
+              format: double
+
+    ReleaseRequestRequest:
+      type: object
+      required: [task_id]
+      properties:
+        task_id:
+          type: string
+
+    ReleaseRequestResponse:
+      type: object
+      required: [released, task_id, surrender_request_id]
+      properties:
+        released:
+          type: boolean
+        task_id:
+          type: string
+        surrender_request_id:
+          type: string
+        status:
+          type: string
+
+    ErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "policy_number"
+        message:
+          type: string
+          example: "Policy number format is invalid"
+        reason_code:
+          type: string
+          example: "VR-SUR-001"
+
+    EscalateRequestRequest:
+      type: object
+      required: [task_id, escalate_to, escalation_reason]
+      properties:
+        task_id:
+          type: string
+        escalate_to:
+          type: string
+        escalation_reason:
+          type: string
+
+    EscalateRequestResponse:
+      type: object
+      required: [escalated, task_id, surrender_request_id]
+      properties:
+        escalated:
+          type: boolean
+        task_id:
+          type: string
+        surrender_request_id:
+          type: string
+        escalated_from:
+          type: string
+        escalated_to:
+          type: string
+
+    RecalculateRequest:
+      type: object
+      required: [surrender_request_id, new_surrender_date]
+      properties:
+        surrender_request_id:
+          type: string
+        new_surrender_date:
+          type: string
+          format: date
+
+    RecalculateResponse:
+      type: object
+      required: [recalculation_id, surrender_request_id, calculation_breakdown]
+      properties:
+        recalculation_id:
+          type: string
+        surrender_request_id:
+          type: string
+        old_surrender_date:
+          type: string
+          format: date
+        new_surrender_date:
+          type: string
+          format: date
+        calculation_breakdown:
+          $ref: '#/components/schemas/CalculationBreakdown'
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                $ref: '#/components/schemas/ErrorDetail'
+            request_id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+
+    RevertStatusRequest:
+      type: object
+      required: [surrender_request_id, reversion_reason]
+      properties:
+        surrender_request_id:
+          type: string
+          example: "FS_REQ_2026_001234"
+        reversion_reason:
+          type: string
+          enum: [PAYMENT_RECEIVED, CUSTOMER_REQUEST, ADMINISTRATIVE_OVERRIDE, ERROR_CORRECTION]
+          example: "PAYMENT_RECEIVED"
+        initiated_by:
+          type: string
+          example: "SYSTEM"
+
+    RevertStatusResponse:
+      type: object
+      required: [reversion_status, surrender_request_id, previous_status, new_status]
+      properties:
+        reversion_status:
+          type: string
+          enum: [REVERTED]
+        surrender_request_id:
+          type: string
+          example: "FS_REQ_2026_001234"
+        previous_status:
+          type: string
+          example: "PENDING_AUTO_COMPLETION"
+        new_status:
+          type: string
+          example: "ACTIVE"
+        reverted_at:
+          type: string
+          format: date-time
+        reverted_by:
+          type: string
+          example: "SYSTEM"
+        policy_reversion:
+          $ref: '#/components/schemas/PolicyReversion'
+        notifications_sent:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    PolicyNotFound:
+      description: Policy Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    SurrenderRequestNotFound:
+      description: Surrender Request Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    TaskNotFound:
+      description: Task Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ValidationError:
+      description: Validation Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    PayloadTooLarge:
+      description: Payload Too Large
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

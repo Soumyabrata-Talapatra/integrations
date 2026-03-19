@@ -1,0 +1,526 @@
+![](media/image1.png){width="2.0888976377952755in"
+height="1.3891852580927384in"}**Ministry of Communications**
+
+**Department of Posts**
+
+**Insurance**
+
+**Management Solution**
+
+**Software Requirements Specification (SRS)**
+
+**Nomination**
+
+Oct 2025
+
+**Index**
+
+  -------------------------------------------------------------------
+   **Sl.**  **Name**                                  **Page No.**
+  --------- --------------------------------------- -----------------
+      1     Version History                                 3
+
+      2     Executive Summary                               3
+
+      3     Business Objectives                             3
+
+      4     Project Scope                                   3
+
+      5     Business Rules (POLI)                           3
+
+      6     Products                                        4
+
+      7     Prerequisites                                   4
+
+      8     Functionality Description                       5
+
+      9     As Is                                           5
+
+     10     Gaps                                            5
+
+     11     Suggested Enhancements                          5
+
+     12     Charges                                         5
+
+     13     Channel                                         5
+
+     14     Flow Chart / Workflow                           6
+
+     15     Business Requirements                           6
+
+     16     Screen                                          7
+
+     17     Form                                            8
+
+     18     Reports                                         8
+
+     19     Appendices                                      8
+  -------------------------------------------------------------------
+
+**01. Version History :**
+
+  ----------------------------------------------------------------------------
+    **Date**    **Version**  **Description of Changes**         **Author**
+  ------------ ------------- ------------------------------ ------------------
+   31.10.2025       1.0      Initial version                
+
+                    1.1                                     
+
+                    1.2                                     
+
+                    1.3                                     
+
+                    1.4                                     
+
+                    1.5                                     
+
+                    1.6                                     
+
+                    1.7                                     
+  ----------------------------------------------------------------------------
+
+**02. Executive Summary :**
+
+This document outlines the business requirements for Nomination with
+Illustrations of Insurance Management System (IMS). It aims to
+processing of Nomination request of a Policy as per the Rules &
+Regulations inforce.
+
+**03. Business Objectives :**
+
+The IMS project addresses the requirements of Nomination of a Policy by
+the Insurant and when required.
+
+**04. Project Scope :**
+
+Nomination will be a Service Request of the Insurance Admin system used
+by Insurant / Customer as and when required to change the Frequency.
+
+**05. Business Rules (POLI) :**
+
+**(6) Nomination :**
+
+\(a\) A policy holder is advised to nominate a person or a trust to whom
+the sum assured shall become payable in the event of his death, so as to
+save his legal heirs the trouble and expense of obtaining legal title to
+the sums payable under the policy.
+
+\(i\) Provided that if any of the legal heir(s) or the
+nominee(s)/trustee of a policy holder has been charged with the murder
+of the policy holder, the policy money shall not be paid to him/her
+unless he/she is honorably acquitted of by the competent court of law.
+
+\(b\) The holder of a policy of life assurance on his own life may when
+effecting or at any time before the policy matures for payment nominate
+the person or persons or religious trust to whom the money secured by
+the policy is desired to be paid in the event of his death.
+
+\(c\) Where the proposer gives the name of the intended nominee or
+nominees in the proposal form itself, the Fund will incorporate the name
+of such nominee or nominees in the text of the policy. A nomination, if
+not incorporated can be made only by an endorsement on the policy. In
+order to be effective, such endorsement must be communicated to the
+Postmaster General/ Head of Division for records. A nomination may, at
+any time before the policy matures for payment, be cancelled or changed
+by the assured by an endorsement or a further endorsement or a will, as
+the case may be, but the Fund will not be liable for any payment under
+the policy made bonafide by it to a nominee mentioned in the text of the
+policy or to be one nominated by an endorsement on the policy and
+registered in the records of the Fund unless notice in writing of any
+such cancellation or change has been received by the Postmaster General/
+Head of Division prior to such payment.
+
+\(d\) A transfer or assignment of a policy made in accordance with the
+provision of section 38 of the Insurance Act, 1938 shall automatically
+cancel a nomination (Section 39 (4)), provided that the assignment of a
+policy to the insurer who bears the risk on the policy at the time of
+the assignment, in consideration of a loan granted by that insurer on
+the security of the policy within its surrender value, or its
+re-assignment by the insurer or repayment of the loan shall not have the
+effect of canceling a nomination, but shall affect the rights of the
+nominee only to the extent of the insurer's interest in the policy.
+
+\(e\) Where the policy matures for payment during the life time of the
+person whose life is insured or where the nominee or, if there are more
+nominees than one, all the nominees die before the policy matures for
+payment, the amount secured by the policy shall be payable to the
+policyholder or his heirs or legal representatives of the holder of a
+succession certificate as the case may be.
+
+\(f\) Where the nominee or, if there are more nominees than one, a
+nominee or nominees survive the person whose life is insured the amount
+secured by the policy shall be payable to such survivor or survivors.
+
+\(g\) **Minor Nominee: -** The holder of a policy of life insurance may,
+in any case where the nominee is a minor, appoint any person to receive
+the money secured by the policy in the event of his death during the
+minority of the nominee and communicate such appointment to the
+Postmaster General/Head of Division by forwarding the documents relating
+to such appointment. The consent of the appointee should be obtained at
+the same time as the appointment is made.
+
+\(h\) Nominations as above are not permissible in the case of policy
+effected by any married man on his own life and expressed on the face of
+it to be for the benefit of his wife, or of his wife and children or any
+of them; in such a case the policy ensures and is deemed to be a trust
+for the benefit of the insurant's wife or for the benefit of his wife
+and children or any of them according to the interest so expressed (vide
+Section 6 of the Married Women's Property Act, 1874).
+
+Provided that the said section 6 shall be deemed not to apply or not to
+have applied to a policy where the nomination made at any time in favour
+of the insurant's wife and children or any of them is expressed, whether
+or not on the face of the policy, as being under section 39 of the
+Insurance Act, 1938.
+
+**Note 5:** A nominee under a policy of the life insurance has a bare
+right to collect the money payable under the policy on the death of the
+insured and give a good discharge to the insurer. The nominee does not
+become the owner of the money payable under the policy and he/she is
+liable to make it over to the legal representative of the insured. Thus
+the nominee acts as a receiver only, subject to the provision of these
+Rules.
+
+**06. Products : All types of Products in PLI & RPLI except Child
+Policy.**
+
+**07. Prerequisites :**
+
+- Policy should be Active Status.
+
+- No pending Premium Payments.
+
+- No pending Service Requests.
+
+- Nomination Form.
+
+- Policy Bond.
+
+- Premium Receipt book.
+
+- Self Attested Copy of ID & Address Proof of Insurant & Nominee.
+
+# **08. Functionality Description :**
+
+- Creating New Nominee/s at the time of Proposal Indexing stage by
+  Insurant or DoP User.
+
+- Modification, Deleting Nominee/s during the lifetime of a Policy.
+
+- Nomination is purely depends on each & every Policy not Customer ID.
+
+- If any Policy is under Assignment, then no facility to Add, Modify,
+  Cancel any Nomination.
+
+- If Nominee pre-deceases, then Insurant must change the Nomination
+  otherwise will process as without Nomination ie) Legal heirs.
+
+- If anyone of the Nominee dies, then his / her wards or family members
+  have no rights on the Policy. Benefits lies on the Surviving
+  Nominee/s.
+
+- No Nomination facility to Child Policy by default the Parent Holder or
+  Natural Parent will be Nominee.
+
+**09. As is :**
+
+- Solution is accepting any number of Nominations.
+
+- If request through Manually or Digitally, request lands to DE stage,
+  process, move to Approver stage.
+
+**10. Gaps :**
+
+- No document upload.
+
+- No provision to enter Date of Birth.
+
+- Both Digital & Manual request are also follows same Workflow.
+
+- No Auto Approvals.
+
+**11. Suggested Enhancements :**
+
+  -----------------------------------------------------------------------
+  **Sl.**   **Current Process**        **Suggested Process**
+  --------- -------------------------- ----------------------------------
+  01\.      Manual mode                Digital
+
+  02\.      Portal                     Portal, App
+
+  03\.      Manual : DE \> Approver    Manual : DE \> Approver
+
+  04\.      Digital : Portal \> DE \>  Digital : Approver or Auto
+            Approver                   Approver
+
+  05        For Modification, Manual   If any Modification thro Portal,
+            process                    App then Auto Approval with OTP.
+
+  06\.      No Document upload         Document is mandatory
+  -----------------------------------------------------------------------
+
+**12. Charges : Free**
+
+**13. Channel :** Customer Portal, Customer Mobile App & DoP Solution.
+
+**14. Flow chart / Workflow :**
+
+![](media/image2.png){width="6.456067366579178in"
+height="6.381678696412949in"}
+
+**15. Business Requirements :**
+
+  -------------------------------------------------------------------------
+   **RFP Req   **Requirement Description**                        **FRS Ref
+     No.**                                                          ID**
+  ------------ -------------------------------------------------- ---------
+   SR-NOMN-1   Policy should be in **Active** status              
+
+   SR-NOMN-2   System should allow the Insurant to change the       1168,
+               Nomination through Manual, Customer Portal,          1170
+               Customer Mobile App. If it is triggered by         
+               Insurant then Updation must happens based on OTP   
+               to the Insurant RMN.                               
+
+   SR-NOMN-3   System should allow the DoP Users to process the     1170
+               Nomination request through Solution, Portal as per 
+               Workflow                                           
+
+   SR-NOMN-4   System should allow the DoP Users to Approve the   
+               Nomination requests received from Customer Portal, 
+               Customer Mobile App                                
+
+   SR-NOMN-5   System should not allow to raise by any Users      
+               other than Insurant & DoP Users in any Channel     
+
+   SR-NOMN-6   System should not allow if any Premium Payment is  
+               due & pending. If Pending then System should show  
+               Error message                                      
+
+   SR-NOMN-7   System should not allow if any Service Request is     552
+               pending. If Pending then System should show Error  
+               message                                            
+
+   SR-NOMN-8   System should allow maximum 3 Nominees with        195, 172,
+               Relationship & Percentage in numerals & decimals   205, 450
+               not permitted.                                     
+
+   SR-NOMN-9   System should allow to nominate Individuals or     
+               Trust to a Policy. If Trust means, Deed should be  
+               uploaded.                                          
+
+   SR-NOMN-10  System should allow for MINOR NOMINEE. System      448, 449
+               should capture Guardian Name & relationship. And   
+               also upload the Birth Certificate.                 
+
+   SR-NOMN-11  If the Minor Nominee is become Major then System   
+               should automatically FREEZE the Guardianship and   
+               trigger SMS, email                                 
+
+   SR-NOMN-12  System should be capable to capture the Dt of      
+               Birth / Regn of all the Nominee/s or Trust.        
+
+   SR-NOMN-13  System should allow the Insurant, Users to upload  
+               the Forms, Docs                                    
+
+   SR-NOMN-14  System should allow to Add, Modify, Delete the     194, 1180
+               Nomination at initial, subsequent stages during    
+               the lifetime of a Policy.                          
+
+   SR-NOMN-15  System should not allow to change Nomination if a  
+               Policy is under Assignment, Pledge                 
+
+   SR-NOMN-16  If any Policy is under Assignment, then the        
+               existing Nomination/s should automatically         
+               CANCELLED and all rights with Assignee only. In    
+               the event of Re-Assignment then Insurant can       
+               continue with the same old Nominee/s or make any   
+               fresh Nomination.                                  
+
+   SR-NOMN-17  If any Nominee pre-deceases or dies, then the      
+               proceeds shall be payable to the rest of the       
+               surviving Nominee/s equally. For ex) 3 nominees in 
+               a Policy. A -- 35%, B -- 35% & C -- 30%. If C dies 
+               then 50% each to Nominee A & B.                    
+
+   SR-NOMN-18  If all the Nominee/s dies, System should allow to    1223
+               process based on Legal documents and allow to      
+               upload all the required documents.                 
+
+   SR-NOMN-19  System should allow Cancel any Nomination, at any  
+               time, if any activities breach of Rules,           
+               Regulations in force, against interest & security  
+               of State & Union etc.                              
+
+   SR-NOMN-20  System should capable to mark any Nominee as       583, 586
+               INVALID due to Litigation, Criminal cases, if any. 
+               And FREEZE to a limited period.                    
+
+   SR-NOMN-21  System should trigger real time SMS, email to      
+               Insurant                                           
+
+   SR-NOMN-22  Solution should have capability to download the    
+               Data in XL, CSV, PDF formats by DoP IT, Business   
+               Users                                              
+
+   SR-NOMN-23  System should store all the Events in History with 
+               User IDs, Channel, Timestamp etc till lifetime of  
+               the Policy. And also maintains Audit Trails.       
+
+   SR-NOMN-24  System should be capable to Add, Modify, Delete      1070
+               Nomination of a Sales Force for payment of         
+               Incentive, Commission in case of death of a Sales  
+               Force                                              
+  -------------------------------------------------------------------------
+
+**16. Screen :**
+
+**a. Customer Portal or Customer Mobile App :**
+
+**Input :**
+
+Service Request Type : Nomination (drop down)
+
+Policy Number :
+
+Current date :
+
+**System shall compile the Data & Display :**
+
+Policy Number: Customer ID :
+
+Name: Policy Issue Date :
+
+Policy status : Current Product Name:
+
+Paid Till Date :
+
+**Current Nominee/s :**
+
+![Check box - Free ui
+icons](media/image3.png){width="0.36670166229221346in"
+height="0.32430555555555557in"}![Check box - Free ui
+icons](media/image3.png){width="0.36670166229221346in"
+height="0.32430555555555557in"}![Check box - Free ui
+icons](media/image3.png){width="0.36670166229221346in"
+height="0.32430555555555557in"}
+
+  -------------------------------------------------------------------------------------
+   **SL.**  **Policy   **Name of the     **Existing       **Dt of    **Relationship**
+            No.**      Insurant**        Nominee/s**      Birth**    
+  --------- ---------- ----------------- ---------------- ---------- ------------------
+     01                                                              
+
+     02                                                              
+
+     03                                                              
+
+     04                                                              
+
+     05                                                              
+  -------------------------------------------------------------------------------------
+
+  -----------------------------------------------------------------------------
+   **Sl.**  **Name of Nominee   **Relationship**   **Percentage**   **Dt of
+            S/s**                                                   Birth**
+  --------- ------------------- ------------------ ---------------- -----------
+      1                                                              
+
+      2                                                              
+
+      3                                                              
+  -----------------------------------------------------------------------------
+
+**b. Indexing Screen by DoP User :**
+
+Service Type : Nomination (drop down)
+
+Policy Number :
+
+Current date :
+
+**System shall collect the Data & Display :**
+
+Policy Number: Customer ID :
+
+Name: Policy Issue Date :
+
+Policy status : Current Product Name:
+
+Paid Till Date :
+
+**Current Nominee/s :**
+
+![Check box - Free ui
+icons](media/image3.png){width="0.36670166229221346in"
+height="0.32430555555555557in"}![Check box - Free ui
+icons](media/image3.png){width="0.36670166229221346in"
+height="0.32430555555555557in"}
+
+  -------------------------------------------------------------------------------------
+   **SL.**  **Policy   **Name of the     **Existing       **Dt of    **Relationship**
+            No.**      Insurant**        Nominee/s**      Birth**    
+  --------- ---------- ----------------- ---------------- ---------- ------------------
+     01                                                              
+
+     02                                                              
+
+     03                                                              
+
+     04                                                              
+
+     05                                                              
+  -------------------------------------------------------------------------------------
+
+  -----------------------------------------------------------------------------
+   **Sl.**  **Name of Nominee   **Relationship**   **Percentage**   **Dt of
+            S/s**                                                   Birth**
+  --------- ------------------- ------------------ ---------------- -----------
+      1                                                              
+
+      2                                                              
+
+      3                                                              
+  -----------------------------------------------------------------------------
+
+**17. Form :**
+
+**Nomination Form**
+
+I,.
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Policy holder of the following Policies is / are wish to Add or Modify
+or Cancel the Nomination as under. I clearly understand the contents,
+Rules, Regulations which are in force and give consent for the change. I
+request to Add or Modify or Cancel the Nomination as per the below
+Table.
+
++---------+----------+------------+-------------+-----------+-------------+---------+------------------+-------------+
+| **Sl.** | **Policy | **Name of  | **Existing  | **Event** | **New       | **Dt of | **Relationship** | **Nominee/s |
+|         | No.**    | the        | Nominee/s** |           | Nominee/s** | Birth** |                  | KYC**       |
+|         |          | Insurant** |             | **Add /   |             |         |                  |             |
+|         |          |            |             | Modify /  |             |         |                  |             |
+|         |          |            |             | Cancel**  |             |         |                  |             |
++=========+==========+============+=============+===========+=============+=========+==================+=============+
+| 01\.    |          |            |             |           |             |         |                  |             |
++---------+----------+------------+-------------+-----------+-------------+---------+------------------+-------------+
+| 02\.    |          |            |             |           |             |         |                  |             |
++---------+----------+------------+-------------+-----------+-------------+---------+------------------+-------------+
+| 03\.    |          |            |             |           |             |         |                  |             |
++---------+----------+------------+-------------+-----------+-------------+---------+------------------+-------------+
+| 04\.    |          |            |             |           |             |         |                  |             |
++---------+----------+------------+-------------+-----------+-------------+---------+------------------+-------------+
+| 05\.    |          |            |             |           |             |         |                  |             |
++---------+----------+------------+-------------+-----------+-------------+---------+------------------+-------------+
+
+> / Signature /
+>
+> (Insurant Name)
+
+**18. Report format to Operational & Admin Units :**
+
+**19.** **Appendices :**
+
+POLI Rules
+
+\*\*\* End \*\*\*

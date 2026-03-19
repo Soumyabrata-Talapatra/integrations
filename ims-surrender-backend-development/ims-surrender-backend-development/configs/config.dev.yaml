@@ -1,0 +1,104 @@
+appname: "surrender"
+trace:
+  enabled: false #trace enable/disable
+  processor: 
+    type: "otlp-grpc"
+    options:
+      host: "localhost:4317"
+  sampler:
+    type: always-on
+    # type: parent-based-trace-id-ratio
+    options: 
+      ratio: 0.1
+swagger:
+  generation:
+    mode: "build"
+
+db: 
+
+  # username: "postgres" 
+  # password: "dop" 
+  # host: "localhost"
+  # port: "5432" 
+  # database: "surrender_db"
+  # schema: "public" 
+
+  username: "finservicemgmt_rw_user" 
+  password: "DoPrw@123" 
+  host: 172.28.13.162 
+  port: "5432" 
+  database: "finservicemgmtdb" 
+  schema: "finservicemgmt"
+
+  maxconns: 10
+  minconns: 1
+  maxconnlifetime: 30
+  maxconnidletime: 10
+  healthcheckperiod: 5
+  QueryTimeoutLow: 2s
+  QueryTimeoutMed: 5s  
+info:  ## This is the information that will be displayed in the swagger
+  name: "go-training"
+  version: "1.0.0"
+  description: "test service"
+  title: "go-training"
+  terms: "https://example.com/terms"
+  email: "test@gmail.com" ## This is the email address to contact the API maintainer and this reflects in swagger
+metrics:
+  expose: false   #metrics enable/disable.
+  buckets: 
+  collect: 
+    build: false
+    go: false
+    process: false  
+    routes: true
+server: 
+  debug:
+    stats:
+      expose: true #stats enable/disable
+      path: "/debug/statsviz"
+    pprof:
+      expose: true #pprof enable/disable
+      path: "/debug/pprof"
+  dashboard:
+    Enabled: true #dashboard enable/disable
+  healthcheck:
+    expose: true     #healthcheck enable/disable
+    path: "/healthzz"   
+  bodylimit: 2097152
+  readbuffersize: 16384
+  addr: ":8080"
+  readtimeout: 10s
+  writetimeout: 60s
+  timeout: 40 ## Over all timeout for the request  
+  cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"  
+log:
+  level: "debug"
+  format: "json"
+  output: "stdout"
+client: 
+  baseurl: "http://localhost:8080"
+  smsurl:  "https://apiservices.cept.gov.in"
+  #HrmsGet1: "https://dev.cept.gov.in/bepis/v1/lien-details/#1?diff-work-office=#2"
+  # HrmsGet:https://dev.cept.gov.in/bepliprodmaster/v1/surrender/5001?age_at_entry=20&age_at_maturity=35
+url:
+  SFUrl: "https://dev.cept.gov.in/bepliprodmaster/v1/surrender/#1?age_at_entry=#2&age_at_maturity=#3"
+
+
+temporal:
+ host: ""
+ port: ""
+ namespace: "default"

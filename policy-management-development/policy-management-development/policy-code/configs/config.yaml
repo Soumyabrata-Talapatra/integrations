@@ -1,0 +1,74 @@
+# Policy Management Orchestrator — Base Configuration
+# Service: policy-management (IMS PLI 2.0)
+# All environment-specific values are overridden in config.{env}.yaml
+
+appname: "policy-management"
+
+# ---------------------------------------------------------------------------
+# Tracing (OpenTelemetry)
+# ---------------------------------------------------------------------------
+trace:
+  enabled: false
+  processor:
+    type: "otlp-grpc"
+    options:
+      host: "localhost:4317"
+  sampler:
+    type: always-on
+    options:
+      ratio: 0.1
+
+# ---------------------------------------------------------------------------
+# Database (PostgreSQL — policy_mgmt schema)
+# ---------------------------------------------------------------------------
+db:
+  username: "postgres"
+  password: "${DB_PASSWORD}"
+  host: "localhost"
+  port: "5432"
+  database: "ims_pli"
+  schema: "policy_mgmt"
+
+  # Connection pool — tuned for 3M active policies
+  maxconns: 20
+  minconns: 2
+  maxconnlifetime: 30        # minutes
+  maxconnidletime: 10        # minutes
+  healthcheckperiod: 5       # minutes
+
+  # Query timeouts
+  QueryTimeoutLow: 2s        # Simple SELECT (policy by number, lookups)
+  QueryTimeoutMed:  5s       # Batch inserts, aggregations, history queries
+  QueryTimeoutHigh: 30s      # Batch scan full-table queries (lapsation, maturity, paid-up)
+
+# ---------------------------------------------------------------------------
+# Temporal Workflow Engine
+# ---------------------------------------------------------------------------
+temporal:
+  hostport: "localhost:7233"
+  namespace: "pli-insurance"
+  # Single task queue for all PM workflows and activities
+  taskqueue: "policy-management-tq"
+
+# ---------------------------------------------------------------------------
+# Application Info (Swagger docs)
+# ---------------------------------------------------------------------------
+info:
+  name: "Policy Management Orchestrator"
+  version: "1.0.0"
+  description: "IMS PLI 2.0 — Per-policy lifecycle orchestration microservice"
+
+cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS" 

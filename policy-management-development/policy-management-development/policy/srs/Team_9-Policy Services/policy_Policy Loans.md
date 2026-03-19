@@ -1,0 +1,572 @@
+**DEPARTMENT OF POSTS**
+
+**MINISTRY OF COMMUNICATIONS & IT**
+
+**GOVERNMENT OF INDIA**
+
+**System Requirements Specification (SRS)**
+
+Policy Loan
+
+# 
+
+## Functional Requirement
+
+The purpose of this business specification is to outline the business
+requirements necessary to support IMA Policy loan processing option &
+logic applicable to each process.
+
+**Process flow**
+
+**Loan sanction**
+
+# Indexing at the counter of BO/SO/HO
+
+b.  Verification of the necessary documents and Indexing
+
+c.  Indexed Number is noted and receipt generation
+
+d.  All the Documents with Indexed number sent to CPC for further
+    processing
+
+e.  Procesed and Approved by CPC
+
+f.  Generation of Loan sanction through various modes
+
+g.  Making payment and Payment date to be captured to close the process.
+
+h.  The Policy is assigned to President of India for the time Loan is
+    not fully repaid.
+
+i.  At CPC the Loan Bond is kept in safe custody along with policy
+    document.
+
+## Loan Repayment
+
+# Repayment along with interest 
+
+Loan interest is capitalised every 6 months
+
+# 
+
+# Functionality Description
+
+A policy loan is issued by an insurance company that uses the surrender
+value of a person\'s life insurance policy as collateral. Loans can be
+obtained on PLI/RPLI policies . Loan is granted on the security of P.L.I
+Policy.
+
+Interest at 10 % per annum is charged on the loan compounded
+half-yearly. Interest for the half year will be charged on the amount
+outstanding on the first day of the half year and repayments made during
+the half year will be taken into account for the calculation of interest
+for the next half year. Grace period of 21 days is permissible for
+payment of interest.
+
+Second & subsequent loan is normally not admissible until one year after
+the repayment of the previous loan.
+
+**Functional Specification**
+
+## Loan Eligibility criteria
+
+The following table represents applicability of Loan functionality on
+India Post products:
+
+  -------------------------------------------------------------------------------
+  **PLI/RPLI**   **Product Type**         **Eligible    **Policy Age Caveat**
+                                          for Loan**    
+  -------------- ------------------------ ------------- -------------------------
+  PLI            Whole Life Assurance     Y             Premium payment of 4 yrs.
+                                                        Minumum
+
+  PLI            Endowment Assurance      Y             Premium payment of 3 yrs.
+                                                        Minumum
+
+  PLI            Convertible Whole Life   Y             Premium payment of 4 yrs.
+                 Assurance                              Minumum
+
+  PLI            Anticipated Endowment    N             NA
+                 Assurance                              
+
+  PLI            Child Policy             N             NA
+
+  PLI            Joint Life Assurance     Y             Premium payment of 3 yrs.
+                                                        Minumum
+
+  RPLI           Whole Life Assurance     Y             Premium payment of 4 yrs.
+                                                        Minumum
+
+  RPLI           Endowment Assurance      Y             Premium payment of 3 yrs.
+                                                        Minumum
+
+  RPLI           Convertible Whole Life   Y             Premium payment of 4 yrs.
+                 Assurance                              Minumum
+
+  RPLI           Anticipated Endowment    N             NA
+                 Assurance                              
+
+  RPLI           Child policy             N             NA
+
+  RPLI           Anticipated Endowment    N             NA
+                 Assurance                              
+  -------------------------------------------------------------------------------
+
+### The following are the product specific conditions for loan as a percentage of Surrender Value:
+
++-----------------+------------+---------------------+----------------+
+| **Product       | **Product  | **Currency of       | **Percentage   |
+| Type**          | Name**     | Policy**            | of surrender   |
+|                 |            |                     | value          |
+|                 |            |                     | admissible**   |
++=================+============+=====================+================+
+| Whole Life      | Suraksha   | More than 4 years   | 90%            |
+| Assurance (WLA) | and Gram   | to 7 years          |                |
+|                 | Suraksha   |                     |                |
+|                 |            +---------------------+----------------+
+|                 |            | More than 7 years   | 90%            |
+|                 |            | to 12 years         |                |
+|                 |            +---------------------+----------------+
+|                 |            | More than 12 years  | 90%            |
++-----------------+------------+---------------------+----------------+
+| Endowment       | Santosh,   | More than 3 years   | 90%            |
+| Assurance(EA)   | Gram       | to 5 years          |                |
+| and Convertible | Santosh,   |                     |                |
+| Whole Life      | Suvidha ,  |                     |                |
+| Assurance(CWLA) | Gram       |                     |                |
+|                 | Suvidha,   |                     |                |
+|                 | Yugal      |                     |                |
+|                 | Suraksha   |                     |                |
+|                 |            +---------------------+----------------+
+|                 |            | More than 5 years   | 90%            |
+|                 |            | to 10 years         |                |
+|                 |            +---------------------+----------------+
+|                 |            | More than 10 years  | 90%            |
++-----------------+------------+---------------------+----------------+
+
+# 
+
+# Requirements 
+
+## 
+
+## Loan Application and Verification:
+
+Note: The policy bond,loan request,loan bond have to be scanned and
+stored.
+
+**Loan Sanction Calculation:**
+
+The following are the details of a Policy Number ABCDE
+
+  -----------------------------------------------------------------------
+  Product Name: Santhosh              Issue Date : 01/11/2019
+  ----------------------------------- -----------------------------------
+  Policy Years: 20 years              Surrender Value : 20,000
+                                      Rs.(Paidup+bonus)\*Surrender factor
+
+  -----------------------------------------------------------------------
+
+Loan Application Date: 30/09/2025
+
+Maximum Loan Amount: 90% of Rs.20, 000 = Rs.18,0000
+
+Minimum Loan Amount: Rs. 1000.
+
+Both Loan Amount Minimum Loan Amount and Maximum Loan Amount to be
+displayed while generation Quote and in sanction
+
+## 
+
+## Loan payment
+
+Process
+
+- First page Loan repayment book to be printed and LRRB has to be issues
+
+- Sanction copy of the loan to be printed along with Loan bond
+
+## Loan Closure
+
+Process
+
+- Loan Interest amount has to be paid as per the Repayment Schedule
+  given in Loan Bond.
+
+- The loan interest payment has to be paid once every 6 months. In case
+  when Loan interest is not repaid within the due date the outstanding
+  loan interest is capitalized in case of non-payment of loan interest.
+
+- On three consecutive defaults in Interest payment against loan, the
+  policy shall be surrendered.
+
+- Currently any loan repayment is registered in the Loan repayment
+  receipt book. In case of advance loan repayments the Repayment has to
+  be revised and interest on the Outstanding Loan amount is calculated
+  in next six monthly cycle.
+
+- All the repayment details are updated in Loan Repayment receipt book.
+
+The following are the Implicit and RFP requirements for Loan
+Calculations in the Policy Administration system:
+
+**Loan Interest Calculation for repayment.**
+
+Loan Interest Rate: 10 % p.a
+
+Half yearly Intrest : 5%
+
+## 
+
+## Loan Workflow
+
+- Loan Request is indexed at PO and CPC Level, for which a New Ticket ID
+  is auto generated.
+
+- For Adding to the existing Request, user can search from the Request
+  number no.field.
+
+- After Submit, Document goes to CPC for further processing.
+
+**Inputs**
+
+Request: Type: Loan
+
+Policy Number:
+
+OutPuts
+
+  -----------------------------------------------------------------------
+  **Field**              **Description**
+  ---------------------- ------------------------------------------------
+  Policy number          Unique identifier for the policy
+
+  Name                   Policy holder\'s name
+
+  Date of Issue          When the policy was issued
+
+  Policy status          Current status of the policy
+                         (Active/Inactive/Pending, etc.)
+
+  Office                 Issuing office or branch
+
+  Generated by           Staff member or system that generated the policy
+
+  Service request Number Associated service request identifier
+  -----------------------------------------------------------------------
+
+**Loan Quote Screen**
+
+**Policy Summary**
+
+  -------------------------------
+  **Field**          **Value**
+  ------------------ ------------
+  **Policy Number**  123456
+
+  **Insured**        Ramesh
+
+  **Customer ID**    1234
+
+  **Insured DOB**    01/01/1990
+
+  **Insured PAN      XXXXX
+  Number**           
+
+  **Product Name**   Santhosh
+
+  Loan               
+
+  **Policy Status**  Active
+
+  **Circle Code**    
+
+  **Post office**    
+
+  **Generated BY**   
+
+  **Issue Date**     10/11/2025
+
+  **Loan Min         
+  Amount**           
+
+  **Loan Max         
+  Amount**           
+
+  **Surrender        
+  Factor**           
+
+  **Loan Repayment   
+  amount**           
+  -------------------------------
+
+  ----------------------------------------------------------------------------------
+  **Documents to be given**                                **View**   **Received**
+  -------------------------------------------------------- ---------- --------------
+  1\. Filled Loan Application Form                         🔗 View    ☐
+
+  2\. Premium Receipt Book *(for cash policy)*             🔗 View    ☐
+
+  3\. Disbursing Officer's Certificate (last 6 months for  🔗 View    ☐
+  deduction of premium, *pay recovery policy*)                        
+
+  4\. Loan Repayment Receipt Book *(for second or          🔗 View    ☐
+  subsequent loan)*                                                   
+
+  5\. Loan Bond                                            🔗 View    ☐
+
+  6\. Policy Bond                                          🔗 View    ☐
+  ----------------------------------------------------------------------------------
+
+### Loan Process
+
+![A screenshot of a computer screen AI-generated content may be
+incorrect.](media/image1.png){width="6.217205818022747in"
+height="2.666897419072616in"}
+
+At DE stage
+
+- Policy Number: Unique identifier for the insurance policy
+
+- Customer ID: Unique identifier for the customer
+
+- Name: Customer's name
+
+- Policy Status: Active/Inactive/Expired, etc.
+
+- Premium Paid Upto: Date till which premium payments are made
+
+Output to be shown
+
+1.  Max loan
+
+2.  Min loan
+
+3.  Surrender value
+
+4.  \% loan
+
+To be captured
+
+- Purpose of Loan: Brief description of why the loan is needed as per
+  business rule (e.g., Home, Education, Medical, etc.)
+
+- Disbursement Office: The office or branch responsible for releasing
+  the loan
+
+- Loan Amount Required: The specific amount the applicant wants Loan
+
+Buttons to be shown
+
+Approver
+
+Rejected
+
+Submit for DE/QC
+
+Cancel
+
+The field properties of the above screen have been captured in section
+10.2.2.
+
+###  Loan Approval Screen
+
+- The data entered by financial transaction E/uality checker is checked
+  by the Financial Transaction Approver.
+
+- Approver to check financial eligibility of the applicant.
+
+- Approver to check the assignment status of the applicant.
+
+- Approver to approve or reject the loan application.
+
+### Loan History
+
+Details of Loan repayment to be shown
+
+The following are the Loan Events:
+
+1.  Loan Sanction
+
+2.  Loan Repayment
+
+3.  Interest Capitalization.
+
+### Loan Status
+
+The following are the Loan Status
+
+1.  Eligible
+
+2.  Outstanding
+
+## 
+
+## Loan Repayment and Remittances
+
+The Loan Repayment and Remittance screens will be captured in Billing
+and Collection SRS.
+
+# 
+
+# Business Rules
+
++-----------------------------+----------------------------------------+
+| **Condition**               | **Description**                        |
++=============================+========================================+
+| Loan Payment                | Loan should be paid in installments of |
+|                             | amount not less than Rs. 100           |
++-----------------------------+----------------------------------------+
+| Loan Interest repayment     | Interest should be paid on(or) before  |
+| date rule                   | 21st of due month (i.e. 6 monthly      |
+|                             | once)                                  |
++-----------------------------+----------------------------------------+
+| Loan interest charge        | Interest will be charged @ 10 % per    |
+|                             | annum compounding half yearly.         |
++-----------------------------+----------------------------------------+
+| Final repayment condition   | In the case of final repayment,        |
+|                             | interest will not be charged beyond    |
+|                             | the last date of the month is made     |
+|                             | provided that interest had already     |
+|                             | been charged on the loan for at least  |
+|                             | six months.                            |
++-----------------------------+----------------------------------------+
+| Second Loan                 | The second or subsequent loan shall    |
+|                             | not be granted until one year after    |
+|                             | the repayment of the previous loan\*.  |
++-----------------------------+----------------------------------------+
+| Effect on Assignment due to | If an insured person has assigned his  |
+| loan                        | policy in favor of another person,     |
+|                             | loan on such a policy will be granted  |
+|                             | to the insured person only. The policy |
+|                             | has to be re-assigned in his favor and |
+|                             | then assign it to the President.       |
++-----------------------------+----------------------------------------+
+| Pre-requisite for Loan      | Policy should be unencumbered/         |
+| Processing                  | unassigned.                            |
++-----------------------------+----------------------------------------+
+| Pre-requisite for Loan      | Min Loan value of the policy should be |
+| Processing                  | 1,000.                                 |
++-----------------------------+----------------------------------------+
+| Outstanding Loan deductions | The outstanding balance of the loan    |
+| from Claim/benefit amount   | with interest will be recovered from   |
+|                             | the value of the policy at the time of |
+|                             | settlement of the claim.               |
++-----------------------------+----------------------------------------+
+| Outstanding Loan Interest   | Interest on a loan will accrue up to   |
+| from Claim/benefit amount   | the last date of the month in which    |
+|                             | the policy becomes a claim either by   |
+|                             | maturity or by surrender, provided     |
+|                             | that interest for at least six months  |
+|                             | had been charged on the loan.          |
++-----------------------------+----------------------------------------+
+| Interest repayment Grace    | On receipt of the above intimation,    |
+| days                        | interest chargeable up to the end of   |
+|                             | the month of final repayment (provided |
+|                             | that interest on the loan has already  |
+|                             | been charged for at least one half     |
+|                             | year) shall be calculated by the       |
+|                             | Postmaster General/ Head of Division   |
+|                             | and communicated to the insurant under |
+|                             | registered post. The insurant shall be |
+|                             | required to pay the amount of interest |
+|                             | at any Head or Sub Post office within  |
+|                             | 21 days from the date of issue of      |
+|                             | intimation by the Postmaster General/  |
+|                             | Head of Division.                      |
++-----------------------------+----------------------------------------+
+| Loan Last repayment         | On the date the amount of loan is      |
+|                             | finally repaid, a letter is sent       |
+|                             | giving details on the amount repaid    |
+|                             | the date of repayment, the name of the |
+|                             | insurant and the policy number and     |
+|                             | loan account.                          |
++-----------------------------+----------------------------------------+
+| Policyholder confirmation   | Policyholder need to send a written    |
+| on Loan last Payment        | intimation on last repayment on        |
+|                             | installment.                           |
++-----------------------------+----------------------------------------+
+| Final repayment             | Interest chargeable up to the end of   |
+|                             | the month of final repayment is        |
+|                             | communicated to Insured. The insured   |
+|                             | shall pay the amount of interest       |
+|                             | within 21 days from the date of issue  |
+|                             | of intimation.                         |
++-----------------------------+----------------------------------------+
+| Loan Process Submission     | This Event should do following         |
+| Event                       | transactions:                          |
+|                             |                                        |
+|                             | 1.  Process Loan for 'Net Loan Amount' |
+|                             |                                        |
+|                             | 2.  Automatically Assign the Policy to |
+|                             |     President of India.                |
+|                             |                                        |
+|                             | 3.  Generate Loan Sanction Letter      |
++-----------------------------+----------------------------------------+
+
+# 
+
+## Various stages
+
+##  
+
+The following is the Loan task inbox for various statuses:
+
+  -----------------------------------------------------------------------
+  **Task**                            **Allocated to**
+  ----------------------------------- -----------------------------------
+  Indexing and Scanning               PO/CPC Indexer
+
+  Verification and data entry         DE Person
+
+  Approval                            Approver
+
+  Loan Amount cheque/EFT generation   Treasury/POSB EFT
+
+  Loan documents in safe custody      CPC
+
+  Apply Loan repayment amount         Collection
+
+  Loan closure                        Request should be sent to DE for
+                                      releasing Document
+
+                                      
+  -----------------------------------------------------------------------
+
+## 
+
+## Reports/SMS/Email
+
+Alert to be sent on default of loan interest payment as per Business
+rule.
+
+# Letters & Documents
+
+Loan Letters and Reports
+
+The Loan letters and reports are covered under Letters and Reports
+section of the SRS.
+
+Cover Letter /Loan Sanction Letter
+
+Loan Application Receipt
+
+Loan Rejection Letter
+
+Loan Interest Advise
+
+Default Notice/ Overdue Intimation
+
+Default termination letter
+
+Loan Repayment receipt- Branch
+
+Loan Repayment receipt- Portal
+
+Cheque Dishonour for Repayment
+
+Loan Default reminder letter
+
+Closure Letter
+
+Loan Quote Letter

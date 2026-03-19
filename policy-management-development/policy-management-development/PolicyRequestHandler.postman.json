@@ -1,0 +1,205 @@
+{
+  "info": {
+    "name": "Policy Management - Policy Request APIs",
+    "_postman_id": "c2e7c7aa-4a22-policy-requests",
+    "description": "Submission APIs for PolicyLifecycleWorkflow signals",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/v1" },
+    { "key": "policyNumber", "value": "PLI/2023/123456" }
+  ],
+  "item": [
+
+    {
+      "name": "Surrender Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/surrender",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CUSTOMER_PORTAL\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"disbursement_method\": \"NEFT\",\n    \"bank_account_id\": 5001,\n    \"reason\": \"Policy surrender\"\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Loan Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/loan",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CUSTOMER_PORTAL\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"requested_amount\": 25000,\n    \"disbursement_method\": \"NEFT\"\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Loan Repayment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/loan-repayment",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CPC\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"loan_id\": 1201,\n    \"amount\": 5000,\n    \"payment_mode\": \"ONLINE\"\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Revival Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/revival",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"AGENT_PORTAL\",\n  \"submitted_by\": 200,\n  \"payload\": {\n    \"requested_installments\": 4\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Death Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/death-claim",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CPC\",\n  \"submitted_by\": 300,\n  \"payload\": {\n    \"customer_id\": 10001,\n    \"date_of_death\": \"2026-03-01\",\n    \"cause_of_death\": \"NATURAL\",\n    \"reported_by\": \"NOMINEE\",\n    \"claimant_relationship\": \"SPOUSE\"\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Maturity Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/maturity-claim",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CUSTOMER_PORTAL\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"disbursement_method\": \"NEFT\",\n    \"bank_account_id\": 9001\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Nomination Change",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/nomination-change",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CUSTOMER_PORTAL\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"nominees\": [\n      {\n        \"name\": \"Ravi Sharma\",\n        \"relationship\": \"SPOUSE\",\n        \"share_percentage\": 100\n      }\n    ]\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Billing Method Change",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/billing-method-change",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CPC\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"new_billing_method\": \"ONLINE\"\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Assignment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/assignment",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CPC\",\n  \"submitted_by\": 200,\n  \"payload\": {\n    \"assignment_type\": \"ABSOLUTE\",\n    \"assignee_name\": \"State Bank of India\"\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Address Change",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Idempotency-Key", "value": "{{uuid}}" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/address-change",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_channel\": \"CUSTOMER_PORTAL\",\n  \"submitted_by\": 101,\n  \"payload\": {\n    \"new_address\": {\n      \"line1\": \"Sector 10\",\n      \"city\": \"Delhi\",\n      \"state\": \"Delhi\",\n      \"pincode\": \"110001\"\n    }\n  }\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Admin Void Policy",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/admin-void",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"Fraudulent policy\",\n  \"voided_by\": 500\n}"
+        }
+      }
+    },
+
+    {
+      "name": "Reopen Policy",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/policies/{{policyNumber}}/requests/reopen",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reopened_by\": 500,\n  \"reason\": \"Reopen after appeal\"\n}"
+        }
+      }
+    }
+
+  ]
+}

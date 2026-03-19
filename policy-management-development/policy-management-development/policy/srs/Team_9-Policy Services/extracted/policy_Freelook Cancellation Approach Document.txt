@@ -1,0 +1,63 @@
+Freelook Cancellation Approach Document
+
+
+
+CEPT may facilitate technical discussion for API response and integration approach for Whatsapp, SMS & WhatsApp integration
+
+
+
+CEPT may facilitate technical discussion for API response and integration approach for Whatsapp, SMS & WhatsApp integration
+
+
+
+IMS to send Policy Number, Insurant Name, DoB, Mobile No, Address, Pin Code, State etc. via API integration.
+
+
+
+Even if hard copy opted by insurant, policy bond via SMS, Email, WhatsApp will be sent & fetching via digilocker will be allowed 
+
+IMS to send Policy Number, Insurant Name, DoB, Mobile No, Address, Pin Code, State etc. via API integration.
+
+
+
+Even if hard copy opted by insurant, policy bond via SMS, Email, WhatsApp will be sent & fetching via digilocker will be allowed 
+
+Digi locker
+
+Digi locker
+
+As delivery date received, dispatch date will be captured and closed in IMS
+
+As delivery date received, dispatch date will be captured and closed in IMS
+
+Insurance Management Solution
+
+Insurance Management Solution
+
+Delivery Date
+
+Delivery Date
+
+Policy Document
+
+Policy Document
+
+Delivered
+
+Delivered
+
+Proposal Approved
+
+Proposal Approved
+
+SMS/Email                 (Link to Download)
+
+SMS/Email                 (Link to Download)
+
+WhatsApp
+
+WhatsApp
+
+Hard Copy (Optional)
+
+Hard Copy (Optional)

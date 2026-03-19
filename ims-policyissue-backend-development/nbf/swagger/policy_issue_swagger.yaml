@@ -1,0 +1,5774 @@
+openapi: 3.0.3
+info:
+  title: Policy Issue Management Service API
+  description: |
+    # Policy Issue Management Service - OpenAPI Specification
+
+    Complete API specification for the **Insurance Management System (IMS) PLI 2.0** - Policy Issue Management Module.
+
+    This module handles the complete lifecycle of new business policy issuance for PLI (Postal Life Insurance)
+    and RPLI (Rural Postal Life Insurance), including:
+
+    - Quote Generation & Benefit Illustration
+    - Proposal Creation (With and Without Aadhaar)
+    - KYC & Compliance Verification
+    - Medical Underwriting Orchestration
+    - Multi-Level Approval Workflow
+    - Policy Number Generation & Bond Creation
+    - Free Look Period Management
+    - Bulk Upload Processing
+
+    ---
+
+    ## API Summary by Category
+
+    | Category | Count | Description |
+    |----------|-------|-------------|
+    | **Quote APIs** | 4 | Quote generation, calculation, conversion |
+    | **Proposal Core APIs** | 12 | Proposal creation, indexing, section updates |
+    | **Aadhaar Flow APIs** | 3 | Aadhaar authentication and instant issuance |
+    | **Approval Workflow APIs** | 5 | QR review, approver decisions |
+    | **Policy Lifecycle APIs** | 3 | Policy issuance, FLC cancellation |
+    | **Lookup APIs** | 10 | Reference data dropdowns |
+    | **Validation APIs** | 8 | Pre-validation checks |
+    | **Calculation APIs** | 4 | Premium, GST, FLC refund |
+    | **Document APIs** | 4 | Document upload/download |
+    | **Status & Tracking APIs** | 4 | Status, timeline queries |
+    | **Workflow Management APIs** | 3 | Temporal workflow operations |
+    | **Bulk Upload APIs** | 2 | Batch processing |
+    | **Total APIs** | **62** | |
+
+    ---
+
+    ## Business Rules Reference
+
+    - **BR-POL-001 to BR-POL-010**: Calculation Rules (Premium, GST, Rebate, FLC Refund)
+    - **BR-POL-011 to BR-POL-013**: Eligibility Rules (PLI, RPLI, Medical)
+    - **BR-POL-015 to BR-POL-017**: State Transition & Approval Routing
+    - **BR-POL-018 to BR-POL-021**: Time-Based Rules (Date Chain, FLC Period)
+    - **BR-POL-024 to BR-POL-032**: Validation & Edge Cases
+
+    ## Validation Rules Reference
+
+    - **VR-PI-001 to VR-PI-044**: Field validations, format checks, business constraints
+
+    ## Error Code Categories
+
+    - **ERR-POL-001 to ERR-POL-030**: Validation Errors (HTTP 400)
+    - **ERR-POL-031 to ERR-POL-060**: Business Rule Errors (HTTP 400)
+    - **ERR-POL-061 to ERR-POL-080**: Integration Errors (HTTP 502/503/504)
+    - **ERR-POL-081 to ERR-POL-099**: System Errors (HTTP 500)
+
+    ## Temporal Workflows
+
+    - **WF-PI-001**: PolicyIssuanceWorkflow (Standard flow)
+    - **WF-PI-002**: InstantIssuanceWorkflow (Aadhaar non-medical)
+    - **WF-PI-003**: BulkProposalUploadWorkflow (Batch processing)
+
+  version: 1.0.0
+  contact:
+    name: IMS PLI 2.0 API Team
+    email: api-support@pli.gov.in
+  license:
+    name: Government of India
+
+servers:
+  - url: https://api.pli.gov.in/v1
+    description: Production Server
+  - url: https://api-staging.pli.gov.in/v1
+    description: Staging Server
+  - url: https://api-dev.pli.gov.in/v1
+    description: Development Server
+
+tags:
+  - name: Quote
+    description: |
+      Quote generation and premium calculation APIs.
+      **Count: 4 APIs**
+  - name: Proposal
+    description: |
+      Proposal creation and management APIs.
+      **Count: 12 APIs**
+  - name: Aadhaar Flow
+    description: |
+      Aadhaar-based proposal and instant issuance APIs.
+      **Count: 3 APIs**
+  - name: Approval
+    description: |
+      Quality review and approval workflow APIs.
+      **Count: 5 APIs**
+  - name: Policy
+    description: |
+      Policy lifecycle management APIs.
+      **Count: 3 APIs**
+  - name: Lookup
+    description: |
+      Reference data and dropdown APIs.
+      **Count: 10 APIs**
+  - name: Validation
+    description: |
+      Pre-validation and eligibility check APIs.
+      **Count: 8 APIs**
+  - name: Calculation
+    description: |
+      Premium, GST, and refund calculation APIs.
+      **Count: 4 APIs**
+  - name: Document
+    description: |
+      Document management APIs.
+      **Count: 4 APIs**
+  - name: Status
+    description: |
+      Status tracking and timeline APIs.
+      **Count: 4 APIs**
+  - name: Workflow
+    description: |
+      Temporal workflow management APIs.
+      **Count: 3 APIs**
+  - name: Bulk Upload
+    description: |
+      Batch proposal upload APIs.
+      **Count: 2 APIs**
+
+paths:
+  # ============================================
+  # QUOTE APIs (4 APIs)
+  # ============================================
+
+  /products:
+    get:
+      tags:
+        - Quote
+      operationId: getProducts
+      summary: Get available products
+      description: |
+        Retrieves list of available PLI/RPLI products for quote generation.
+
+        **API ID**: POL-API-001
+
+        **User Journeys**: UJ-POL-001
+
+        **Functional Requirements**: FR-POL-004
+
+        **Integration Points**: INT-POL-001 (Product Catalog Service)
+      parameters:
+        - name: policy_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PLI, RPLI]
+          description: Filter by policy type
+        - name: is_active
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: Filter active products only
+      responses:
+        '200':
+          description: Product list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /quotes/calculate:
+    post:
+      tags:
+        - Quote
+      operationId: calculateQuote
+      summary: Calculate premium quote
+      description: |
+        Calculates premium quote based on product, age, sum assured, and term.
+
+        **API ID**: POL-API-002
+
+        **User Journeys**: UJ-POL-001
+
+        **Functional Requirements**: FR-POL-001
+
+        **Business Rules**:
+        - BR-POL-001: Base Premium Calculation (Sankalan table lookup)
+        - BR-POL-002: GST Calculation (CGST/SGST or IGST based on state)
+        - BR-POL-003: Rebate Calculation (mode-based rebates)
+        - BR-POL-010: Total Premium Pipeline
+
+        **Validation Rules**:
+        - VR-PI-012: Age eligibility (min/max entry age)
+        - VR-PI-013: Sum assured range validation
+        - VR-PI-044: Policy term range validation
+
+        **Error Codes**:
+        - ERR-POL-031: Age not eligible for product
+        - ERR-POL-033: Sum assured outside range
+        - ERR-POL-036: Invalid policy term
+        - ERR-POL-056: Premium calculation failed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteCalculateRequest'
+      responses:
+        '200':
+          description: Premium calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteCalculateResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ageNotEligible:
+                  $ref: '#/components/examples/ERR-POL-031'
+                saOutsideRange:
+                  $ref: '#/components/examples/ERR-POL-033'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /quotes:
+    post:
+      tags:
+        - Quote
+      operationId: createQuote
+      summary: Save quote
+      description: |
+        Saves a calculated quote and generates quote reference number.
+
+        **API ID**: POL-API-003
+
+        **User Journeys**: UJ-POL-001
+
+        **Functional Requirements**: FR-POL-001, FR-POL-002
+
+        **Integration Points**: INT-POL-008 (DMS for PDF storage)
+
+        **Workflow**: Creates lead record for follow-up
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteCreateRequest'
+      responses:
+        '201':
+          description: Quote created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteCreateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /quotes/{quote_id}/convert-to-proposal:
+    post:
+      tags:
+        - Quote
+      operationId: convertQuoteToProposal
+      summary: Convert quote to proposal
+      description: |
+        Converts a saved quote to a draft proposal.
+
+        **API ID**: POL-API-004
+
+        **User Journeys**: UJ-POL-001
+
+        **Functional Requirements**: FR-POL-003
+
+        **Business Rules**:
+        - BR-POL-024: Deduplication check before conversion
+
+        **Validation Rules**:
+        - Quote must be in GENERATED or SAVED status
+        - Quote must not be expired
+
+        **Error Codes**:
+        - ERR-POL-055: Quote has expired
+        - ERR-POL-003: Duplicate customer detected
+      parameters:
+        - name: quote_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Proposal created from quote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteConvertResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Quote already converted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================
+  # PROPOSAL CORE APIs (12 APIs)
+  # ============================================
+
+  /proposals/indexing:
+    post:
+      tags:
+        - Proposal
+      operationId: createProposalIndexing
+      summary: Create proposal with indexing
+      description: |
+        Creates a new proposal through CPC indexing (without Aadhaar).
+
+        **API ID**: POL-API-005
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-007
+
+        **Business Rules**:
+        - BR-POL-015: State machine initialization (DRAFT → DATA_ENTRY)
+        - BR-POL-018: Date chain validation
+        - BR-POL-024: Deduplication check
+
+        **Validation Rules**:
+        - VR-PI-004 to VR-PI-007: Date sequence validation
+        - VAL-POL-024: Declaration date required
+        - VAL-POL-025: Receipt date required
+
+        **Error Codes**:
+        - ERR-POL-006: Invalid declaration date
+        - ERR-POL-007: Invalid receipt date
+        - ERR-POL-008: Invalid indexing date
+        - ERR-POL-009: Invalid proposal date
+
+        **Temporal Workflow**: Starts WF-PI-001 (PolicyIssuanceWorkflow)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalIndexingRequest'
+      responses:
+        '201':
+          description: Proposal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalIndexingResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidDateChain:
+                  $ref: '#/components/examples/ERR-POL-006'
+        '409':
+          description: Duplicate proposal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}:
+    get:
+      tags:
+        - Proposal
+      operationId: getProposal
+      summary: Get proposal details
+      description: |
+        Retrieves complete proposal details by ID.
+
+        **User Journeys**: UJ-POL-002, UJ-POL-006
+
+        **Functional Requirements**: FR-POL-009
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      responses:
+        '200':
+          description: Proposal details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/resolve/{proposal_number}:
+    get:
+      tags:
+        - Proposal
+      operationId: resolveProposalNumber
+      summary: Resolve proposal number to ID
+      description: |
+        Resolves a human-readable proposal_number to proposal_id for subsequent API calls.
+        
+        **Use Case**: When external systems or UI have proposal_number but need proposal_id for API calls.
+        
+        **API ID**: POL-API-017
+        
+        **Response**: Returns minimal proposal info including proposal_id for further operations.
+      parameters:
+        - $ref: '#/components/parameters/ProposalNumber'
+      responses:
+        '200':
+          description: Proposal resolved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  proposal_id:
+                    type: integer
+                    format: int64
+                  proposal_number:
+                    type: string
+                  customer_id:
+                    type: integer
+                    format: int64
+                  status:
+                    type: string
+                  product_code:
+                    type: string
+                  sum_assured:
+                    type: number
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/first-premium:
+    post:
+      tags:
+        - Proposal
+      operationId: recordFirstPremium
+      summary: Record first premium payment
+      description: |
+        Records first premium payment at indexing stage.
+
+        **API ID**: POL-API-006
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-026
+
+        **Integration Points**: INT-POL-011 (Collections Service)
+
+        **Business Rules**:
+        - Payment modes: CASH, CHEQUE, DD, ONLINE, POSB, NACH
+
+        **Validation Rules**:
+        - VR-PI-036: Payment mode validation
+        - VR-PI-015: Premium amount validation
+
+        **Error Codes**:
+        - ERR-POL-030: Invalid payment mode
+        - ERR-POL-058: Payment amount mismatch
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FirstPremiumRequest'
+      responses:
+        '200':
+          description: First premium recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FirstPremiumResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/sections/insured:
+    put:
+      tags:
+        - Proposal
+      operationId: updateInsuredDetails
+      summary: Update insured person details
+      description: |
+        Updates insured person details section of proposal.
+
+        **API ID**: POL-API-007
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-008, FR-POL-034
+
+        **Integration Points**:
+        - INT-POL-002: Customer Service (create/link customer)
+        - INT-POL-004: PAN verification with NSDL
+
+        **Validation Rules**:
+        - VAL-POL-016: Husband name for married female
+        - VAL-POL-017: Father name for male/unmarried female
+        - VAL-POL-018: Communication address required
+        - VAL-POL-019: Permanent address when different
+        - VAL-POL-022: City or village required
+        - VAL-POL-023: Employment date for PLI
+        - VR-PI-010: Aadhaar format validation
+        - VR-PI-011: PAN format validation
+
+        **Error Codes**:
+        - ERR-POL-010: Invalid Aadhaar number
+        - ERR-POL-011: Invalid PAN format
+        - ERR-POL-012: PAN required for high premium
+        - ERR-POL-015: Father name required
+        - ERR-POL-016: Husband name required
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsuredDetailsRequest'
+      responses:
+        '200':
+          description: Insured details updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionUpdateResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidAadhaar:
+                  $ref: '#/components/examples/ERR-POL-010'
+                invalidPan:
+                  $ref: '#/components/examples/ERR-POL-011'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/sections/nominees:
+    put:
+      tags:
+        - Proposal
+      operationId: updateNominees
+      summary: Update nominee details
+      description: |
+        Updates nominee section of proposal. Maximum 3 nominees allowed.
+
+        **API ID**: POL-API-008
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-010
+
+        **Validation Rules**:
+        - VAL-POL-003: Nominee shares must total 100%
+        - VAL-POL-004: Maximum 3 nominees
+        - VAL-POL-005: At least 1 nominee (except HUF/MWPA)
+        - VAL-POL-006: Appointee required for minor nominee
+        - VR-PI-017: Nominee count validation
+        - VR-PI-018: Share percentage validation
+        - VR-PI-019: Minor appointee validation
+
+        **Error Codes**:
+        - ERR-POL-022: Nominee count exceeded
+        - ERR-POL-023: Nominee share invalid
+        - ERR-POL-024: Appointee required for minor
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NomineesRequest'
+      responses:
+        '200':
+          description: Nominees updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionUpdateResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                nomineeCountExceeded:
+                  $ref: '#/components/examples/ERR-POL-022'
+                nomineeShareInvalid:
+                  $ref: '#/components/examples/ERR-POL-023'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/sections/policy-details:
+    put:
+      tags:
+        - Proposal
+      operationId: updatePolicyDetails
+      summary: Update policy details
+      description: |
+        Updates policy details section including MWPA, HUF, Yugal Suraksha configurations.
+
+        **API ID**: POL-API-009
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-011, FR-POL-012, FR-POL-013, FR-POL-014
+
+        **Validation Rules**:
+        - VAL-POL-007: Spouse required for Yugal Suraksha
+        - VAL-POL-010: SA decrease restriction for certain products
+        - VAL-POL-026: Policy taken under required
+        - VR-PI-020: Max 7 HUF members
+
+        **Error Codes**:
+        - ERR-POL-017: Spouse details required
+        - ERR-POL-025: HUF member count exceeded
+        - ERR-POL-034: SA not multiple of 5000
+        - ERR-POL-036: Invalid policy term
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDetailsRequest'
+      responses:
+        '200':
+          description: Policy details updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/sections/agent:
+    put:
+      tags:
+        - Proposal
+      operationId: updateAgentDetails
+      summary: Update agent association
+      description: |
+        Links an agent to the proposal and captures snapshot of agent details.
+
+        **API ID**: POL-API-010
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-016
+
+        **Integration Points**: INT-POL-014 (Agent Service)
+
+        **Business Rules**:
+        - Agent must be active and licensed
+        - Agent details snapshotted at proposal time
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentDetailsRequest'
+      responses:
+        '200':
+          description: Agent linked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/sections/medical:
+    put:
+      tags:
+        - Proposal
+      operationId: updateMedicalInfo
+      summary: Update medical questionnaire
+      description: |
+        Updates medical questionnaire responses.
+
+        **API ID**: POL-API-011
+
+        **User Journeys**: UJ-POL-002, UJ-POL-005
+
+        **Functional Requirements**: FR-POL-017, FR-POL-018
+
+        **Business Rules**:
+        - BR-POL-013: Medical requirement determination (SA ≥ 20 Lakh)
+
+        **Validation Rules**:
+        - Enhanced medical required for SA ≥ 20 Lakh
+        - Disease details required if any disease flag is true
+
+        **Error Codes**:
+        - ERR-POL-037: Medical examination required
+        - ERR-POL-038: Medical report pending
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicalInfoRequest'
+      responses:
+        '200':
+          description: Medical info updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/submit-for-qc:
+    post:
+      tags:
+        - Proposal
+      operationId: submitForQC
+      summary: Submit proposal for quality review
+      description: |
+        Submits completed proposal for quality review.
+
+        **API ID**: POL-API-012
+
+        **User Journeys**: UJ-POL-002
+
+        **Functional Requirements**: FR-POL-022
+
+        **Business Rules**:
+        - BR-POL-015: State transition DATA_ENTRY → QC_PENDING
+
+        **Validation Rules**:
+        - All mandatory sections must be complete
+        - All mandatory documents must be uploaded
+
+        **Error Codes**:
+        - ERR-POL-029: Mandatory document missing
+        - ERR-POL-050: Incomplete proposal
+
+        **Temporal Workflow**: Sends signal to WF-PI-001
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comments:
+                  type: string
+                  description: Submission comments
+      responses:
+        '200':
+          description: Proposal submitted for QC
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitForQCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/summary:
+    get:
+      tags:
+        - Proposal
+      operationId: getProposalSummary
+      summary: Get proposal summary for review
+      description: |
+        Retrieves comprehensive proposal summary for QR/Approver review.
+
+        **API ID**: POL-API-016
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-033
+
+        **Business Rules**:
+        - BR-POL-016: Determines required approval level based on SA
+        - BR-POL-025: Age revalidation at approval time
+
+        **Response includes**:
+        - Insured and coverage details
+        - Nominee summary
+        - Medical status
+        - Agent information
+        - Document checklist
+        - Approval routing info
+        - Age change detection
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      responses:
+        '200':
+          description: Proposal summary retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalSummaryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/queue:
+    get:
+      tags:
+        - Proposal
+      operationId: getProposalQueue
+      summary: Get proposals in queue
+      description: |
+        Retrieves proposals in specified queue for QR/Approver workload.
+
+        **API ID**: WF-POL-003
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-009
+
+        **Query Parameters**:
+        - status: Filter by proposal status
+        - level: Approver level filter
+        - po_code: Post office filter
+        - assigned_to: User assignment filter
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - QC_PENDING
+              - QC_RETURNED
+              - APPROVAL_PENDING
+              - PENDING_MEDICAL
+          description: Filter by status
+        - name: level
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [1, 2, 3]
+          description: Approver level
+        - name: po_code
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Post office code
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Queue retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalQueueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================
+  # AADHAAR FLOW APIs (3 APIs)
+  # ============================================
+
+  /proposals/aadhaar/initiate:
+    post:
+      tags:
+        - Aadhaar Flow
+      operationId: initiateAadhaarAuth
+      summary: Initiate Aadhaar authentication
+      description: |
+        Initiates Aadhaar OTP authentication for proposal creation.
+
+        **API ID**: POL-API-013
+
+        **User Journeys**: UJ-POL-003
+
+        **Functional Requirements**: FR-POL-020
+
+        **Integration Points**:
+        - INT-POL-003: Customer Service eKYC
+        - INT-POL-005: UIDAI OTP service
+
+        **Business Rules**:
+        - Aadhaar must be 12 digits
+        - OTP valid for 10 minutes
+
+        **Error Codes**:
+        - ERR-POL-010: Invalid Aadhaar number
+        - ERR-POL-061: Aadhaar service unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AadhaarInitiateRequest'
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AadhaarInitiateResponse'
+        '400':
+          description: Invalid Aadhaar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidAadhaar:
+                  $ref: '#/components/examples/ERR-POL-010'
+        '502':
+          description: Aadhaar service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/aadhaar/verify-otp:
+    post:
+      tags:
+        - Aadhaar Flow
+      operationId: verifyAadhaarOtp
+      summary: Verify Aadhaar OTP
+      description: |
+        Verifies OTP and retrieves demographic data from UIDAI.
+
+        **API ID**: POL-API-014
+
+        **User Journeys**: UJ-POL-003
+
+        **Functional Requirements**: FR-POL-020
+
+        **Integration Points**:
+        - INT-POL-005: UIDAI verification
+        - INT-POL-008: DMS for Aadhaar photo storage
+
+        **Response includes**:
+        - Customer demographic data (name, DOB, gender, address)
+        - Photo from UIDAI (stored in DMS)
+        - Session ID for proposal submission
+
+        **Error Codes**:
+        - ERR-POL-062: Invalid OTP
+        - ERR-POL-063: OTP expired
+        - ERR-POL-064: Max retries exceeded
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AadhaarVerifyOtpRequest'
+      responses:
+        '200':
+          description: OTP verified, data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AadhaarVerifyOtpResponse'
+        '400':
+          description: Verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/aadhaar/submit:
+    post:
+      tags:
+        - Aadhaar Flow
+      operationId: submitAadhaarProposal
+      summary: Submit Aadhaar-based proposal
+      description: |
+        Submits complete proposal with Aadhaar-authenticated data.
+        Supports instant issuance for non-medical cases.
+
+        **API ID**: POL-API-015
+
+        **User Journeys**: UJ-POL-003
+
+        **Functional Requirements**: FR-POL-020, FR-POL-030
+
+        **Business Rules**:
+        - BR-POL-013: Medical requirement check
+        - BR-POL-015: Accelerated state machine for instant issuance
+
+        **Instant Issuance Criteria**:
+        - Age ≤ 50 years
+        - SA within non-medical limit (< 20 Lakh)
+        - No adverse medical history
+        - Payment completed
+
+        **Temporal Workflow**:
+        - WF-PI-002 (InstantIssuanceWorkflow) if eligible
+        - WF-PI-001 (PolicyIssuanceWorkflow) otherwise
+
+        **Error Codes**:
+        - ERR-POL-048: Not eligible for instant issuance
+        - ERR-POL-037: Medical examination required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AadhaarSubmitRequest'
+      responses:
+        '200':
+          description: Proposal submitted
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InstantIssuanceResponse'
+                  - $ref: '#/components/schemas/StandardIssuanceResponse'
+              examples:
+                instantIssuance:
+                  $ref: '#/components/examples/InstantIssuanceSuccess'
+                standardFlow:
+                  $ref: '#/components/examples/StandardFlowPendingMedical'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================
+  # APPROVAL WORKFLOW APIs (5 APIs)
+  # ============================================
+
+  /proposals/{proposal_id}/qr-approve:
+    post:
+      tags:
+        - Approval
+      operationId: qrApproveProposal
+      summary: QR approves proposal
+      description: |
+        Quality Reviewer approves proposal for next stage.
+
+        **API ID**: POL-API-017
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-022
+
+        **Business Rules**:
+        - BR-POL-015: State transition QC_PENDING → QC_APPROVED
+        - BR-POL-016: Routes to appropriate approver level based on SA
+
+        **State Transitions**:
+        - If medical required: QC_APPROVED → PENDING_MEDICAL
+        - If no medical: QC_APPROVED → APPROVAL_PENDING
+
+        **Temporal Workflow**: Sends SignalQRDecision with APPROVED
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QRDecisionRequest'
+      responses:
+        '200':
+          description: QR approval recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRApprovalResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Invalid state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/qr-reject:
+    post:
+      tags:
+        - Approval
+      operationId: qrRejectProposal
+      summary: QR rejects proposal
+      description: |
+        Quality Reviewer rejects proposal with mandatory comments.
+
+        **API ID**: POL-API-018
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-022
+
+        **Business Rules**:
+        - BR-POL-015: State transition QC_PENDING → QC_REJECTED
+        - BR-POL-017: Rejection requires comments
+
+        **Validation Rules**:
+        - VAL-POL-013: Comments mandatory for rejection
+
+        **Error Codes**:
+        - ERR-POL-054: Rejection details
+
+        **Temporal Workflow**: Sends SignalQRDecision with REJECTED
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QRRejectRequest'
+      responses:
+        '200':
+          description: QR rejection recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRRejectionResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/qr-return:
+    post:
+      tags:
+        - Approval
+      operationId: qrReturnProposal
+      summary: QR returns proposal for corrections
+      description: |
+        Quality Reviewer returns proposal to CPC for corrections.
+
+        **API ID**: POL-API-019
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-022
+
+        **Business Rules**:
+        - BR-POL-015: State transition QC_PENDING → QC_RETURNED
+
+        **Workflow**:
+        - CPC can make corrections
+        - CPC resubmits via submit-for-qc endpoint
+        - Proposal returns to QC_PENDING
+
+        **Temporal Workflow**: Sends SignalQRDecision with RETURNED
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QRReturnRequest'
+      responses:
+        '200':
+          description: Proposal returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRReturnResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/approve:
+    post:
+      tags:
+        - Approval
+      operationId: approveProposal
+      summary: Approver approves proposal
+      description: |
+        Final approver (L1/L2/L3) approves proposal for policy issuance.
+
+        **API ID**: POL-API-020
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-022, FR-POL-023
+
+        **Business Rules**:
+        - BR-POL-015: State transition APPROVAL_PENDING → APPROVED
+        - BR-POL-025: Age revalidation at approval
+        - Policy number generated upon approval
+
+        **Approval Hierarchy (BR-POL-016)**:
+        - Level 1: SA ≤ 5,00,000
+        - Level 2: SA ≤ 10,00,000
+        - Level 3: SA > 10,00,000
+
+        **Error Codes**:
+        - ERR-POL-049: Incorrect approver level
+        - ERR-POL-050: Quality review pending
+
+        **Temporal Workflow**: Sends SignalApproverDecision with APPROVED
+
+        **Events Published**: proposal.approved
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproverDecisionRequest'
+      responses:
+        '200':
+          description: Proposal approved, policy number assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Approver level mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                incorrectLevel:
+                  $ref: '#/components/examples/ERR-POL-049'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /proposals/{proposal_id}/reject:
+    post:
+      tags:
+        - Approval
+      operationId: rejectProposal
+      summary: Approver rejects proposal
+      description: |
+        Final approver rejects proposal with mandatory reason.
+
+        **API ID**: POL-API-021
+
+        **User Journeys**: UJ-POL-006
+
+        **Functional Requirements**: FR-POL-022
+
+        **Business Rules**:
+        - BR-POL-015: State transition APPROVAL_PENDING → REJECTED
+        - BR-POL-017: Rejection requires comments
+
+        **Actions Triggered**:
+        - Premium refund initiated
+        - Customer notification sent
+
+        **Temporal Workflow**: Sends SignalApproverDecision with REJECTED
+
+        **Events Published**: proposal.rejected
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproverRejectRequest'
+      responses:
+        '200':
+          description: Proposal rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================
+  # POLICY LIFECYCLE APIs (3 APIs)
+  # ============================================
+
+  /policies/{policy_id}:
+    get:
+      tags:
+        - Policy
+      operationId: getPolicy
+      summary: Get policy details
+      description: |
+        Retrieves complete policy details by ID.
+
+        **User Journeys**: UJ-POL-007, UJ-POL-009
+
+        **Functional Requirements**: FR-POL-025
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Policy details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /policies/{policy_id}/flc-cancel:
+    post:
+      tags:
+        - Policy
+      operationId: cancelPolicyFLC
+      summary: Cancel policy during free look period
+      description: |
+        Processes free look cancellation within FLC period.
+
+        **API ID**: POL-API-022
+
+        **User Journeys**: UJ-POL-009
+
+        **Functional Requirements**: FR-POL-027
+
+        **Business Rules**:
+        - BR-POL-009: FLC Refund Calculation
+          - Deduct proportionate risk premium (days of coverage)
+          - Deduct stamp duty
+          - Deduct medical fee (if applicable)
+        - BR-POL-021: Free Look Period Duration (15-30 days based on channel)
+        - BR-POL-028: FLC Start Date Determination
+
+        **Validation Rules**:
+        - VR-PI-024: Within free look period
+
+        **Error Codes**:
+        - ERR-POL-053: Free look period expired
+
+        **Integration Points**:
+        - INT-POL-011: Collections Service (refund)
+        - INT-POL-014: Agent Service (commission clawback)
+        - INT-POL-012: Accounting Service (GL reversal)
+
+        **Temporal Workflow**: Sends SignalFLCCancelRequest
+
+        **Events Published**: policy.flc_cancelled
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FLCCancelRequest'
+      responses:
+        '200':
+          description: FLC cancellation processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FLCCancelResponse'
+        '400':
+          description: FLC period expired or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                flcExpired:
+                  $ref: '#/components/examples/ERR-POL-053'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /policies/{policy_id}/flc-status:
+    get:
+      tags:
+        - Policy
+      operationId: getFLCStatus
+      summary: Get free look period status
+      description: |
+        Retrieves current free look period status for a policy.
+
+        **API ID**: STATUS-POL-004
+
+        **User Journeys**: UJ-POL-009
+
+        **Business Rules**:
+        - BR-POL-021: FLC period duration
+        - BR-POL-028: FLC start date determination
+
+        **Response includes**:
+        - FLC start date
+        - FLC end date
+        - Days remaining
+        - Eligibility status
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: FLC status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FLCStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================
+  # LOOKUP APIs (10 APIs)
+  # ============================================
+
+  /lookup/products:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupProducts
+      summary: Get product dropdown
+      description: |
+        **API ID**: LU-POL-001
+
+        **Used In**: UJ-POL-001 Step 1
+      responses:
+        '200':
+          description: Products list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/relationships:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupRelationships
+      summary: Get relationship dropdown
+      description: |
+        **API ID**: LU-POL-002
+
+        **Used In**: UJ-POL-002 Step 4 (Nominee details)
+
+        **Purpose**: Returns list of valid relationships for:
+        - Nominee relationship to insured (e.g., SPOUSE, SON, DAUGHTER, FATHER, MOTHER, BROTHER, SISTER, etc.)
+        - Proposer relationship to insured (when proposer ≠ insured)
+        - HUF member relationships (Karta, Co-parcener)
+        - Appointee relationship for minor nominees
+
+        This is used for nominee appointment and also validates family relationships for underwriting purposes.
+      responses:
+        '200':
+          description: Relationships list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/salutations:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupSalutations
+      summary: Get salutation dropdown
+      description: |
+        **API ID**: LU-POL-003
+
+        **Used In**: All insured details screens
+      responses:
+        '200':
+          description: Salutations list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/states:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupStates
+      summary: Get state dropdown
+      description: |
+        **API ID**: LU-POL-004
+
+        **Used In**: Address capture
+      responses:
+        '200':
+          description: States list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/occupations:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupOccupations
+      summary: Get occupation dropdown
+      description: |
+        **API ID**: LU-POL-005
+
+        **Used In**: Employment details
+      responses:
+        '200':
+          description: Occupations list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/age-proof-types:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupAgeProofTypes
+      summary: Get age proof types dropdown
+      description: |
+        **API ID**: LU-POL-006
+
+        **Used In**: Document upload
+
+        **Values**: AADHAAR, BIRTH_CERTIFICATE, SCHOOL_CERTIFICATE, PASSPORT,
+        VOTER_ID, DRIVING_LICENSE, PAN, OTHER_STANDARD, NON_STANDARD_AFFIDAVIT,
+        NON_STANDARD_DECLARATION
+      responses:
+        '200':
+          description: Age proof types list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/payment-modes:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupPaymentModes
+      summary: Get payment modes dropdown
+      description: |
+        **API ID**: LU-POL-007
+
+        **Used In**: Premium payment
+
+        **Values**: CASH, CHEQUE, DD, ONLINE, POSB, NACH, ECS,
+        STANDING_INSTRUCTION, UPI, NEFT, RTGS
+      responses:
+        '200':
+          description: Payment modes list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/document-types:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupDocumentTypes
+      summary: Get document types dropdown
+      description: |
+        **API ID**: LU-POL-008
+
+        **Used In**: Document upload
+
+        **Values**: PROPOSAL_FORM, DOB_PROOF, ADDRESS_PROOF, PHOTO_ID,
+        MEDICAL_REPORT, PAYMENT_COPY, HEALTH_DECLARATION, PHOTO, OTHER
+      responses:
+        '200':
+          description: Document types list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/rejection-reasons:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupRejectionReasons
+      summary: Get rejection reasons dropdown
+      description: |
+        **API ID**: LU-POL-009
+
+        **Used In**: UJ-POL-006 (QR/Approver reject)
+      responses:
+        '200':
+          description: Rejection reasons list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  /lookup/cancellation-reasons:
+    get:
+      tags:
+        - Lookup
+      operationId: lookupCancellationReasons
+      summary: Get FLC cancellation reasons dropdown
+      description: |
+        **API ID**: LU-POL-010
+
+        **Used In**: UJ-POL-009 (FLC cancellation)
+      responses:
+        '200':
+          description: Cancellation reasons list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+
+  # ============================================
+  # VALIDATION APIs (8 APIs)
+  # ============================================
+
+  /validate/eligibility:
+    post:
+      tags:
+        - Validation
+      operationId: validateEligibility
+      summary: Real-time eligibility check
+      description: |
+        **API ID**: VAL-POL-001
+
+        **Components**: BR-POL-011, BR-POL-012
+
+        Validates customer eligibility for product including age, SA limits,
+        aggregate SA check.
+
+        **Integration Points**: INT-POL-002 (Customer Service for aggregate SA)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EligibilityCheckRequest'
+      responses:
+        '200':
+          description: Eligibility result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityCheckResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /validate/aadhaar-format:
+    post:
+      tags:
+        - Validation
+      operationId: validateAadhaarFormat
+      summary: Validate Aadhaar format
+      description: |
+        **API ID**: VAL-POL-002
+
+        **Components**: VR-PI-008
+
+        Validates Aadhaar number format (12 digits).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - aadhaar_number
+              properties:
+                aadhaar_number:
+                  type: string
+                  pattern: '^[0-9]{12}$'
+      responses:
+        '200':
+          description: Format validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormatValidationResponse'
+
+  /validate/pan-format:
+    post:
+      tags:
+        - Validation
+      operationId: validatePanFormat
+      summary: Validate PAN format
+      description: |
+        **API ID**: VAL-POL-003
+
+        **Components**: VR-PI-009
+
+        Validates PAN format (AAAAA9999A).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pan_number
+              properties:
+                pan_number:
+                  type: string
+                  pattern: '^[A-Z]{5}[0-9]{4}[A-Z]{1}$'
+      responses:
+        '200':
+          description: Format validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormatValidationResponse'
+
+  /validate/pincode:
+    post:
+      tags:
+        - Validation
+      operationId: validatePincode
+      summary: Validate pincode-state combination
+      description: |
+        **API ID**: VAL-POL-004
+
+        **Components**: VR-PI-034, VR-PI-035
+
+        Validates 6-digit pincode and state match.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pincode
+              properties:
+                pincode:
+                  type: string
+                  pattern: '^[0-9]{6}$'
+                state:
+                  type: string
+      responses:
+        '200':
+          description: Pincode validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PincodeValidationResponse'
+
+  /validate/bank-ifsc:
+    post:
+      tags:
+        - Validation
+      operationId: validateBankIfsc
+      summary: Validate IFSC code
+      description: |
+        **API ID**: VAL-POL-005
+
+        **Components**: VR-PI-030
+
+        Validates 11-character IFSC code format and optionally verifies with bank directory.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ifsc_code
+              properties:
+                ifsc_code:
+                  type: string
+                  pattern: '^[A-Z]{4}0[A-Z0-9]{6}$'
+      responses:
+        '200':
+          description: IFSC validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IFSCValidationResponse'
+
+  /validate/nominee-shares:
+    post:
+      tags:
+        - Validation
+      operationId: validateNomineeShares
+      summary: Validate nominee share percentages
+      description: |
+        **API ID**: VAL-POL-006
+
+        **Components**: VR-PI-018
+
+        Validates that nominee shares total exactly 100%.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shares:
+                  type: array
+                  description: Simple share-only validation (backward compatible). Use nominees for richer validation.
+                  items:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                nominees:
+                  type: array
+                  description: Rich nominee entries with share, minor/appointee validation. Max 3 nominees.
+                  items:
+                    $ref: '#/components/schemas/NomineeShareEntry'
+      responses:
+        '200':
+          description: Share validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareValidationResponse'
+
+  /validate/date-chain:
+    post:
+      tags:
+        - Validation
+      operationId: validateDateChain
+      summary: Validate proposal date sequence
+      description: |
+        **API ID**: VAL-POL-007
+
+        **Components**: BR-POL-018
+
+        Validates date chain: declaration_date ≤ receipt_date ≤ indexing_date ≤ proposal_date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - declaration_date
+                - receipt_date
+                - indexing_date
+                - proposal_date
+              properties:
+                declaration_date:
+                  type: string
+                  format: date
+                receipt_date:
+                  type: string
+                  format: date
+                indexing_date:
+                  type: string
+                  format: date
+                proposal_date:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Date chain validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DateChainValidationResponse'
+
+  /validate/aggregate-sa:
+    post:
+      tags:
+        - Validation
+      operationId: validateAggregateSA
+      summary: Check aggregate sum assured
+      description: |
+        **API ID**: VAL-POL-008
+
+        **Components**: INT-POL-002
+
+        **Integration Points**: Customer Service (Portfolio check)
+
+        Checks if proposed SA + existing SA exceeds aggregate limits.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AggregateSACheckRequest'
+      responses:
+        '200':
+          description: Aggregate SA check result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AggregateSACheckResponse'
+
+  # ============================================
+  # CALCULATION APIs (4 APIs)
+  # ============================================
+
+  /calculate/premium:
+    post:
+      tags:
+        - Calculation
+      operationId: calculatePremium
+      summary: Calculate premium breakdown
+      description: |
+        **API ID**: CALC-POL-001
+
+        **Components**: BR-POL-001, BR-POL-002, BR-POL-010
+
+        Full premium calculation with base premium, GST, rebates.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PremiumCalculationRequest'
+      responses:
+        '200':
+          description: Premium calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PremiumCalculationResponse'
+
+  /calculate/maturity-value:
+    post:
+      tags:
+        - Calculation
+      operationId: calculateMaturityValue
+      summary: Calculate maturity value estimation
+      description: |
+        **API ID**: CALC-POL-002
+
+        **Components**: FR-POL-001
+
+        Calculates indicative maturity value with guaranteed and bonus components.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaturityCalculationRequest'
+      responses:
+        '200':
+          description: Maturity calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaturityCalculationResponse'
+
+  /calculate/flc-refund:
+    post:
+      tags:
+        - Calculation
+      operationId: calculateFLCRefund
+      summary: Preview FLC refund amount
+      description: |
+        **API ID**: CALC-POL-003
+
+        **Components**: BR-POL-009
+
+        Calculates FLC refund with deductions for proportionate risk, stamp duty, medical fee.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FLCRefundCalculationRequest'
+      responses:
+        '200':
+          description: FLC refund calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FLCRefundCalculationResponse'
+
+  /calculate/gst:
+    post:
+      tags:
+        - Calculation
+      operationId: calculateGST
+      summary: Calculate GST breakdown
+      description: |
+        **API ID**: CALC-POL-004
+
+        **Components**: BR-POL-002
+
+        Calculates CGST/SGST or IGST based on state of insured vs provider.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GSTCalculationRequest'
+      responses:
+        '200':
+          description: GST calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GSTCalculationResponse'
+
+  # ============================================
+  # DOCUMENT APIs (4 APIs)
+  # ============================================
+
+  /proposals/{proposal_id}/required-documents:
+    get:
+      tags:
+        - Document
+      operationId: getRequiredDocuments
+      summary: Get dynamic document checklist
+      description: |
+        **API ID**: DOC-POL-001
+
+        **Components**: FR-POL-029
+
+        Returns list of required documents based on product, SA, age, and other criteria.
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      responses:
+        '200':
+          description: Document checklist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentChecklistResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /proposals/{proposal_id}/documents:
+    post:
+      tags:
+        - Document
+      operationId: uploadDocument
+      summary: Upload document
+      description: |
+        **API ID**: DOC-POL-002
+
+        **Integration Points**: INT-POL-008 (DMS)
+
+        **Validation Rules**:
+        - VR-PI-021: File type (PDF, JPG, PNG, JPEG only)
+        - VR-PI-022: File size (max 5 MB)
+        - VR-PI-023: Document date not in future
+
+        **Error Codes**:
+        - ERR-POL-026: Invalid file type
+        - ERR-POL-027: File size exceeds limit
+        - ERR-POL-028: Invalid document date
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentUploadRequest'
+      responses:
+        '201':
+          description: Document uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /proposals/{proposal_id}/documents/{document_id}:
+    get:
+      tags:
+        - Document
+      operationId: downloadDocument
+      summary: Get document metadata
+      description: |
+        **API ID**: DOC-POL-003
+
+        **Integration Points**: INT-POL-008 (DMS)
+
+        Returns document metadata and download URL. In production, actual file
+        content is served via DMS proxy/redirect.
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            description: Document reference ID (bigint)
+      responses:
+        '200':
+          description: Document metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Document
+      operationId: removeDocument
+      summary: Remove document
+      description: |
+        **API ID**: DOC-POL-004
+
+        **Integration Points**: INT-POL-008 (DMS)
+
+        Soft-deletes document from proposal. Requires maker-checker for certain document types.
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            description: Document reference ID (bigint)
+      responses:
+        '204':
+          description: Document removed
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          description: Deletion not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /proposals/{proposal_id}/missing-documents:
+    get:
+      tags:
+        - Document
+      operationId: getMissingDocuments
+      summary: Get list of missing documents
+      description: |
+        Get all missing documents recorded for a proposal during QC/Approval review stages.
+
+        **API ID**: DOC-POL-005
+
+        **Business Rules**:
+        - Returns documents marked as missing during QC_REVIEW or APPROVAL stage
+        - Includes resolution status (PENDING, UPLOADED, WAIVED)
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+        - name: stage
+          in: query
+          description: Filter by stage where missing was noted
+          schema:
+            type: string
+            enum: [QC_REVIEW, APPROVAL]
+        - name: status
+          in: query
+          description: Filter by resolution status
+          schema:
+            type: string
+            enum: [PENDING, UPLOADED, WAIVED]
+      responses:
+        '200':
+          description: Missing documents list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissingDocumentsListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Document
+      operationId: addMissingDocument
+      summary: Record a missing document
+      description: |
+        Record a document as missing during QC/Approval review.
+
+        **API ID**: DOC-POL-006
+
+        **Business Rules**:
+        - Can only be added during QC_REVIEW or APPROVAL stage
+        - Used to track documents that need follow-up
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MissingDocumentCreateRequest'
+      responses:
+        '201':
+          description: Missing document recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMissingNotation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /proposals/{proposal_id}/missing-documents/{missing_doc_id}/resolve:
+    put:
+      tags:
+        - Document
+      operationId: resolveMissingDocument
+      summary: Resolve a missing document
+      description: |
+        Mark a missing document as resolved (uploaded or waived).
+
+        **API ID**: DOC-POL-007
+
+        **Business Rules**:
+        - Status can be set to UPLOADED (with document reference) or WAIVED (with reason)
+        - Waivers may require additional authorization
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+        - name: missing_doc_id
+          in: path
+          required: true
+          description: Missing document record ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MissingDocumentResolveRequest'
+      responses:
+        '200':
+          description: Missing document resolved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMissingNotation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # STATUS & TRACKING APIs (4 APIs)
+  # ============================================
+
+  /proposals/{proposal_id}/status:
+    get:
+      tags:
+        - Status
+      operationId: getProposalStatus
+      summary: Get proposal status
+      description: |
+        **API ID**: STATUS-POL-001
+
+        **Components**: BR-POL-015
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      responses:
+        '200':
+          description: Proposal status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /proposals/{proposal_id}/timeline:
+    get:
+      tags:
+        - Status
+      operationId: getProposalTimeline
+      summary: Get proposal timeline
+      description: |
+        **API ID**: STATUS-POL-002
+
+        **Components**: FR-POL-033
+
+        Returns complete timeline of proposal status changes with timestamps and actors.
+      parameters:
+        - $ref: '#/components/parameters/ProposalId'
+      responses:
+        '200':
+          description: Proposal timeline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalTimelineResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /policies/{policy_id}/status:
+    get:
+      tags:
+        - Status
+      operationId: getPolicyStatus
+      summary: Get policy status
+      description: |
+        **API ID**: STATUS-POL-003
+
+        **Components**: FR-POL-025
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Policy status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # WORKFLOW MANAGEMENT APIs (3 APIs)
+  # ============================================
+
+  /workflows/{workflow_id}/state:
+    get:
+      tags:
+        - Workflow
+      operationId: getWorkflowState
+      summary: Get Temporal workflow state
+      description: |
+        **API ID**: WF-POL-001
+
+        **Components**: WF-PI-001
+
+        Queries Temporal workflow for current state, progress, and pending actions.
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowStateResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /workflows/{workflow_id}/signal/{signal_name}:
+    post:
+      tags:
+        - Workflow
+      operationId: sendWorkflowSignal
+      summary: Send signal to workflow
+      description: |
+        **API ID**: WF-POL-002
+
+        **Components**: WF-PI-001
+
+        **Available Signals**:
+        - qr-decision: QR approval/rejection/return
+        - medical-result: Medical outcome callback
+        - approver-decision: Final approval/rejection
+        - payment-received: Payment confirmation
+        - flc-cancel-request: FLC cancellation
+        - death-notification: Death during processing
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: signal_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - qr-decision
+              - medical-result
+              - approver-decision
+              - payment-received
+              - cpc-resubmit
+              - flc-cancel-request
+              - death-notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '202':
+          description: Signal accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # BULK UPLOAD APIs (2 APIs)
+  # ============================================
+
+  /bulk-upload/proposals:
+    post:
+      tags:
+        - Bulk Upload
+      operationId: uploadBulkProposals
+      summary: Upload bulk proposal file
+      description: |
+        **User Journeys**: UJ-POL-010
+
+        **Functional Requirements**: FR-POL-021
+
+        **Business Rules**:
+        - BR-POL-029: Combined cheque reconciliation
+
+        **Temporal Workflow**: Starts WF-PI-003 (BulkProposalUploadWorkflow)
+
+        **File Formats**: CSV, Excel
+
+        **Max Rows**: 1000 per batch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - file_name
+                - mime_type
+                - file_size
+                - total_rows
+                - payment_type
+                - uploaded_by
+              properties:
+                file_name:
+                  type: string
+                  description: Name of the uploaded file (must end with .csv, .xls, or .xlsx)
+                mime_type:
+                  type: string
+                  description: MIME type of the file
+                  enum:
+                    - text/csv
+                    - application/vnd.ms-excel
+                    - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                file_size:
+                  type: integer
+                  format: int64
+                  description: File size in bytes (max 10 MB)
+                  maximum: 10485760
+                total_rows:
+                  type: integer
+                  description: Total number of data rows in the file
+                  minimum: 1
+                  maximum: 1000
+                payment_type:
+                  type: string
+                  enum:
+                    - INDIVIDUAL
+                    - COMBINED_CHEQUE
+                cheque_amount:
+                  type: number
+                  description: Required if payment_type is COMBINED_CHEQUE (BR-POL-029)
+                uploaded_by:
+                  type: integer
+                  format: int64
+                  description: User ID of the uploader
+      responses:
+        '202':
+          description: Upload accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /bulk-upload/batches/{batch_id}:
+    get:
+      tags:
+        - Bulk Upload
+      operationId: getBulkUploadStatus
+      summary: Get bulk upload batch status
+      description: |
+        Retrieves status and results of bulk upload batch.
+      parameters:
+        - name: batch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Batch status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUploadStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ============================================
+# COMPONENTS
+# ============================================
+
+components:
+  parameters:
+    ProposalId:
+      name: proposal_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: Unique proposal identifier (bigint) - use /proposals/resolve/{proposal_number} to get ID from number
+
+    ProposalNumber:
+      name: proposal_number
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Human-readable proposal number (e.g., PLI-MH-2026-00056789)
+
+  responses:
+    BadRequest:
+      description: Bad Request - Validation Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    # ============================================
+    # ERROR SCHEMAS
+    # ============================================
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - category
+            - message
+            - http_status
+          properties:
+            code:
+              type: string
+              description: Error code (e.g., ERR-POL-001)
+              example: "ERR-POL-018"
+            category:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - BUSINESS_RULE_ERROR
+                - INTEGRATION_ERROR
+                - SYSTEM_ERROR
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Sum assured must be between Rs. 50,000 and Rs. 10,00,000"
+            field:
+              type: string
+              description: Field that caused the error
+              example: "sum_assured"
+            http_status:
+              type: integer
+              example: 400
+            details:
+              type: object
+              additionalProperties: true
+              example:
+                provided_value: 25000
+                min_value: 50000
+                max_value: 1000000
+                related_rules: ["VR-PI-013", "BR-PI-013"]
+            timestamp:
+              type: string
+              format: date-time
+            path:
+              type: string
+              example: "/api/v1/proposals"
+            request_id:
+              type: string
+              example: "req-abc-123-xyz"
+            resolution_steps:
+              type: array
+              items:
+                type: string
+
+    # ============================================
+    # QUOTE SCHEMAS
+    # ============================================
+
+    ProductListResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    Product:
+      type: object
+      properties:
+        product_code:
+          type: string
+          example: "PLI_WLA"
+        product_name:
+          type: string
+          example: "Suraksha (Whole Life Assurance)"
+        product_type:
+          type: string
+          enum: [PLI, RPLI]
+        min_sum_assured:
+          type: number
+          example: 20000
+        max_sum_assured:
+          type: number
+          nullable: true
+        min_entry_age:
+          type: integer
+          example: 19
+        max_entry_age:
+          type: integer
+          example: 55
+        min_term:
+          type: integer
+          example: 10
+        max_term:
+          type: integer
+          example: 50
+        available_frequencies:
+          type: array
+          items:
+            type: string
+            enum: [MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY]
+        description:
+          type: string
+
+    QuoteCalculateRequest:
+      type: object
+      required:
+        - policy_type
+        - product_code
+        - proposer
+        - coverage
+      properties:
+        policy_type:
+          type: string
+          enum: [PLI, RPLI]
+        product_code:
+          type: string
+        proposer:
+          type: object
+          required:
+            - date_of_birth
+            - gender
+          properties:
+            name:
+              type: string
+            date_of_birth:
+              type: string
+              format: date
+            gender:
+              type: string
+              enum: [MALE, FEMALE, OTHER]
+            mobile:
+              type: string
+              pattern: '^[0-9]{10}$'
+            email:
+              type: string
+              format: email
+        coverage:
+          type: object
+          required:
+            - sum_assured
+            - policy_term
+            - payment_frequency
+          properties:
+            sum_assured:
+              type: number
+              minimum: 20000
+            policy_term:
+              type: integer
+              minimum: 5
+              maximum: 50
+            payment_frequency:
+              type: string
+              enum: [MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY]
+        location:
+          type: object
+          properties:
+            state:
+              type: string
+            city:
+              type: string
+
+    QuoteCalculateResponse:
+      type: object
+      properties:
+        calculation_id:
+          type: string
+          format: uuid
+        eligibility:
+          type: object
+          properties:
+            is_eligible:
+              type: boolean
+            age_at_entry:
+              type: integer
+            maturity_age:
+              type: integer
+        premium_breakdown:
+          $ref: '#/components/schemas/PremiumBreakdown'
+        benefit_illustration:
+          type: object
+          properties:
+            maturity_value_guaranteed:
+              type: number
+            maturity_value_with_bonus:
+              type: number
+            indicative_bonus_rate:
+              type: number
+            death_benefit:
+              type: number
+        calculation_basis:
+          type: object
+          properties:
+            premium_table:
+              type: string
+            rate_per_thousand:
+              type: number
+            gst_rate:
+              type: number
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    PremiumBreakdown:
+      type: object
+      properties:
+        base_premium:
+          type: number
+        rebate:
+          type: number
+        net_premium:
+          type: number
+        cgst:
+          type: number
+        sgst:
+          type: number
+        igst:
+          type: number
+        total_gst:
+          type: number
+        total_payable:
+          type: number
+
+    QuoteCreateRequest:
+      type: object
+      required:
+        - calculation_id
+        - policy_type
+        - product_code
+        - proposer
+        - coverage
+        - channel
+        - created_by
+      properties:
+        calculation_id:
+          type: string
+          format: uuid
+        policy_type:
+          type: string
+          enum: [PLI, RPLI]
+        product_code:
+          type: string
+        proposer:
+          type: object
+          properties:
+            name:
+              type: string
+            date_of_birth:
+              type: string
+              format: date
+            gender:
+              type: string
+              enum: [MALE, FEMALE, OTHER]
+            mobile:
+              type: string
+            email:
+              type: string
+              format: email
+        coverage:
+          type: object
+          properties:
+            sum_assured:
+              type: number
+            policy_term:
+              type: integer
+            payment_frequency:
+              type: string
+        channel:
+          type: string
+          enum: [WEB, MOBILE, AGENCY, POS, CSC, DIRECT]
+        created_by:
+          type: integer
+          format: int64
+          description: User ID who created the quote
+        generate_pdf:
+          type: boolean
+          default: true
+        send_email:
+          type: boolean
+          default: false
+
+    QuoteCreateResponse:
+      type: object
+      properties:
+        quote_id:
+          type: string
+          format: uuid
+        quote_ref_number:
+          type: string
+          example: "QT-PLI-2026-00012345"
+        status:
+          type: string
+          enum: [GENERATED, SAVED]
+        premium_breakdown:
+          $ref: '#/components/schemas/PremiumBreakdown'
+        pdf_document:
+          type: object
+          properties:
+            document_id:
+              type: string
+            download_url:
+              type: string
+        validity:
+          type: object
+          properties:
+            expires_at:
+              type: string
+              format: date-time
+            days_valid:
+              type: integer
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    QuoteConvertResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        quote_id:
+          type: string
+          format: uuid
+          description: Quote reference ID (may be UUID from quote service)
+        status:
+          type: string
+        redirect_url:
+          type: string
+
+    # ============================================
+    # PROPOSAL SCHEMAS
+    # ============================================
+
+    ProposalIndexingRequest:
+      type: object
+      required:
+        - policy_type
+        - product_code
+        - entry_path
+        - po_code
+        - dates
+        - quote_ref_number
+        - customer_id
+      properties:
+        policy_type:
+          type: string
+          enum: [PLI, RPLI]
+        product_code:
+          type: string
+        entry_path:
+          type: string
+          enum: [WITHOUT_AADHAAR, WITH_AADHAAR, BULK_UPLOAD, QUOTE_CONVERSION]
+        po_code:
+          type: string
+        channel:
+          type: string
+          enum: [DIRECT, AGENCY, WEB, MOBILE, POS, CSC]
+        customer_id:
+          type: integer
+          format: int64
+          description: MANDATORY - Customer ID from Customer Service (linked/created before indexing)
+        spouse_customer_id:
+          type: integer
+          format: int64
+          description: Spouse customer ID for Yugal Suraksha policies
+        proposer_customer_id:
+          type: integer
+          format: int64
+          description: Proposer customer ID when proposer is different from insured
+        dates:
+          type: object
+          required:
+            - declaration_date
+            - receipt_date
+            - indexing_date
+            - proposal_date
+          properties:
+            declaration_date:
+              type: string
+              format: date
+            receipt_date:
+              type: string
+              format: date
+            indexing_date:
+              type: string
+              format: date
+            proposal_date:
+              type: string
+              format: date
+        quote_ref_number:
+          type: string
+          description: Quote reference number - mandatory for tracking proposal source
+
+    ProposalIndexingResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+          description: Unique proposal identifier (bigint)
+        proposal_number:
+          type: string
+          example: "PLI-MH-2026-00056789"
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID created/linked for this proposal
+        status:
+          type: string
+          enum: [DATA_ENTRY]
+        workflow_id:
+          type: string
+        acknowledgement:
+          type: object
+          properties:
+            receipt_number:
+              type: string
+            receipt_date:
+              type: string
+              format: date
+            download_url:
+              type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    ProposalDetailResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+          description: Unique proposal identifier (bigint)
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID linked to this proposal
+        status:
+          type: string
+        policy_type:
+          type: string
+        product_code:
+          type: string
+        insured:
+          type: object
+          additionalProperties: true
+        coverage:
+          type: object
+          additionalProperties: true
+        nominees:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        medical:
+          type: object
+          additionalProperties: true
+        agent:
+          type: object
+          additionalProperties: true
+        premium:
+          $ref: '#/components/schemas/PremiumBreakdown'
+        dates:
+          type: object
+          additionalProperties: true
+        documents:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    InsuredDetailsRequest:
+      type: object
+      required:
+        - salutation
+        - first_name
+        - last_name
+        - date_of_birth
+        - gender
+        - mobile
+      properties:
+        salutation:
+          type: string
+          enum: [MR, MRS, MS, DR, SHRI, SMT, KUM]
+        first_name:
+          type: string
+          maxLength: 100
+        middle_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        marital_status:
+          type: string
+          enum: [SINGLE, MARRIED, DIVORCED, WIDOWED]
+        father_name:
+          type: string
+        husband_name:
+          type: string
+        mobile:
+          type: string
+          pattern: '^[0-9]{10}$'
+        email:
+          type: string
+          format: email
+        aadhaar_number:
+          type: string
+          pattern: '^[0-9]{12}$'
+        pan_number:
+          type: string
+          pattern: '^[A-Z]{5}[0-9]{4}[A-Z]{1}$'
+        communication_address:
+          $ref: '#/components/schemas/Address'
+        permanent_address:
+          $ref: '#/components/schemas/Address'
+        is_permanent_same_as_communication:
+          type: boolean
+          default: true
+        occupation:
+          type: string
+        employment:
+          type: object
+          properties:
+            employer_name:
+              type: string
+            designation:
+              type: string
+            pao_code:
+              type: string
+            ddo_code:
+              type: string
+            ddo_mobile_no:
+              type: string
+              pattern: '^[0-9]{10}$'
+              description: DDO contact mobile number
+            ddo_designation:
+              type: string
+              description: DDO designation
+            ddo_email:
+              type: string
+              format: email
+              description: DDO email address
+            ddo_location:
+              type: string
+              description: DDO office location
+            medical_policy:
+              type: boolean
+              default: false
+              description: Whether insured has medical policy coverage through employer
+            date_of_joining:
+              type: string
+              format: date
+
+    Address:
+      type: object
+      properties:
+        address_line1:
+          type: string
+          maxLength: 200
+        address_line2:
+          type: string
+          maxLength: 200
+        city:
+          type: string
+        village:
+          type: string
+        district:
+          type: string
+        state:
+          type: string
+        pincode:
+          type: string
+          pattern: '^[0-9]{6}$'
+        country:
+          type: string
+          default: "India"
+
+    NomineesRequest:
+      type: object
+      required:
+        - nominees
+      properties:
+        nominees:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/Nominee'
+
+    Nominee:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - date_of_birth
+        - gender
+        - relationship
+        - share_percentage
+      properties:
+        salutation:
+          type: string
+        first_name:
+          type: string
+        middle_name:
+          type: string
+        last_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        relationship:
+          type: string
+        share_percentage:
+          type: number
+          minimum: 1
+          maximum: 100
+        address:
+          $ref: '#/components/schemas/Address'
+        phone:
+          type: string
+        email:
+          type: string
+        appointee:
+          type: object
+          description: Required if nominee is minor
+          properties:
+            name:
+              type: string
+            relationship:
+              type: string
+            date_of_birth:
+              type: string
+              format: date
+            address:
+              type: string
+
+    PolicyDetailsRequest:
+      type: object
+      required:
+        - sum_assured
+        - policy_term
+        - payment_frequency
+      properties:
+        sum_assured:
+          type: number
+          minimum: 20000
+        policy_term:
+          type: integer
+        premium_ceasing_age:
+          type: integer
+        payment_frequency:
+          type: string
+          enum: [MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY]
+        policy_taken_under:
+          type: string
+          enum: [HUF, MWPA, OTHER]
+        mwpa_details:
+          $ref: '#/components/schemas/MWPADetails'
+        huf_details:
+          $ref: '#/components/schemas/HUFDetails'
+        spouse_details:
+          $ref: '#/components/schemas/SpouseDetails'
+        children_policy_details:
+          $ref: '#/components/schemas/ChildrenPolicyDetails'
+
+    MWPADetails:
+      type: object
+      properties:
+        trust_type:
+          type: string
+          enum: [INDIVIDUAL, CORPORATE]
+        trustee_name:
+          type: string
+        trustee_dob:
+          type: string
+          format: date
+        relationship:
+          type: string
+        address:
+          type: string
+
+    HUFDetails:
+      type: object
+      properties:
+        is_financed_huf:
+          type: boolean
+        karta_name:
+          type: string
+        huf_pan:
+          type: string
+        members:
+          type: array
+          maxItems: 7
+          items:
+            type: object
+            properties:
+              member_name:
+                type: string
+              relationship:
+                type: string
+              age:
+                type: integer
+
+    SpouseDetails:
+      type: object
+      description: Required for Yugal Suraksha (Joint Life)
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [MALE, FEMALE]
+        aadhaar_number:
+          type: string
+        occupation:
+          type: string
+        is_smoker:
+          type: boolean
+        existing_policies_declared:
+          type: boolean
+        medical_history_declared:
+          type: boolean
+
+    ChildrenPolicyDetails:
+      type: object
+      description: Required for Children's Policy (Bal Jeevan Bima / Gram Bal Jeevan Bima)
+      properties:
+        mothers_name:
+          type: string
+          description: Mother's name - mandatory for children's policy
+        parent_policy_number:
+          type: string
+          description: Parent's policy number - mandatory and must be active
+        parent_policy_sa:
+          type: number
+          description: Parent's policy Sum Assured (for SA validation)
+        relationship_to_policy_holder:
+          type: string
+          enum: [SON, DAUGHTER]
+        child_age_proof_type:
+          type: string
+          enum: [BIRTH_CERTIFICATE, SCHOOL_CERTIFICATE, PASSPORT, AADHAAR]
+        is_second_child_policy:
+          type: boolean
+          description: Indicates if this is second child policy for same parent
+
+    AgentDetailsRequest:
+      type: object
+      required:
+        - agent_id
+      properties:
+        agent_id:
+          type: string
+        opportunity_id:
+          type: string
+        receives_correspondence:
+          type: boolean
+          default: false
+
+    MedicalInfoRequest:
+      type: object
+      required:
+        - general_questionnaire
+      properties:
+        general_questionnaire:
+          type: object
+          properties:
+            is_sound_health:
+              type: boolean
+            disease_tb:
+              type: boolean
+            disease_cancer:
+              type: boolean
+            disease_paralysis:
+              type: boolean
+            disease_insanity:
+              type: boolean
+            disease_heart_lungs:
+              type: boolean
+            disease_kidney:
+              type: boolean
+            disease_brain:
+              type: boolean
+            disease_hiv:
+              type: boolean
+            disease_hepatitis_b:
+              type: boolean
+            disease_epilepsy:
+              type: boolean
+            disease_nervous:
+              type: boolean
+            disease_liver:
+              type: boolean
+            disease_leprosy:
+              type: boolean
+            disease_physical_deformity:
+              type: boolean
+            disease_other:
+              type: boolean
+            disease_details:
+              type: string
+            family_hereditary:
+              type: boolean
+            family_hereditary_details:
+              type: string
+            medical_leave_3yr:
+              type: boolean
+            hospitalization_details:
+              type: object
+              additionalProperties: true
+        enhanced_questionnaire:
+          type: object
+          description: Required for SA >= 20 Lakh
+          properties:
+            tests_investigations:
+              type: boolean
+            diabetes:
+              type: boolean
+            blood_pressure:
+              type: boolean
+            oncologist_visit:
+              type: boolean
+            ailment_over_1_week:
+              type: boolean
+            thyroid:
+              type: boolean
+            angioplasty_surgery:
+              type: boolean
+            eye_ear_nose:
+              type: boolean
+            anaemia_blood:
+              type: boolean
+            musculoskeletal:
+              type: boolean
+            habit_smoke_tobacco:
+              type: string
+              enum: [NO, FREQUENTLY, OCCASIONALLY]
+            habit_alcohol:
+              type: string
+              enum: [NO, FREQUENTLY, OCCASIONALLY]
+            habit_drugs:
+              type: string
+              enum: [NO, FREQUENTLY, OCCASIONALLY]
+        medical_examination:
+          type: object
+          description: Medical examination details (populated when medical is required)
+          properties:
+            medical_examiner_id:
+              type: integer
+              format: int64
+              description: ID of the assigned medical examiner/doctor from Medical Appointment Service
+            medical_examiner_name:
+              type: string
+              description: Name of the medical examiner
+            medical_examination_date:
+              type: string
+              format: date
+              description: Date of medical examination
+            re_examination_date:
+              type: string
+              format: date
+              description: Date for re-examination if required
+            medical_facility_id:
+              type: integer
+              format: int64
+              description: ID of the medical facility/center
+
+    FirstPremiumRequest:
+      type: object
+      required:
+        - payment_method
+        - amount
+        - collection_type
+      properties:
+        payment_method:
+          type: string
+          enum: [CASH, CHEQUE, DD, ONLINE, POSB, NACH, UPI, NEFT, RTGS]
+        amount:
+          type: number
+        collection_type:
+          type: string
+          enum: [INITIAL_PREMIUM]
+          default: INITIAL_PREMIUM
+          description: Type of first premium collection - always INITIAL_PREMIUM for new business
+        payment_reference:
+          type: string
+        payment_date:
+          type: string
+          format: date
+        cheque_details:
+          type: object
+          properties:
+            cheque_number:
+              type: string
+            bank_name:
+              type: string
+            cheque_date:
+              type: string
+              format: date
+
+    FirstPremiumResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+          description: Unique proposal identifier (bigint)
+        proposal_number:
+          type: string
+          description: Human-readable proposal number for display
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID linked to the proposal
+        payment_status:
+          type: string
+          enum: [RECEIVED, PENDING_VERIFICATION]
+        receipt_number:
+          type: string
+        receipt_date:
+          type: string
+          format: date
+        age_change_detection:
+          type: object
+          description: Result of DOB/age change check at payment (BR-POL-007)
+          properties:
+            age_changed:
+              type: boolean
+              description: Whether age changed since indexing
+            age_at_indexing:
+              type: integer
+              description: Age when proposal was indexed
+            age_at_payment:
+              type: integer
+              description: Current age at payment
+            age_change_date:
+              type: string
+              format: date
+              description: Date when age changed (birthday between indexing and payment)
+        premium_adjustment:
+          type: object
+          description: Short/excess premium details if age changed (BR-POL-007)
+          properties:
+            adjustment_type:
+              type: string
+              enum: [NONE, SHORT_PREMIUM, EXCESS_PREMIUM]
+              description: Type of adjustment required
+            original_premium:
+              type: number
+              description: Premium calculated at indexing
+            revised_premium:
+              type: number
+              description: Premium recalculated at current age
+            premium_difference:
+              type: number
+              description: Difference amount (positive = short, negative = excess)
+            short_premium_due:
+              type: number
+              description: Additional premium to collect (if short)
+            excess_premium_credit:
+              type: number
+              description: Excess amount credited to next premium (if excess)
+            excess_adjustment_type:
+              type: string
+              enum: [CREDIT_TO_NEXT_PREMIUM, REFUND_REQUESTED]
+              description: How excess premium was handled
+            suspense_reference:
+              type: string
+              description: Suspense account reference if short premium posted
+
+    SectionUpdateResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        section:
+          type: string
+        status:
+          type: string
+          enum: [UPDATED, VALIDATION_ERRORS]
+        validation_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              error:
+                type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    SubmitForQCResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum: [QC_PENDING]
+        submitted_at:
+          type: string
+          format: date-time
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    ProposalSummaryResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        status:
+          type: string
+        summary:
+          type: object
+          properties:
+            insured:
+              type: object
+              additionalProperties: true
+            product:
+              type: object
+              additionalProperties: true
+            coverage:
+              type: object
+              additionalProperties: true
+            premium:
+              type: object
+              additionalProperties: true
+            nominees:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            medical:
+              type: object
+              additionalProperties: true
+            agent:
+              type: object
+              additionalProperties: true
+            dates:
+              type: object
+              additionalProperties: true
+            flags:
+              type: object
+              additionalProperties: true
+            documents:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+        approval_routing:
+          type: object
+          properties:
+            required_level:
+              type: integer
+              enum: [1, 2, 3]
+            reason:
+              type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    ProposalQueueResponse:
+      type: object
+      properties:
+        proposals:
+          type: array
+          items:
+            type: object
+            properties:
+              proposal_id:
+                type: integer
+                format: int64
+              proposal_number:
+                type: string
+              status:
+                type: string
+              insured_name:
+                type: string
+              sum_assured:
+                type: number
+              product_code:
+                type: string
+              po_code:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+              time_in_queue:
+                type: string
+              sla_status:
+                type: string
+                enum: [ON_TRACK, AT_RISK, BREACHED]
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ============================================
+    # AADHAAR SCHEMAS
+    # ============================================
+
+    AadhaarInitiateRequest:
+      type: object
+      required:
+        - aadhaar_number
+        - auth_mode
+      properties:
+        aadhaar_number:
+          type: string
+          pattern: '^[0-9]{12}$'
+        auth_mode:
+          type: string
+          enum: [OTP, BIO, DEMO]
+          default: OTP
+        consent:
+          type: boolean
+          default: true
+
+    AadhaarInitiateResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [OTP_SENT]
+        masked_mobile:
+          type: string
+          example: "XXXXXX7890"
+        otp_expiry_minutes:
+          type: integer
+          example: 10
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    AadhaarVerifyOtpRequest:
+      type: object
+      required:
+        - session_id
+        - otp
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        otp:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    AadhaarVerifyOtpResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [VERIFIED]
+        customer_data:
+          type: object
+          properties:
+            name:
+              type: string
+            date_of_birth:
+              type: string
+              format: date
+            gender:
+              type: string
+              enum: [MALE, FEMALE, OTHER]
+            address:
+              $ref: '#/components/schemas/Address'
+            photo_document_id:
+              type: string
+            email:
+              type: string
+            mobile:
+              type: string
+        eligibility_check:
+          type: object
+          properties:
+            is_eligible:
+              type: boolean
+            age_at_entry:
+              type: integer
+            existing_policies:
+              type: integer
+            aggregate_sa:
+              type: number
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    AadhaarSubmitRequest:
+      type: object
+      required:
+        - session_id
+        - proposal
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        proposal:
+          type: object
+          required:
+            - policy_type
+            - product_code
+            - coverage
+            - insured
+            - nominees
+            - medical
+            - customer_id
+          properties:
+            policy_type:
+              type: string
+              enum: [PLI, RPLI]
+            product_code:
+              type: string
+            customer_id:
+              type: integer
+              format: int64
+              description: MANDATORY - Customer ID from Customer Service
+            spouse_customer_id:
+              type: integer
+              format: int64
+              description: Spouse customer ID for Yugal Suraksha policies
+            coverage:
+              type: object
+              required:
+                - sum_assured
+                - policy_term
+                - payment_frequency
+              properties:
+                sum_assured:
+                  type: number
+                policy_term:
+                  type: integer
+                payment_frequency:
+                  type: string
+                  enum: [MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY]
+            insured:
+              type: object
+              properties:
+                mobile:
+                  type: string
+                email:
+                  type: string
+                pan:
+                  type: string
+                occupation:
+                  type: string
+            nominees:
+              type: array
+              items:
+                $ref: '#/components/schemas/Nominee'
+            medical:
+              type: object
+              properties:
+                is_sound_health:
+                  type: boolean
+                all_diseases_no:
+                  type: boolean
+            payment:
+              type: object
+              properties:
+                method:
+                  type: string
+                  enum: [UPI, CARD, NET_BANKING, POSB]
+                amount:
+                  type: number
+
+    InstantIssuanceResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        issuance_type:
+          type: string
+          enum: [INSTANT]
+        policy:
+          type: object
+          properties:
+            policy_id:
+              type: integer
+              format: int64
+            policy_number:
+              type: string
+            status:
+              type: string
+              enum: [ISSUED]
+            issue_date:
+              type: string
+              format: date
+            commencement_date:
+              type: string
+              format: date
+        bond:
+          type: object
+          properties:
+            document_id:
+              type: string
+            download_url:
+              type: string
+            sent_via:
+              type: array
+              items:
+                type: string
+                enum: [EMAIL, WHATSAPP, SMS]
+            qr_code:
+              type: string
+        payment:
+          type: object
+          properties:
+            payment_id:
+              type: string
+            status:
+              type: string
+              enum: [SUCCESS]
+            receipt_number:
+              type: string
+        free_look_period:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+            days:
+              type: integer
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        notifications_sent:
+          type: object
+          properties:
+            email:
+              type: boolean
+            whatsapp:
+              type: boolean
+            sms:
+              type: boolean
+
+    StandardIssuanceResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        issuance_type:
+          type: string
+          enum: [STANDARD]
+        status:
+          type: string
+          enum: [PENDING_MEDICAL, QC_PENDING]
+        reason:
+          type: string
+        medical_requirement:
+          type: object
+          properties:
+            is_required:
+              type: boolean
+            reason:
+              type: string
+            next_steps:
+              type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    # ============================================
+    # APPROVAL SCHEMAS
+    # ============================================
+
+    QRDecisionRequest:
+      type: object
+      properties:
+        comments:
+          type: string
+
+    QRRejectRequest:
+      type: object
+      required:
+        - rejection_reason
+        - comments
+      properties:
+        rejection_reason:
+          type: string
+        comments:
+          type: string
+          minLength: 1
+
+    QRReturnRequest:
+      type: object
+      required:
+        - return_reason
+        - comments
+      properties:
+        return_reason:
+          type: string
+        comments:
+          type: string
+        fields_to_correct:
+          type: array
+          items:
+            type: string
+
+    QRApprovalResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        previous_status:
+          type: string
+        new_status:
+          type: string
+        qr_decision:
+          type: object
+          properties:
+            decision:
+              type: string
+              enum: [APPROVED]
+            decision_by:
+              type: integer
+              format: int64
+              description: User ID who made the decision
+            decision_at:
+              type: string
+              format: date-time
+            comments:
+              type: string
+        routing:
+          type: object
+          properties:
+            routed_to:
+              type: string
+            reason:
+              type: string
+            queue:
+              type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    QRRejectionResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum: [QC_REJECTED]
+        qr_decision:
+          type: object
+          properties:
+            decision:
+              type: string
+              enum: [REJECTED]
+            rejection_reason:
+              type: string
+            decision_by:
+              type: integer
+              format: int64
+              description: User ID who made the decision
+            decision_at:
+              type: string
+              format: date-time
+            comments:
+              type: string
+        refund:
+          type: object
+          properties:
+            initiated:
+              type: boolean
+            refund_amount:
+              type: number
+            refund_reference:
+              type: string
+        notifications_sent:
+          type: object
+          properties:
+            customer_notified:
+              type: boolean
+            cpc_notified:
+              type: boolean
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    QRReturnResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum: [QC_RETURNED]
+        return_details:
+          type: object
+          properties:
+            return_reason:
+              type: string
+            comments:
+              type: string
+            fields_to_correct:
+              type: array
+              items:
+                type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    ApproverDecisionRequest:
+      type: object
+      properties:
+        comments:
+          type: string
+
+    ApproverRejectRequest:
+      type: object
+      required:
+        - rejection_reason
+        - comments
+      properties:
+        rejection_reason:
+          type: string
+        comments:
+          type: string
+          minLength: 1
+
+    ApprovalResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum: [APPROVED]
+        policy_number:
+          type: string
+        approver_decision:
+          type: object
+          properties:
+            decision:
+              type: string
+              enum: [APPROVED]
+            decision_by:
+              type: integer
+              format: int64
+              description: User ID who made the decision
+            decision_at:
+              type: string
+              format: date-time
+            comments:
+              type: string
+        age_revalidation:
+          type: object
+          properties:
+            age_at_indexing:
+              type: integer
+            age_at_approval:
+              type: integer
+            age_changed:
+              type: boolean
+            premium_shortfall:
+              type: number
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        next_steps:
+          type: object
+          properties:
+            bond_generation:
+              type: string
+              enum: [IN_PROGRESS, COMPLETED]
+            estimated_completion:
+              type: string
+              format: date-time
+
+    RejectionResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum: [REJECTED]
+        approver_decision:
+          type: object
+          properties:
+            decision:
+              type: string
+              enum: [REJECTED]
+            rejection_reason:
+              type: string
+            decision_by:
+              type: integer
+              format: int64
+              description: User ID who made the decision
+            decision_at:
+              type: string
+              format: date-time
+            comments:
+              type: string
+        refund:
+          type: object
+          properties:
+            initiated:
+              type: boolean
+            refund_amount:
+              type: number
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+
+    # ============================================
+    # POLICY SCHEMAS
+    # ============================================
+
+    PolicyDetailResponse:
+      type: object
+      properties:
+        policy_id:
+          type: integer
+          format: int64
+          description: Unique policy identifier (bigint)
+        policy_number:
+          type: string
+        proposal_id:
+          type: integer
+          format: int64
+          description: Linked proposal identifier
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID linked to this policy
+        status:
+          type: string
+        policy_type:
+          type: string
+        product_code:
+          type: string
+        product_name:
+          type: string
+        customer:
+          type: object
+          additionalProperties: true
+        coverage:
+          type: object
+          additionalProperties: true
+        premium:
+          $ref: '#/components/schemas/PremiumBreakdown'
+        dates:
+          type: object
+          properties:
+            issue_date:
+              type: string
+              format: date
+            commencement_date:
+              type: string
+              format: date
+            maturity_date:
+              type: string
+              format: date
+        dispatch_delivery:
+          type: object
+          description: Policy kit dispatch and delivery tracking
+          properties:
+            dispatch_date:
+              type: string
+              format: date
+              description: Date when policy kit was dispatched
+            delivery_date:
+              type: string
+              format: date
+              description: Actual date of delivery to customer - used for FLC start and Collections
+            delivery_status:
+              type: string
+              enum: [PENDING_DISPATCH, DISPATCHED, IN_TRANSIT, DELIVERED, DELIVERY_FAILED]
+            delivery_confirmation_mode:
+              type: string
+              enum: [POSTAL_TRACKING, CUSTOMER_ACKNOWLEDGEMENT, DIGITAL_DELIVERY]
+            tracking_number:
+              type: string
+              description: Postal/courier tracking number
+            delivery_address:
+              type: string
+              description: Address where policy was delivered
+        aea_dates:
+          type: object
+          description: Automatic Endorsement of Age dates (applicable when age proof verification is pending)
+          properties:
+            aea_due_date:
+              type: string
+              format: date
+              description: Due date for Automatic Endorsement of Age verification
+            aea_completed_date:
+              type: string
+              format: date
+              description: Date when AEA verification was completed
+            aea_status:
+              type: string
+              enum: [PENDING, COMPLETED, NOT_APPLICABLE]
+              description: Status of AEA process
+        flc_status:
+          type: object
+          additionalProperties: true
+
+    FLCCancelRequest:
+      type: object
+      required:
+        - cancellation_reason
+        - refund_bank_account
+      properties:
+        cancellation_reason:
+          type: string
+        reason_details:
+          type: string
+        refund_bank_account:
+          type: object
+          required:
+            - account_number
+            - ifsc_code
+            - account_holder_name
+          properties:
+            account_number:
+              type: string
+            ifsc_code:
+              type: string
+              pattern: '^[A-Z]{4}0[A-Z0-9]{6}$'
+            account_holder_name:
+              type: string
+
+    FLCCancelResponse:
+      type: object
+      properties:
+        policy_id:
+          type: integer
+          format: int64
+          description: Unique policy identifier (bigint)
+        policy_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID linked to this policy
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum: [FLC_CANCELLED]
+        cancellation:
+          type: object
+          properties:
+            cancellation_date:
+              type: string
+              format: date
+            reason:
+              type: string
+            processed_by:
+              type: integer
+              format: int64
+              description: User ID who processed cancellation
+        flc_period:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+              description: FLC start date (delivery_date)
+            end_date:
+              type: string
+              format: date
+            days_remaining:
+              type: integer
+            within_period:
+              type: boolean
+        delivery_date:
+          type: string
+          format: date
+          description: Date when policy kit was delivered - used as FLC start date
+        refund_calculation:
+          type: object
+          properties:
+            premium_paid:
+              type: number
+            deductions:
+              type: object
+              properties:
+                proportionate_risk_premium:
+                  type: object
+                  properties:
+                    days_of_coverage:
+                      type: integer
+                    daily_rate:
+                      type: number
+                    amount:
+                      type: number
+                stamp_duty:
+                  type: number
+                medical_fee:
+                  type: number
+                gst_not_refundable:
+                  type: number
+            total_deductions:
+              type: number
+            net_refund_amount:
+              type: number
+        refund:
+          type: object
+          properties:
+            refund_id:
+              type: string
+            amount:
+              type: number
+            status:
+              type: string
+              enum: [INITIATED, PROCESSING, COMPLETED]
+            estimated_processing_days:
+              type: integer
+            bank_account:
+              type: object
+              properties:
+                masked_account:
+                  type: string
+                bank_name:
+                  type: string
+        commission_clawback:
+          type: object
+          properties:
+            initiated:
+              type: boolean
+            agent_id:
+              type: string
+            clawback_amount:
+              type: number
+        receipt:
+          type: object
+          properties:
+            document_id:
+              type: string
+            download_url:
+              type: string
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        notifications_sent:
+          type: object
+          properties:
+            email:
+              type: boolean
+            sms:
+              type: boolean
+
+    FLCStatusResponse:
+      type: object
+      properties:
+        policy_id:
+          type: integer
+          format: int64
+          description: Unique policy identifier (bigint)
+        policy_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID linked to this policy
+        flc_status:
+          type: string
+          enum: [NOT_STARTED, ACTIVE, EXPIRED, CANCELLED]
+        delivery_date:
+          type: string
+          format: date
+          description: Date when policy kit was delivered - triggers FLC start
+        flc_period:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+              description: FLC start date (equals delivery_date)
+            end_date:
+              type: string
+              format: date
+            total_days:
+              type: integer
+            days_elapsed:
+              type: integer
+            days_remaining:
+              type: integer
+        is_cancellation_allowed:
+          type: boolean
+        message:
+          type: string
+
+    # ============================================
+    # LOOKUP SCHEMAS
+    # ============================================
+
+    LookupResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              label:
+                type: string
+              description:
+                type: string
+
+    # ============================================
+    # VALIDATION SCHEMAS
+    # ============================================
+
+    EligibilityCheckRequest:
+      type: object
+      required:
+        - product_code
+        - date_of_birth
+        - sum_assured
+      properties:
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID for aggregate SA check (optional for new customers)
+        product_code:
+          type: string
+        policy_type:
+          type: string
+          enum: [PLI, RPLI]
+        date_of_birth:
+          type: string
+          format: date
+        sum_assured:
+          type: number
+        policy_term:
+          type: integer
+        accrued_sum_assured:
+          type: number
+          description: |
+            Accrued Sum Assured for linked products (e.g., Children's Policy linked to parent policy).
+            For products with bonus/participating features, this includes accumulated bonuses.
+            Used for eligibility validation alongside base sum assured.
+        existing_aggregate_sa:
+          type: number
+          description: Existing aggregate SA from other policies for the customer
+
+    EligibilityCheckResponse:
+      type: object
+      properties:
+        is_eligible:
+          type: boolean
+        age_at_entry:
+          type: integer
+        eligibility_checks:
+          type: array
+          items:
+            type: object
+            properties:
+              check:
+                type: string
+              passed:
+                type: boolean
+              message:
+                type: string
+        aggregate_sa:
+          type: object
+          properties:
+            current:
+              type: number
+            proposed:
+              type: number
+            max_allowed:
+              type: number
+            within_limit:
+              type: boolean
+
+    FormatValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        message:
+          type: string
+
+    PincodeValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        pincode:
+          type: string
+        state:
+          type: string
+        district:
+          type: string
+        post_office:
+          type: string
+        message:
+          type: string
+
+    IFSCValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        ifsc_code:
+          type: string
+        bank_name:
+          type: string
+        branch_name:
+          type: string
+        address:
+          type: string
+
+    NomineeShareEntry:
+      type: object
+      required:
+        - share
+      properties:
+        share:
+          type: number
+          minimum: 0.01
+          maximum: 100
+          description: Nominee share percentage
+        is_minor:
+          type: boolean
+          default: false
+          description: Whether the nominee is a minor
+        appointee_name:
+          type: string
+          description: Required if is_minor is true
+        appointee_relationship:
+          type: string
+          description: Required if is_minor is true
+
+    ShareValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        total_percentage:
+          type: number
+        nominee_count:
+          type: integer
+          description: Number of nominees validated
+        message:
+          type: string
+
+    DateChainValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+    AggregateSACheckRequest:
+      type: object
+      required:
+        - customer_id
+        - proposed_sa
+      properties:
+        customer_id:
+          type: integer
+          format: int64
+          description: Customer ID for aggregate SA lookup
+        product_code:
+          type: string
+        policy_type:
+          type: string
+          enum: [PLI, RPLI]
+        proposed_sa:
+          type: number
+
+    AggregateSACheckResponse:
+      type: object
+      properties:
+        is_eligible:
+          type: boolean
+        current_aggregate_sa:
+          type: number
+        proposed_aggregate_sa:
+          type: number
+        max_allowed_sa:
+          type: number
+        reason:
+          type: string
+
+    # ============================================
+    # CALCULATION SCHEMAS
+    # ============================================
+
+    PremiumCalculationRequest:
+      type: object
+      required:
+        - product_code
+        - age_at_entry
+        - gender
+        - sum_assured
+        - policy_term
+        - frequency
+      properties:
+        product_code:
+          type: string
+        age_at_entry:
+          type: integer
+        gender:
+          type: string
+          enum: [MALE, FEMALE]
+        sum_assured:
+          type: number
+        policy_term:
+          type: integer
+        frequency:
+          type: string
+          enum: [MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY]
+        age_proof_type:
+          type: string
+          enum: [STANDARD, NON_STANDARD]
+        insured_state:
+          type: string
+        provider_state:
+          type: string
+
+    PremiumCalculationResponse:
+      type: object
+      properties:
+        base_premium:
+          type: number
+        loaded_premium:
+          type: number
+        rebate_amount:
+          type: number
+        net_premium:
+          type: number
+        cgst:
+          type: number
+        sgst:
+          type: number
+        igst:
+          type: number
+        total_gst:
+          type: number
+        stamp_duty:
+          type: number
+        medical_fee:
+          type: number
+        total_first_payment:
+          type: number
+        modal_premium:
+          type: number
+
+    MaturityCalculationRequest:
+      type: object
+      required:
+        - product_code
+        - sum_assured
+        - policy_term
+      properties:
+        product_code:
+          type: string
+        sum_assured:
+          type: number
+        policy_term:
+          type: integer
+
+    MaturityCalculationResponse:
+      type: object
+      properties:
+        guaranteed_sum_assured:
+          type: number
+        indicative_bonus:
+          type: number
+        indicative_maturity_value:
+          type: number
+        bonus_rate_used:
+          type: number
+        disclaimer:
+          type: string
+
+    FLCRefundCalculationRequest:
+      type: object
+      required:
+        - premium_paid
+        - days_of_coverage
+        - base_premium
+      properties:
+        premium_paid:
+          type: number
+        days_of_coverage:
+          type: integer
+        base_premium:
+          type: number
+        stamp_duty:
+          type: number
+        medical_fee:
+          type: number
+
+    FLCRefundCalculationResponse:
+      type: object
+      properties:
+        premium_paid:
+          type: number
+        proportionate_risk_premium:
+          type: number
+        stamp_duty_deduction:
+          type: number
+        medical_fee_deduction:
+          type: number
+        total_deductions:
+          type: number
+        net_refund_amount:
+          type: number
+
+    GSTCalculationRequest:
+      type: object
+      required:
+        - base_amount
+        - insured_state
+      properties:
+        base_amount:
+          type: number
+        insured_state:
+          type: string
+        provider_state:
+          type: string
+          default: "Maharashtra"
+
+    GSTCalculationResponse:
+      type: object
+      properties:
+        base_amount:
+          type: number
+        gst_rate:
+          type: number
+        cgst:
+          type: number
+        sgst:
+          type: number
+        igst:
+          type: number
+        total_gst:
+          type: number
+        gst_type:
+          type: string
+          enum: [INTRASTATE, INTERSTATE]
+
+    # ============================================
+    # DOCUMENT SCHEMAS
+    # ============================================
+
+    DocumentChecklistResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+          description: Proposal ID (bigint)
+        required_documents:
+          type: array
+          items:
+            type: object
+            properties:
+              document_type:
+                type: string
+                description: DDL document_type_enum value
+              sub_type:
+                type: string
+                description: "Optional qualifier for duplicate types (e.g. PROPOSER_PHOTO_ID, PROPOSER_ADDRESS_PROOF)"
+              is_mandatory:
+                type: boolean
+              is_uploaded:
+                type: boolean
+              document_id:
+                type: string
+              upload_date:
+                type: string
+                format: date-time
+              reason_required:
+                type: string
+        completion_percentage:
+          type: integer
+
+    DocumentUploadRequest:
+      type: object
+      required:
+        - document_type
+        - file_name
+        - mime_type
+        - file_size
+        - document_date
+        - uploaded_by
+      properties:
+        document_type:
+          type: string
+          description: Type of document being uploaded
+          enum:
+            - PROPOSAL_FORM
+            - DOB_PROOF
+            - ADDRESS_PROOF
+            - PHOTO_ID
+            - MEDICAL_REPORT
+            - PAYMENT_COPY
+            - HEALTH_DECLARATION
+            - PHOTO
+            - INCOME_PROOF
+            - EMPLOYMENT_PROOF
+            - OTHER
+        file_name:
+          type: string
+          description: Original file name
+        mime_type:
+          type: string
+          description: "File MIME type (VR-PI-021)"
+          enum:
+            - application/pdf
+            - image/jpeg
+            - image/png
+            - image/jpg
+        file_size:
+          type: integer
+          format: int64
+          description: "File size in bytes (VR-PI-022: max 5 MB)"
+          minimum: 1
+        document_date:
+          type: string
+          format: date
+          description: "Date on the document (VR-PI-023: must not be in the future). Format: YYYY-MM-DD"
+        comments:
+          type: string
+          description: Optional comments about the document
+        uploaded_by:
+          type: integer
+          format: int64
+          description: User ID of the uploader
+
+    DocumentMissingNotation:
+      type: object
+      description: Notation for missing documents at QC/Approval stage
+      required:
+        - document_type
+        - stage
+      properties:
+        missing_doc_id:
+          type: integer
+          format: int64
+          description: Unique ID for the missing document record
+        proposal_id:
+          type: integer
+          format: int64
+          description: Proposal ID
+        document_type:
+          type: string
+          enum: [PROPOSAL_FORM, DOB_PROOF, ADDRESS_PROOF, PHOTO_ID, MEDICAL_REPORT, PAYMENT_COPY, HEALTH_DECLARATION, PHOTO, INCOME_PROOF, EMPLOYMENT_PROOF, OTHER]
+          description: Type of document marked as missing
+        document_description:
+          type: string
+          description: Additional description of the missing document
+        reason_missing:
+          type: string
+          description: Reason why document is missing (e.g., customer not available, pending from authority)
+        stage:
+          type: string
+          enum: [QC_REVIEW, APPROVAL]
+          description: Stage at which document was marked missing
+        noted_by:
+          type: integer
+          format: int64
+          description: User ID (QC or Approver) who noted the missing document
+        noted_at:
+          type: string
+          format: date-time
+          description: Timestamp when missing document was noted
+        notes:
+          type: string
+          description: Additional notes about the missing document
+        status:
+          type: string
+          enum: [PENDING, UPLOADED, WAIVED]
+          default: PENDING
+          description: Current status of the missing document
+        resolved_by:
+          type: integer
+          format: int64
+          description: User ID who resolved the missing document
+        resolved_at:
+          type: string
+          format: date-time
+          description: Timestamp when document was uploaded/resolved
+        resolution_notes:
+          type: string
+          description: Notes about the resolution
+        uploaded_document_id:
+          type: integer
+          format: int64
+          description: Reference to uploaded document when resolved
+        waived:
+          type: boolean
+          default: false
+          description: Whether the document requirement was waived
+        waived_by:
+          type: integer
+          format: int64
+          description: User ID who waived the document
+        waived_at:
+          type: string
+          format: date-time
+          description: Timestamp when document was waived
+        waiver_reason:
+          type: string
+          description: Reason for waiving the document requirement
+        follow_up_required:
+          type: boolean
+          default: true
+          description: Whether follow-up is required to obtain the document
+
+    MissingDocumentsListResponse:
+      type: object
+      description: Response for getting list of missing documents for a proposal
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        total_missing:
+          type: integer
+        pending_count:
+          type: integer
+        uploaded_count:
+          type: integer
+        waived_count:
+          type: integer
+        missing_documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentMissingNotation'
+
+    MissingDocumentCreateRequest:
+      type: object
+      required:
+        - document_type
+        - stage
+        - noted_by
+      properties:
+        document_type:
+          type: string
+          enum: [PROPOSAL_FORM, DOB_PROOF, ADDRESS_PROOF, PHOTO_ID, MEDICAL_REPORT, PAYMENT_COPY, HEALTH_DECLARATION, PHOTO, INCOME_PROOF, EMPLOYMENT_PROOF, OTHER]
+        document_description:
+          type: string
+        reason_missing:
+          type: string
+        stage:
+          type: string
+          enum: [QC_REVIEW, APPROVAL]
+        notes:
+          type: string
+        noted_by:
+          type: integer
+          format: int64
+          description: User ID who noted the missing document
+        follow_up_required:
+          type: boolean
+          default: true
+
+    MissingDocumentResolveRequest:
+      type: object
+      required:
+        - status
+        - resolved_by
+      properties:
+        status:
+          type: string
+          enum: [UPLOADED, WAIVED]
+        uploaded_document_id:
+          type: integer
+          format: int64
+          description: Required if status is UPLOADED
+        waiver_reason:
+          type: string
+          description: Required if status is WAIVED
+        resolution_notes:
+          type: string
+        resolved_by:
+          type: integer
+          format: int64
+          description: User ID who resolved the missing document
+
+    DocumentUploadResponse:
+      type: object
+      properties:
+        document_ref_id:
+          type: integer
+          format: int64
+          description: Document reference ID (bigint)
+        document_id:
+          type: string
+          description: DMS document ID
+        document_type:
+          type: string
+        file_name:
+          type: string
+        uploaded_at:
+          type: string
+          format: date-time
+        download_url:
+          type: string
+        is_missing_notation:
+          type: boolean
+          default: false
+          description: Indicates if this is a missing document notation rather than actual upload
+
+    # ============================================
+    # STATUS SCHEMAS
+    # ============================================
+
+    ProposalStatusResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        status:
+          type: string
+        status_description:
+          type: string
+        last_updated:
+          type: string
+          format: date-time
+
+    ProposalTimelineResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: integer
+          format: int64
+        proposal_number:
+          type: string
+        timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: string
+              status:
+                type: string
+                enum: [COMPLETED, CURRENT, PENDING, SKIPPED]
+              from_status:
+                type: string
+              to_status:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              actor:
+                type: string
+              comments:
+                type: string
+              duration:
+                type: string
+
+    PolicyStatusResponse:
+      type: object
+      properties:
+        policy_id:
+          type: integer
+          format: int64
+        policy_number:
+          type: string
+        status:
+          type: string
+        status_description:
+          type: string
+        effective_date:
+          type: string
+          format: date
+        last_updated:
+          type: string
+          format: date-time
+
+    # ============================================
+    # WORKFLOW SCHEMAS
+    # ============================================
+
+    WorkflowStateResponse:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+        workflow_type:
+          type: string
+          enum:
+            - PolicyIssuanceWorkflow
+            - InstantIssuanceWorkflow
+            - BulkProposalUploadWorkflow
+        status:
+          type: string
+          enum: [RUNNING, COMPLETED, FAILED, TERMINATED]
+        current_step:
+          type: string
+        progress:
+          type: object
+          properties:
+            completed_steps:
+              type: integer
+            total_steps:
+              type: integer
+            percentage:
+              type: integer
+        pending_signals:
+          type: array
+          items:
+            type: string
+        start_time:
+          type: string
+          format: date-time
+        last_activity:
+          type: string
+          format: date-time
+
+    # ============================================
+    # BULK UPLOAD SCHEMAS
+    # ============================================
+
+    BulkUploadResponse:
+      type: object
+      properties:
+        batch_id:
+          type: integer
+          format: int64
+        file_name:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED, PROCESSING]
+        workflow_id:
+          type: string
+        estimated_completion:
+          type: string
+          format: date-time
+
+    BulkUploadStatusResponse:
+      type: object
+      properties:
+        batch_id:
+          type: integer
+          format: int64
+        file_name:
+          type: string
+        status:
+          type: string
+          enum: [PROCESSING, COMPLETED, FAILED]
+        total_rows:
+          type: integer
+        success_count:
+          type: integer
+        failure_count:
+          type: integer
+        proposal_numbers:
+          type: array
+          items:
+            type: string
+        error_report:
+          type: object
+          properties:
+            document_id:
+              type: string
+            download_url:
+              type: string
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    # ============================================
+    # COMMON SCHEMAS
+    # ============================================
+
+    WorkflowState:
+      type: object
+      properties:
+        current_step:
+          type: string
+        next_step:
+          type: string
+        is_terminal:
+          type: boolean
+        allowed_actions:
+          type: array
+          items:
+            type: string
+        sla_status:
+          type: string
+          enum: [ON_TRACK, AT_RISK, BREACHED]
+        time_remaining:
+          type: string
+        approval_routing:
+          type: object
+          description: Approval routing configuration for the proposal
+          properties:
+            required_approval_level:
+              type: integer
+              enum: [1, 2, 3]
+              description: Required approver level based on SA (L1: ≤5L, L2: 5-10L, L3: >10L)
+            qc_required:
+              type: boolean
+              default: true
+              description: Whether QC review is required
+            qc_skip_reason:
+              type: string
+              description: Reason if QC is skipped (e.g., AUTO_APPROVED_KYC, INSTANT_ISSUANCE)
+            approval_skip_eligible:
+              type: boolean
+              default: false
+              description: Whether proposal is eligible for approval skip (instant issuance)
+            auto_approval_criteria:
+              type: object
+              description: Criteria for auto-approval if eligible
+              properties:
+                kyc_verified:
+                  type: boolean
+                aadhaar_authenticated:
+                  type: boolean
+                non_medical:
+                  type: boolean
+                within_auto_approval_sa_limit:
+                  type: boolean
+                all_criteria_met:
+                  type: boolean
+
+    ApprovalRoutingConfig:
+      type: object
+      description: Configuration for approval routing and QC skip rules
+      properties:
+        sa_min:
+          type: number
+        sa_max:
+          type: number
+        approver_level:
+          type: integer
+          enum: [1, 2, 3]
+        qc_skip_allowed:
+          type: boolean
+          default: false
+        auto_approval_allowed:
+          type: boolean
+          default: false
+        auto_approval_conditions:
+          type: array
+          items:
+            type: string
+            enum:
+              - KYC_VERIFIED_AADHAAR
+              - NON_MEDICAL
+              - SA_BELOW_THRESHOLD
+              - STANDARD_PRODUCT
+              - NO_ADVERSE_HISTORY
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
+        has_next:
+          type: boolean
+        has_previous:
+          type: boolean
+
+  examples:
+    ERR-POL-006:
+      summary: Invalid Declaration Date
+      value:
+        error:
+          code: "ERR-POL-006"
+          category: "VALIDATION_ERROR"
+          message: "Declaration date cannot be later than receipt date"
+          field: "declaration_date"
+          http_status: 400
+          details:
+            declaration_date: "2026-02-15"
+            receipt_date: "2026-02-10"
+            related_rules: ["VR-PI-004", "BR-POL-018"]
+          resolution_steps:
+            - "Verify declaration date is on or before the receipt date"
+            - "Check date entry sequence: Declaration Date ≤ Receipt Date ≤ Indexing Date ≤ Proposal Date"
+            - "Correct the declaration date or receipt date"
+
+    ERR-POL-010:
+      summary: Invalid Aadhaar Number
+      value:
+        error:
+          code: "ERR-POL-010"
+          category: "VALIDATION_ERROR"
+          message: "Invalid Aadhaar number. Must be 12 digits"
+          field: "aadhaar_number"
+          http_status: 400
+          details:
+            provided_value: "12345678901"
+            expected_format: "12 numeric digits"
+            related_rules: ["VR-PI-008"]
+          resolution_steps:
+            - "Provide a valid 12-digit Aadhaar number"
+            - "Verify Aadhaar number from customer's Aadhaar card"
+
+    ERR-POL-011:
+      summary: Invalid PAN Format
+      value:
+        error:
+          code: "ERR-POL-011"
+          category: "VALIDATION_ERROR"
+          message: "Invalid PAN format. Must be 10 characters (5 letters, 4 digits, 1 letter)"
+          field: "pan_number"
+          http_status: 400
+          details:
+            provided_value: "ABCD12345"
+            expected_format: "AAAAA9999A"
+            related_rules: ["VR-PI-009"]
+          resolution_steps:
+            - "Provide PAN in format: ABCDE1234F"
+            - "Ensure all letters are uppercase"
+
+    ERR-POL-022:
+      summary: Nominee Count Exceeded
+      value:
+        error:
+          code: "ERR-POL-022"
+          category: "VALIDATION_ERROR"
+          message: "Maximum 3 nominees allowed per policy"
+          field: "nominees"
+          http_status: 400
+          details:
+            provided_count: 4
+            max_allowed: 3
+            related_rules: ["VR-PI-017", "BR-PI-036"]
+          resolution_steps:
+            - "Remove excess nominees to have maximum 3 nominees"
+            - "Distribute nominee share percentages among 3 or fewer nominees"
+
+    ERR-POL-023:
+      summary: Nominee Share Invalid
+      value:
+        error:
+          code: "ERR-POL-023"
+          category: "VALIDATION_ERROR"
+          message: "Total nominee share percentage must equal exactly 100%"
+          field: "nominees.share_percentage"
+          http_status: 400
+          details:
+            total_percentage: 90
+            expected: 100
+            related_rules: ["VR-PI-018", "VAL-POL-003"]
+          resolution_steps:
+            - "Adjust nominee share percentages to total exactly 100%"
+            - "Example: Nominee 1: 50%, Nominee 2: 30%, Nominee 3: 20%"
+
+    ERR-POL-031:
+      summary: Age Not Eligible
+      value:
+        error:
+          code: "ERR-POL-031"
+          category: "BUSINESS_RULE_ERROR"
+          message: "Age 60 years is not eligible for product 'Suraksha'. Age must be between 19 and 55 years"
+          field: "date_of_birth"
+          http_status: 400
+          details:
+            calculated_age: 60
+            min_age: 19
+            max_age: 55
+            product_code: "PLI_WLA"
+            related_rules: ["VR-PI-012", "BR-POL-011"]
+          resolution_steps:
+            - "Verify customer date of birth is correct"
+            - "Select a product that matches customer's age criteria"
+
+    ERR-POL-033:
+      summary: Sum Assured Outside Range
+      value:
+        error:
+          code: "ERR-POL-033"
+          category: "BUSINESS_RULE_ERROR"
+          message: "Sum assured Rs. 15000 is outside allowed range. Must be between Rs. 20000 and Rs. 10000000"
+          field: "sum_assured"
+          http_status: 400
+          details:
+            provided_value: 15000
+            min_sa: 20000
+            max_sa: 10000000
+            product_code: "PLI_WLA"
+            related_rules: ["VR-PI-013", "VAL-POL-002"]
+          resolution_steps:
+            - "Adjust sum assured to be within product limits"
+            - "Minimum SA: Rs. 20,000"
+            - "Sum assured should be in multiples of Rs. 5,000"
+
+    ERR-POL-049:
+      summary: Incorrect Approver Level
+      value:
+        error:
+          code: "ERR-POL-049"
+          category: "BUSINESS_RULE_ERROR"
+          message: "Your approval authority level 1 does not match the required level 2 for sum assured Rs. 800000"
+          http_status: 403
+          details:
+            current_level: 1
+            required_level: 2
+            sum_assured: 800000
+            related_rules: ["BR-POL-016"]
+          resolution_steps:
+            - "Route proposal to appropriate approver level"
+            - "Level 1: SA ≤ Rs. 5,00,000"
+            - "Level 2: SA ≤ Rs. 10,00,000"
+            - "Level 3: SA > Rs. 10,00,000"
+
+    ERR-POL-053:
+      summary: Free Look Period Expired
+      value:
+        error:
+          code: "ERR-POL-053"
+          category: "BUSINESS_RULE_ERROR"
+          message: "Free look period has expired. Cancellation not allowed"
+          http_status: 400
+          details:
+            flc_start_date: "2026-02-12"
+            flc_end_date: "2026-03-14"
+            current_date: "2026-03-20"
+            days_expired: 6
+            related_rules: ["BR-POL-021", "VR-PI-024"]
+          resolution_steps:
+            - "Free look cancellation only allowed within free look period"
+            - "After free look period, surrender process applies"
+            - "Contact branch for surrender options"
+
+    InstantIssuanceSuccess:
+      summary: Instant Issuance Success
+      value:
+        proposal_id: "prop_uuid_instant_001"
+        proposal_number: "PLI-MH-2026-00056790"
+        issuance_type: "INSTANT"
+        policy:
+          policy_id: "pol_uuid_001"
+          policy_number: "PLI-MH-2026-P-00012345"
+          status: "ISSUED"
+          issue_date: "2026-02-12"
+          commencement_date: "2026-02-12"
+        bond:
+          document_id: "doc_uuid_bond_001"
+          download_url: "/api/v1/documents/doc_uuid_bond_001/download"
+          sent_via: ["EMAIL", "WHATSAPP"]
+        payment:
+          payment_id: "pay_uuid_instant_001"
+          status: "SUCCESS"
+          receipt_number: "RCP-MH001-2026-00012346"
+        free_look_period:
+          start_date: "2026-02-12"
+          end_date: "2026-03-14"
+          days: 30
+        workflow_state:
+          current_step: "issued"
+          next_step: "free_look_active"
+          allowed_actions: ["download_bond", "view_policy", "flc_cancel"]
+
+    StandardFlowPendingMedical:
+      summary: Standard Flow - Medical Required
+      value:
+        proposal_id: "prop_uuid_medical_001"
+        proposal_number: "PLI-MH-2026-00056791"
+        issuance_type: "STANDARD"
+        status: "PENDING_MEDICAL"
+        reason: "Sum assured exceeds non-medical threshold"
+        medical_requirement:
+          is_required: true
+          reason: "SA ≥ 20 Lakh"
+          next_steps: "Medical examination will be scheduled"
+        workflow_state:
+          current_step: "pending_medical"
+          next_step: "medical_examination"
+          allowed_actions: ["view_status", "cancel"]
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - bearerAuth: []
+  - apiKey: []

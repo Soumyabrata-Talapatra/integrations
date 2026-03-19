@@ -1,0 +1,408 @@
+SRS/FRS- Billing & Collection of various PLI/RPLI receipts
+
+SRS/FRS- Billing & Collection of various PLI/RPLI receipts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Postal Life Insurance
+
+Department of Post
+
+
+
+
+
+Software Requirements Specification (SRS)/ Functional Requirements Specification (FRS)
+
+Billing & Collection of various PLI/RPLI receipts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INTERNAL APPROVAL FORM
+
+
+
+Project Name: Billing & Collection of various PLI/RPLI receipts
+
+Version: 1.0
+
+Submitted on: 
+
+
+
+Name
+
+Date
+
+Approved By: 
+
+
+
+
+
+Reviewed By: 
+
+
+
+
+
+Prepared By:  
+
+
+
+
+
+
+
+
+
+VERSION CONTROL LOG
+
+Version
+
+Date
+
+Prepared By
+
+Remarks
+
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+
+
+
+	1. Executive Summary	4
+
+	2. Project Scope	4
+
+	3. Business Requirements	4
+
+	4. Functional Requirements Specification	5
+
+	DUPLICATE POLICY BOND	5
+
+	BILLING METHOD CHANGE	5
+
+	NOMINATION CHANGE	5
+
+	PREMIUM RECEIPTBOOK	5
+
+	ADDRESS CHANGE	6
+
+	NAME CHANGE	6
+
+	FREELOOK	6
+
+	COMMUTATION	6
+
+	MATURITY	7
+
+	LOAN	7
+
+	SURRENDER	7
+
+	DEATH CLAIM	7
+
+	SURVIVAL	8
+
+	REVIVAL	8
+
+	NEW PROPOSAL	8
+
+	REDUCED PAIDUP	8
+
+	5. Attachments	9
+
+
+
+
+
+
+
+
+1. Executive Summary
+
+The purpose of this document is to define the functional and non-functional requirements for generating standardized receipts for various PLI/RPLI transactions (Loan, Maturity, Surrender, Revival, Premium Payment, etc.) within the IMS. The goal is to ensure consistency, accuracy, and compliance with Department of Posts standards.
+
+
+
+2. Project Scope
+
+This Module will:
+
+Display mandatory details such as Policyholder Name, Policy Number, Transaction Type, Amount, Date, Office Code, and User ID.
+
+Provide uniform templates across all transaction types.
+
+Include security features like QR code/barcode and digital signature.
+
+
+
+3. Business Requirements
+
+
+
+ID
+
+Requirements
+
+FS_RCPT_001
+
+System shall generate receipts for all transaction types (Loan, Maturity, Surrender, Revival, Premium Payment).
+
+FS_RCPT_002
+
+Receipt shall include: 
+
+Policy Number
+
+Insurant/Policyholder Name
+
+Transaction Type
+
+Amount Paid/Received
+
+Date & Time
+
+Office Code
+
+User ID
+
+Policy Type (PLI/RPLI)
+
+QR Code/Barcode for verification
+
+Digital Signature for authenticity
+
+FS_RCPT_003
+
+System shall validate presence of Insurant Name before receipt generation.
+
+FS_RCPT_004
+
+All receipts shall follow a uniform template with standardized header and footer.
+
+FS_RCPT_005
+
+Header shall display “Department of Posts – Postal Life Insurance / RPLI”.
+
+FS_RCPT_006
+
+System shall fetch Insurant Name and Policy details from the central policy database.
+
+FS_RCPT_007
+
+QR code/barcode shall link to receipt verification service.
+
+FS_RCPT_008
+
+Digital signature shall confirm authenticity.
+
+
+
+4. Functional Requirements Specification
+
+
+
+DUPLICATE POLICY BOND
+
+             POLICY NUMBER-AP-512948-UC
+
+
+
+BILLING METHOD CHANGE
+
+POLICY NUMBER-AP-589243-CC
+
+
+
+
+
+NOMINATION CHANGE
+
+     POLICY NUMBER-AP-584307-CS
+
+
+
+PREMIUM RECEIPTBOOK
+
+POLICY NUMBER-0000012040494
+
+
+
+
+
+ADDRESS CHANGE
+
+
+
+         POLICY NUMBER-AP-511774-UC
+
+
+
+NAME CHANGE
+
+            POLICY NUMBER-0000000458382
+
+
+
+FREELOOK
+
+          POLICY NUMBER-0000012103934
+
+
+
+COMMUTATION
+
+           POLICY NUMBER-0000001916590
+
+
+
+MATURITY													
+
+ 	POLICY NUMBER- AP-439698-CS
+
+
+
+LOAN
+
+          POLICY NUMBER-0000001940091
+
+
+
+SURRENDER
+
+            POLICY NUMBER-AP-403856-UC
+
+
+
+DEATH CLAIM
+
+              POLICY NUMBER-AP-419708-UC
+
+
+
+SURVIVAL
+
+       POLICY NUMBER-0000003126432
+
+
+
+
+
+REVIVAL
+
+               POLICY NUMBER-AP-627201-CS
+
+
+
+NEW PROPOSAL
+
+              POLICY NUMBER- 0000012786412
+
+
+
+REDUCED PAIDUP
+
+               POLICY NUMBER-R-AP-VP-EA-156274
+
+
+
+
+
+5. Attachments
+
+The following documents can be referred.
+
+
+
+
+
+2

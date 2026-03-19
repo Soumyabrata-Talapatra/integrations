@@ -1,0 +1,157 @@
+
+
+
+
+
+
+
+Postal Life Insurance
+Department of Post
+
+
+Software Requirements Specification (SRS)/ Functional Requirements Specification (FRS)
+Business Continuity Plan for PLI/RPLI Services
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INTERNAL APPROVAL FORM
+
+Project Name: Business Continuity Plan for PLI/RPLI Services
+Version: 1.0
+Submitted on: 
+
+VERSION CONTROL LOG
+
+1. Executive Summary
+This document defines the requirements for a Business Continuity Plan (BCP) system to ensure uninterrupted PLI/RPLI services during network outages. The system will support offline operations and enable secure synchronization once connectivity is restored. An application should be installed in each of the post offices that will help in performing few critical transactions using cached data present offline in the app, which will be uploaded to the central Insurance Management System once the post office system becomes online.
+
+2. Project Scope
+The system will be deployed at branch/post office level and will cover:
+Policyholder verification
+Offline Policy Issue
+Premium collection and receipt generation
+Claim intimation and documentation
+Policy servicing requests
+Accounting and reconciliation
+Offline data storage and sync
+
+
+3. Business Requirements
+
+
+Use Cases for BCP: 
+
+4. Functional Requirements Specification
+4.1 Policyholder Verification Page
+Purpose: Verify identity offline using physical documents and cached policy data (To be present offline in installed application).
+Fields:
+Policy Number (Text, mandatory)
+Policyholder Name (Auto-populated from cache)
+Date of Birth (Auto-populated)
+Document Type (Dropdown: Aadhaar, PAN, Voter ID)
+Document Number (Text)
+Verification Status (Dropdown: Verified / Pending)
+Remarks (Text area)
+
+4.2 Proposal Indexing Page
+Purpose: Issue proposals offline for new business.
+Field:
+Proposal Number (Auto-generated)
+Policyholder Name (Text)
+Date of Birth (Date picker)
+Sum Assured (Numeric)
+Premium Amount (Numeric)
+Payment Mode (Dropdown)
+Policy Start Date (Date picker)
+Upload Documents (File upload)
+Remarks (Text area)
+
+4.3 Premium Collection Page
+Purpose: Record offline premium payments and generate receipts.
+Field:
+Policy Number (Text)
+Policyholder Name (Auto-populated)
+Premium Amount (Numeric)
+Payment Mode (Dropdown: Cash / Cheque / DD)
+Receipt Number (Auto-generated)
+Date of Payment (Date picker)
+Collector Name (Text)
+Remarks (Text area) 
+
+4.4 Claim Intimation Page
+Purpose: Accept claim requests manually with document capture.
+Field:
+Policy Number (Text)
+Claim Type (Dropdown: Death / Maturity / Survival)
+Claimant Name (Text)
+Relationship to Policyholder (Dropdown)
+Documents Submitted (Checkbox list: Death Certificate, ID Proof, Policy Bond)
+Acknowledgment Number (Auto-generated)
+Remarks (Text area)
+
+4.5 Policy Servicing Page
+Purpose: Record servicing requests offline.
+Field:
+Policy Number (Text)
+Request Type (Dropdown: Address Change / Nominee Update / Revival)
+New Details (Text area)
+Reference Number (Auto-generated)
+Date of Request (Date picker)
+Remarks (Text area) 
+
+4.6 Accounting & Reconciliation Page
+Purpose: Maintain daily transaction summaries.
+Field:
+Date (Date picker)
+Total Premium Collected (Numeric)
+Total Claims Logged (Numeric)
+Total Servicing Requests (Numeric)
+Cash Balance (Numeric)
+Remarks (Text area)
+Export Option (Button: CSV / PDF) 
+
+4.7 Data Sync & Recovery Page
+Purpose: Sync offline data with central system.
+Field:
+Sync Status (Dropdown: Pending / Completed / Failed)
+Last Sync Date (Auto-populated)
+Number of Records Synced (Numeric)
+Error Log (Text area)
+Retry Sync (Button) 
+
+5. Attachments
+The following documents can be referred.
+
+
+ | Name | Date
+Approved By:  |  | 
+Reviewed By:  |  | 
+Prepared By:   | 
+ | 
+Version | Date | Prepared By | Remarks
+1 |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ |  |  | 
+ID | Requirements
+FS_BCP_001 | Enable offline identity verification using physical documents and cached policy data.
+FS_BCP_002 | Allow issuance of new policies using an offline system with later upload to central database when network is restored.
+FS_BCP_003 | Allow offline premium payments with manual or system-generated receipts and local ledger recording.
+FS_BCP_004 | Accept and log claim requests manually with document capture and acknowledgment generation.
+FS_BCP_005 | Record servicing requests like address or nominee changes offline with reference tracking.
+FS_BCP_006 | Maintain daily transaction summaries and generate reconciliation reports offline.
+FS_BCP_007 | Sync offline data securely with central systems upon network restoration with audit logging.

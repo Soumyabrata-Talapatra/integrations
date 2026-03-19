@@ -1,0 +1,588 @@
+Postal Life Insurance
+
+Department of Post
+
+
+
+
+
+Software Requirements Specification (SRS)
+
+
+
+
+
+Policy Commutation
+
+
+
+
+Executive Summary
+
+
+
+This document is detailing the functionality of Commutation  of a Policy and its impact on other functionalities.
+
+Business Objectives
+
+
+
+The IMS project addresses the requirement of commuting a Policy by the Insurant as and when required for reducing the premium. This system will index the policy as Commutation request, process and effect the change of renewals from the effective period as per the guidelines provided by Business Division
+
+
+
+Project Scope
+
+
+
+Policy Commutation will be a module of the Insurance Admin system used by Insurant/Customer as and when required  for reducing the premium amount paid  to continue the policy  .
+
+Business Requirements
+
+
+
+Functional Requirements Specification
+
+Surrender value of a policy, is the amount that is payable to  the Insurant, when he/she foregoes the contingent benefit of his policy and surrenders it for an immediate  payment. Surrender value depends on the surrender factor and type and term of policy and as per the prescribed ruling mentioned in POLI
+
+
+
+		
+
+	Brief Description
+
+This document  details the functionality of Commutation and its impact on other functionalities.
+
+
+
+System Flows
+
+	
+
+Standard Flow
+
+Indexing of Commutation Request → Data Entry → Quality Checker → Approver → Letter Generation (Decrease in sum assured accepted letter) → Request status changed to approved
+
+
+
+Sub-Standard Flows
+
+     
+
+Rejected by Approver
+
+Indexing of Commutation Request → Data Entry → Quality Checker → Approver rejected the request → Letter Generation (Decrease in sum assured rejection letter) → Request status changed to Rejected.
+
+
+
+Redirected by Approver
+
+Indexing of Commutation Request → Data Entry → Quality Checker → Approver redirected the request → Data Entry → Quality Checker → Approver → Letter Generation (Decrease in sum assured accepted letter) → Request status changed to approved
+
+
+
+Missing document by Quality Checker
+
+Indexing of Commutation Request → Data Entry → Quality Checker raises missing document → Missing document received → Quality checker → Approver → Letter Generation (Decrease in sum assured accepted letter) → Request status changed to approved
+
+
+
+Missing document by Approver
+
+Indexing of Commutation Request → Data Entry → Quality Checker → Approver raises missing document → Missing document received → Approver → Letter Generation (Decrease in sum assured accepted letter) → Request status changed to approved
+
+
+
+Withdrawal of Request
+
+Indexing of Commutation Request → Data Entry → Quality Checker → Approver → withdrawal of request → request status changed to withdrawn.
+
+
+
+Indexing of Commutation Request → Data Entry → Quality Checker → withdrawal of request → request status changed to withdrawn.
+
+
+
+	Commutation Flow
+
+
+
+             
+
+
+
+Business Rules and Logics
+
+
+
+Calcuation
+
+
+
+
+
+
+
+Step 1:
+
+New Premium needs to be selected
+
+PUV as on current date= Total Premium Paid as on current date / Total Premium Payable*Old SA
+
+Step 2 : 
+
+Difference Amount = New Premium x ( 1000 (for RPLI) or 5000 (for PLI) or 10000 (for Yugal Suraksha)) / Rate of Premium from Premium Table as on the current date)
+
+Step 3 :
+
+New SA = PUV + Difference
+
+Difference amount calculated will be rounded off to nearest thousand and added to paid up value.
+
+Step 4 :
+
+New difference amount = New sum assured – Paid up value
+
+Step 5 :
+
+New Premium after rounding off = (Premium Rate from premium rate table as on current date * New Difference amount) / 5000 (PLI) or 1000 (RPLI) or 10000 (Yugal Suraksha)
+
+Decrease in Sum Assured - Rules
+
+
+
+Paid up value has to  be calculated  
+
+
+
+Attained age as on commutation effective date has to be calculated 
+
+
+
+
+
+Difference Amount = New Sum Assured-PUV
+
+
+
+New Sum assured cannot be less than the Paid up value.
+
+
+
+Premium will be calculated on Difference Amount
+
+
+
+Premium rate will be based on attained age as on current Date and Remaining Term of the Policy/premium ceasing age.
+
+
+
+Rebate will be calculated based on Difference Amount:
+
+Rebate of Re. 1 per Rs.20000 and for Yugal Suraksha Re. 1 per Rs.40000 of Sum Assured will be calculated on Difference Amount i.e. New Sum Assured – Paid up Value.
+
+
+
+There is no limit on the minimum and maximum counts of Commutations during a policy term.
+
+
+
+Example:
+
+
+
+Policy
+
+xxxxxxx
+
+Issue date
+
+Mar-20
+
+Date of Birth
+
+07-07-1983
+
+Attained age at the time of conversion
+
+43
+
+Commutation date
+
+17-Oct-25
+
+Sum Assured
+
+500000
+
+Premium frequency
+
+Monthly
+
+Premiums paid before conversion
+
+68
+
+Total Premium Payable Months
+
+216
+
+Paid up value
+
+157407.4074
+
+Opted SA
+
+300000
+
+Remaining Sum Assured:
+
+142593
+
+ Rounded to multiples of 10000
+
+ 143000
+
+Premium Rate for remaining sum assured
+
+36
+
+Premium amount before rebate(Monthly)
+
+1030
+
+Rebate
+
+7
+
+Premium amount After rebate(Monthly)
+
+1023
+
+ 
+
+
+
+
+
+Eligibility Criteria-
+
+Policy Status should be paid till date.
+
+Any PLI/RPLI product except Sumangal, Gram Sumangal and Gram Priya.
+
+
+
+Quote
+
+Login by indexer->Quote icon->Enter quote type as commutation->Enter policy number->select date->Next button-> select any option either change in premium amount or change in Sum assured” -> Enter revised premium amount or sum assured in respective field-> Click on get quote button.
+
+
+
+Login by indexer->Quote icon
+
+
+
+Enter quote type as commutation->Enter policy number->select date->Next button
+
+
+
+
+
+Error Message
+
+Description
+
+Invalid policy number
+
+When no policy number is entered on the Quote and ‘Next’ button is clicked.
+
+Policy Details not found
+
+When incorrect policy number is entered on the Quote and ‘Next’ button is clicked.
+
+Commutation is allowed only once during the term of the policy.
+
+User tries to generate quote when already commutation request is effective on the policy or is approver or in pending status.
+
+
+
+Error will be thrown on Quote screen on the click of the ‘Next’ button.
+
+
+
+Select any option either ‘change in premium amount’ or ‘change in Sum assured’. If User selected “Change in Premium Amount”, then user should enter the revised premium amount.
+
+
+
+
+
+On entrant the revised premium amount, user will get 2 options for the selection of premium amount based on the sum assured.
+
+
+
+If nothing is selected and user clicks submit button
+
+
+
+On the click of get quote, user will get an option to open or save the quote
+
+
+
+
+
+If user chose ‘change in sum assured’
+
+
+
+
+
+If sum assured selected is less than the allowed limit
+
+
+
+
+
+
+
+
+
+If paid up value id greater than the entered sum assured value, then below error will be thrown
+
+
+
+
+
+If sum assured entered is not in multiples of 1000 for PLI policies  10000 for PLI policies and 5000 for RPLI policies then below error will be thrown.
+
+
+
+
+
+After selecting the sum assured, user should click on the get quote. User will get an option to open or save the quote PDF.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Error Message
+
+Description
+
+Product not eligible
+
+If user tries to index commutation request on products - Sumangal (AEA), Gram Sumangal (RAEA) and Gram Priya (GY).
+
+
+
+Error will be thrown on Quote screen on the click of the Get Quote button.
+
+Invalid policy status
+
+If policy status is other than AP at the time of indexing or approval.
+
+
+
+Error will be thrown on Quote screen on the click of the Get Quote button.
+
+Please select an option
+
+When ‘change in premium amount’ is selected by the user but form the given option nothing is selected and submit button is clicked. 
+
+
+
+Error will be thrown on Quote screen on the click of the Get Quote button.
+
+Commutation - Applied sum assured is less than allowed limit for this product
+
+When ‘change in sum assured’ is selected and the amount entered is less than the allowed limit.
+
+
+
+This error will be thrown on the Quote screen on entering the sum assured amount.
+
+Commutation - Current Paid up value is greater than reduced sum assured
+
+When user enter the sum assured amount less than the current paid up value of the policy.
+
+
+
+This error will be thrown on the Quote screen on entering the sum assured amount.
+
+Commutation - Sum assured should be in multiple of 1000 for PLI  multiple of 10000 for PLI product and 5000 for RPLI product.
+
+When ‘change in sum assured’ is selected and the amount entered is not in multiple of 1000 for PLI product and 5000 for RPLI product.
+
+
+
+This error will be thrown on the Quote screen on entering the sum assured amount.
+
+
+
+
+
+	Service request indexing
+
+	Login by indexer→ Service request indexing icon→ Select request type as Commutation→ Enter policy number→ select date→ Click on next button
+
+
+
+
+
+
+
+Click on submit button
+
+
+
+
+
+
+
+On the click of the submit button, request ID will be generated. Request nomenclature “PSCOMXXXXXXXXXX”
+
+
+
+Error Message
+
+Description
+
+Invalid policy number
+
+When no policy number is entered on the Indexing screen and ‘Next’ button is clicked.
+
+Policy Details not found
+
+When incorrect policy number is entered on the Indexing screen and ‘Next’ button is clicked.
+
+
+
+
+
+Financial request is pending
+
+If any financial request is pending, commutation cannot be indexed.
+
+Loan, Conversion, Death Claim, Maturity Claim, Billing frequency change, Reduced paid up, Policy cancellation, Free look cancellation, DOB change, Surrender and Commutation.
+
+
+
+Error will be thrown on Indexing screen on the click of the submit button.
+
+
+
+
+
+Data entry screen-
+
+Login by data entry operator→ Click on inbox → Select the reserved request id 
+
+
+
+
+
+
+
+Select any option either change in premium amount or change in sum assured → Click on continue button
+
+Change in Sum Assured
+
+
+
+
+
+
+
+
+
+Change in Premium
+
+
+
+
+
+On the click on the Submit button, below pop up will appear. On clicking ‘Yes’, request will be submitted to the Quality Checker.
+
+
+
+
+
+Error Message
+
+Description
+
+Please select an option
+
+When ‘change in premium amount’ is selected by the user but form the given option nothing is selected and submit button is clicked. 
+
+
+
+This error is applicable for Data Entry and Quality checker screen.
+
+Commutation - Applied sum assured is less than allowed limit for this product
+
+When ‘change in sum assured’ is selected and the amount entered is less than the allowed limit.
+
+
+
+This error will be thrown on the Data Entry and Quality checker screen on entering the sum assured amount.
+
+Commutation - Current Paid up value is greater than reduced sum assured
+
+When user enter the sum assured amount less than the current paid up value of the policy.
+
+
+
+This error will be thrown on the g, Data Entry and Quality checker screen on entering the sum assured amount.
+
+Commutation - Sum assured should be in multiple of 1000 10000 for PLI product and 5000 for RPLI product.
+
+When ‘change in sum assured’ is selected and the amount entered is not in multiple of   10000 for PLI product and 5000 for RPLI product.
+
+
+
+This error will be thrown on  Data Entry and Quality checker screen on entering the sum assured amount.
+
+
+
+
+
+
+
+Quality checker screen:
+
+Login by Quality checker → Click on inbox → Select the reserved request id 
+
+
+
+
+
+
+
+
+
+On the click of the Submit button, pop up will appear. On clicking ‘Yes’, request will be submitted to Approver.
+
+
+
+Approval Screen:
+
+Login by Approver→ Click on inbox→ Select the reserved request id
+
+
+
+
+
+
+
+
+
+On the click of submit button, pop up will appear. On clicking ‘Yes’ button, request will be approved.

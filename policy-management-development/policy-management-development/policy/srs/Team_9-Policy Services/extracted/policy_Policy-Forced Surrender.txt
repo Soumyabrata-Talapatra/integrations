@@ -1,0 +1,800 @@
+DEPARTMENT OF POSTS 
+
+MINISTRY OF COMMUNICATIONS & IT 
+
+GOVERNMENT OF INDIA
+
+
+
+			System Requirement Specification (SRS)	
+
+
+
+				Policy Forced Surrender
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+
+Brief Description
+
+
+
+The purpose of this business specification is to outline the business requirements necessary to Force Surrender of a Policy
+
+The document covers following important aspects:
+
+Forced Surrender when Loan O/S amount including Interest is more than Gross Surrender value
+
+
+
+	
+
+Standard Flow
+
+
+
+System has to generate a service request as and when the Policy crosses the value /rule framed by Business term in respect of outstanding  loan cases as Forced Surrender request (or also called as Auto Surrender Flow) and will be reserved in Approver Queue of the Postmaster.
+
+ 
+
+Approver-> Either Approve or Reject  Letter generation
+
+
+
+Sub-Standard Flows
+
+	
+
+	Forced Surrender
+
+	system will check when Gross Surrender amount is less than O/S Loan Principal + O/s Loan interest -> System will change the policy status as ‘Terminated as Auto Surrender’ due to loanPolicy Auto-terminatedAll pending Financial/Non-Financial requests are Auto-terminated
+
+	
+
+  Auto Surrender Flow
+
+Approver rejects the request  Request status is Rejected.
+
+Approver Queue is not available then request will remain as pending 
+
+Approver Queue is available, but no Approver user is tagged against that queue than request will remain as pending 
+
+Approver mapped against the office code from where the Original Loan was approved is transferred (Transfer/Relocation)  Requests will be mapped against another user based on the Approver queue available for the mentioned Office Code.
+
+
+
+
+
+Functionality Description
+
+
+
+Forced Surrender
+
+In the event of any three defaults (failure to pay) in the payment of half yearly interest, the Postmaster General/ Head of Division will be entitled to surrender the policy and to apply the surrender value thereof in payment of the said loan and interest. The balance, if any, of such surrender value if adequate for a paid-up value of Rs. 10,000/- shall be utilized for the issue of such a paid-up policy; otherwise, the amount will be paid in cash to policy holder entitled thereto.
+
+
+
+Illustration and Understanding Document
+
+
+
+Bus Rule no
+
+Illustration 
+
+System Expected Result
+
+SR_FS_1
+
+Force Surrender due to Loan : Rules
+
+Loan Disbursement Date : 15th Dec 2012
+Loan Sanction Amount : 10,000
+Gross Surrender Value = 2000
+Outstanding Loan Principal Amount = 1500
+Outstanding Loan Interest Amount = 500
+Policy Status : Active
+
+
+Forced Surrender Rule to be checked as on First of Every Month
+
+(i)On Active policy status  , Force surrender rule will be triggered when outstanding Loan repayment amount (principal plus interest) is =>100
+
+% of SV.                                                          If due amount remains unpaid within 30 days from the date of 3rd notice/reminder, request will be forwarded to Postmaster queue for further Approval or Rejection. 
+
+SR_FS_2
+
+Force Surrender due to Loan : Rules
+
+Loan Disbursement Date : 15th Dec 2012
+Loan Sanction Amount : 10,000
+Gross Surrender Value = 2000
+Outstanding Loan Principal Amount = 1500
+Outstanding Loan Interest Amount = 500
+Policy Status : Active
+
+
+Forced Surrender Rule to be checked as on First of Every Month
+
+ Forced surrender rule triggers when loan O/S + loan int = 2000 is equals to GSV = 2000, then outstanding Loan repayment amount (principal plus interest) is =>100
+
+% of SV.                                                               3rd Reminder will be sent to the user.            If due amount remains unpaid within 30 days from the date of 3rd notice/reminder, request will be forwarded to Postmaster queue for further Approval or Rejection.
+(iii) If the request is approved by approver than Policy status changed to 'Terminated surrender due to loan'
+/Terminated due to Auto surrender (iv) A Request ID has to be generated  
+
+(v) Reason to be displayed as ' Forced Surrender due to Loan'
+(vi) Request ID, print, view history to be displayed in disable mode.
+(vii) Financial History , event for forced surrender to be generated
+(viii) Owner to be displayed as 'System'
+(ix) Status to be displayed as 'Auto-complete'
+(x) Pending Request 'Name Change' will get terminated                                                (xi) On rejection of request by approver, Customer is required to pay the due amount (principal+interest).                        Policy status will be updated accordingly.                                                   
+
+SR_FS_3
+
+Force Surrender due to Loan : Pending Request
+
+Loan Disbursement Date : 15th Dec 2012
+Loan Sanction Amount: 10,000
+Gross Surrender Value = 2000
+Outstanding Loan Principal Amount = 1500
+Outstanding Loan Interest Amount = 500
+Policy Status : Pending Maturity
+
+
+On policy status PM , Force surrender rule will not trigger
+
+Same rule to be followed for 
+
+Pending and Terminated Maturity/Surrender/Death
+
+
+
+SR_FS_4
+
+Force Surrender due to Loan :
+Impact on post collection & processing
+
+Loan Disbursement Date : 15th December 2012
+Loan Sanction Amount 10,000 Rs.
+Gross Surrender Value = 2000
+Outstanding Loan Principal:1500
+Outstanding Loan Interest :500
+
+
+
+
+
+
+(i) Any loan collection not allowed on policy status  error message to be displayed ' Policy status not eligible'
+
+(ii)Any further processing not allowed and error message to be displayed as 'Policy status not eligible'
+
+(iii) Any collection through Bulk/meghdoot not allowed 
+
+SR_FS_5
+
+Force Surrender due to Loan
+
+Loan Disbursement Date : 15th Dec 2012
+Loan Sanction Amount : 10,000
+Gross Surrender Value = 2000
+Outstanding Loan Principal Amount = 1500
+Outstanding Loan Interest Amount = 500
+
+
+
+
+Request ID to be generated
+
+ (iii) Reason to be displayed as ' Forced Surrender due to Loan'
+(iv)Request ID, print, view history to be displayed in disable mode.
+(v) Financial History , event for forced surrender to be generated
+(vi) Owner to be displayed  'System'
+(vii) Status to be displayed as 'Auto-complete'
+
+
+
+SR_FS_6
+
+Auto Surrender
+
+Policy No:  TN-82048-CC
+
+Policy Holder Name:  xxxxx
+
+Product Name: Santosh
+
+Surrender Value as on Date-10 Jan 2025-49400
+
+Loan Principal-50000
+
+Loan Interest-2000
+
+Loan Capitalization is 95% of Surrender Value.  
+
+
+
+Loan Capitalization (Principle plus Interest) =95% of the Policy’s Surrender Value-1st reminder intimation by Postmaster.  
+
+SR_FS_7
+
+Auto Surrender
+
+Policy No:  TN-820948-CS
+
+Policy Holder Name: XXXXX
+
+Product Name: Santosh
+
+Surrender Value as on Date-10 Jun-26-51480
+
+Loan Principal-50000
+
+Loan Interest-2000
+
+Loan Capitalization is 99% of Surrender Value.  
+
+
+
+Loan Capitalization (Principle plus Interest) >98% of the Policy’s Surrender Value-Only 2nd  reminder intimation by Postmaster.  
+
+SR_FS-8
+
+Auto Surrender
+
+Policy No:  TN-820948-CS
+
+Policy Holder Name:  xxxx
+
+Product Name: Santosh
+
+Surrender Value as on Date-10 Jan 26 is 54600
+
+Loan Principal-50000
+
+Loan Interest-2000
+
+Loan Capitalization is 105% of Surrender Value.  
+
+
+
+Loan Capitalization (Principle plus Interest) >100% of the Policy’s Surrender Value-Only 3rd and Final reminder intimation by Postmaster.  
+
+SR_FS_9
+
+Auto Surrender
+
+Policy No:  TN_82048-CC
+
+Policy Holder Name:  XXXXX
+
+Product Name: Santosh
+
+Surrender Value as on Date-10 Jan 2026-54600
+
+Loan Principal-50000
+
+Loan Interest-2000
+
+Loan Capitalization Six monthly Cycle-10 Jan 2026
+
+Loan Capitalization is 105% of Surrender Value. 
+
+10th  Jan 2026 plus 30 days
+
+Loan Capitalization (Principle plus Interest) >100% of the Policy’s Surrender Value-3rd and Final reminder intimation by Postmaster on 10th Jan 2026 alongwith Auto Surrender process gets triggered with Auto Surrender request d generation and Policy status as PAS (Pending Auto Surrender).  
+
+If amount remains unpaid within the period of 30 days post 30 days period, Request will move to workflow mechanism. 
+
+Post workflow Policy will move to TAS (Terminated Auto Surrender). 
+
+SR_FS-11
+
+Auto Surrender
+
+Policy No:  TN-820948-CS
+
+Policy Holder Name:  XXXXX
+
+Product Name: Santosh
+
+Surrender Value as on Date-10 Jan 2026-54600
+
+Loan Principal-50000
+
+Loan Interest-2000
+
+Loan Capitalization Six monthly Cycle-10 Jan 2026
+
+Loan Capitalization is 105% of Surrender Value. 
+
+10th  Jan 2026 plus 30 days
+
+Collection made post 30 days period.
+
+
+
+
+
+Amount remains unpaid within the period of 30 days post 30 days period.
+
+ Collection will not be allowed at the DE/QC and Approver stage. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Forced Surrender Description and process flow
+
+
+
+
+
+
+
+Forced Surrender intimation letter should be sent to policy owner in the event of any three defaults (failure to pay) in the payment of half yearly interest. 
+
+The task should be created for workflow queue on 31st day from of the 3rd unpaid loan interest due date and the policy should acquire  new status. (Currently PAS)
+
+Note: There could be multiple loan transactions on policy taken at different intervals; system should identify 3 instances for any particular loan transaction.
+
+If O/S interest is received within 30 days the Forced Surrender task should be completed and closed automatically and a letter should go to the policy holder.
+
+In the above situation collection batch should intimate the workflow on the payment received.
+
+If O/S interest is not received within or equal to 30 days, System should check Net surrender value. (i.e. Field: Net Amount)
+
+If Net Surrender value (Net Amount) is less than prescribed amount, then the Surrender Value is paid in Cash and policy should acquire “Terminated” status.
+
+Since the Net Amount is more than or equal to prescribed amount, the policy will be reduced paid up to sum assured <Net Amount>
+
+n the approval, new intimation letter should be sent to the policy holder. 
+
+On surrender screen would display the surrender details as mentioned on surrender screen.
+
+Surrender request should be same as task created date. (Task created date is the date of the 3rd unpaid loan interest due date.)
+
+Status transition:
+
+
+
+AP/IL/AL to PAS  to TAS (As the case may be).
+
+
+
+If rejected, the policy should acquire status prior to PAS status (AP/IL/AL).
+
+Next Forced surrender action on same policy should be initiated only at next loan capitalisation.
+
+
+
+Forced Surrender Screens
+
+Approver
+
+
+
+
+
+
+
+
+
+
+
+
+
+List of documents section should not be displayed for these cases.
+
+Approver can take decisions as given in above button.
+
+Approve - Approves, system should check the net surrender value is more than or equal to  prescribed amountshould be configurable as desired by Business rule). If it is yes, the existing policy to be changed to “reduced paid up policy” with the net surrender value amount as the new Sum Assured.  Policy status would be changed to AU. 
+
+If net surrender value is less than presecribed amount(should be configurable as desired by Business rule), surrender event should be processed and policy status should be changed to Terminated auto surrender from Pending Auto surrender.
+
+Once the approver approves, respective Forced Surrender letter should be sent as given in below section.
+
+View documents – Click on view documents will be enable to view policy docket, any other documents received from customer. 
+
+Add comments – enable user to add comments if required
+
+Request history – allow user to view the history of transaction
+
+Cancel – enable to user to cancel the page and go back to inbox
+
+
+
+
+
+Request type should be marked as Forced Surrender.  When approver clicks on the item, it automatically reserves to the user. This would take user to the surrender screen.
+
+In below screen – Reason would be shown automatically as Loan interest default, Request date should be the date when workflow triggers the policy for Forced Surrender. This date should be allowed to change and surrender quote should be modified according to the request date.
+
+ Disbursement method should be appearing in dropdown Cash or Cheque.
+
+If the amount to be refunded above 20,000 (if required), disbursement method automatically switched to Cheque.
+
+Approver can view the net surrender value through the surrender quote displayed on screen.
+
+
+
+Remove the available loan on policy on the screen
+
+
+
+
+
+Sr No
+
+Field Name
+
+Data Type/ Format
+
+UI Display
+
+Properties
+
+Validation
+
+Validation message
+
+1
+
+Surrender Request Date
+
+DD/MM/YYYY
+
+Auto display and not editable
+
+Data field rule
+
+It is mandatory field.
+
+Should be auto populated as   the date of the 3rd unpaid loan interest due date.  
+
+ NA
+
+2
+
+Reason for surrender
+
+Text
+
+Auto display, not editable
+
+Data field rule
+
+Loan interest default should be displayed under reason for surrender
+
+NA
+
+3
+
+Policy assignment details fields
+
+Text
+
+Auto display. Derived from DB
+
+Data field rule
+
+If assignment is yes, assignee details – name of assignee, payee name and payee address should be displayed
+
+NA
+
+4
+
+Quote
+
+Numeric
+
+Auto display
+
+Derived from DB
+
+Business Rule
+
+Net amount should be round off. 
+
+NA
+
+5
+
+Net amount
+
+Numeric
+
+Auto display
+
+Derived 
+
+Data field rule
+
+Net surrender value should be displayed
+
+NA
+
+
+
+
+
+Letters
+
+Below are the impacted letters:
+
+	Letter Template Field Details & Rules – Repayment Schedule Letter
+
+
+
+	Auto Surrender Letters
+
+
+
+Intimation of Forced Surrender due to Loan-1st and 2nd Intimation
+
+Letter Type
+
+New
+
+
+
+Letter Description
+
+Intimation of Forced Surrender due to Loan is the letter which will be triggered at the time of 1st and 2nd Intimations when the Loan Capitalization amount => 95 % and 98 % of Policy’s Surrender value.
+
+
+
+Letter to be sent to:
+
+Policy holder
+
+
+
+Assumption: 
+
+‘Principal and Interest amount’,  ‘Policy Number’ in the letter format is considered to be changeable for every letter.
+
+
+
+Letter Trigger Point:
+
+On 1st and 2nd Intimation  
+
+
+
+Letter Format
+
+Word format as attached below: 
+
+Sample letter : Format to be decided by PLI Dte
+
+
+
+
+
+
+
+Intimation of Forced Surrender-3rd Intimation
+
+Letter Type
+
+New
+
+
+
+Letter Description
+
+Intimation of Forced Surrender due to Loan-3rd Intimation is the letter which will be triggered at the time of 3rd Intimation when the Loan Capitalization amount => 100 % of Policy’s Surrender value.
+
+
+
+Letter to be sent to:
+
+Policy holder
+
+
+
+Assumption: 
+
+‘Principal and Interest amount’,  ‘Policy Number’ in the letter format is considered to be changeable for every letter and 30 days period will remain static as shared in the template.
+
+
+
+Letter Trigger Point:
+
+On 3rd Intimation  
+
+
+
+Letter Format To be prescribed by PLI Dte
+
+
+
+
+
+Forced Surrender Letter
+
+Letter Type
+
+New
+
+
+
+Letter Description
+
+Intimation of Forced Surrender letter when the Loan Capitalization amount => 100 % of Policy’s Surrender value and the Forced surrender request is approved by the Postmaster Approver.
+
+
+
+Letter to be sent to:
+
+Policy holder
+
+
+
+Assumption: 
+
+‘Principal and Interest amount’,  ‘Policy Number’ in the letter format is considered to be changeable for every letter. 
+
+
+
+Letter Trigger Point:
+
+On Approval of the Forced Surrender request
+
+
+
+Letter   format To be prescribed by PLI Dte
+
+
+
+
+
+
+
+
+
+SMS’s
+
+
+
+Formats of SMS (To be decided by Business team) sample template given below)
+
+
+
+	Event Name: Auto Surrender 1st and 2nd  Intimation
+
+This SMS will be sent at the time of 1st and 2nd Intimations when the Loan Capitalization amount => 95 % and 98 % of Policy’s Surrender value.
+
+
+
+Alert Periodicity: At the trigger of 1st and 2nd intimation
+
+
+
+Alert Message: 
+
+To Customer (Policyholder) as an Auto Surrender Intimation: “Dear Customer, due to non-repayment of loan interest, your policy no 123456789012345 will be liable for auto-surrender. Please make payment immediately.”
+
+
+
+Data Elements:
+
+Field Name
+
+Data Type/ Format
+
+Policy Number
+
+String
+
+
+
+
+
+	Event Name: Auto Surrender 3rd (Final)  Intimation
+
+This SMS will be sent at the time of 3rd (Final) Intimation when the Loan Capitalization amount => 100% of Policy’s Surrender value.
+
+
+
+Alert Periodicity: At the trigger of 3rd  intimation
+
+
+
+Alert Message: 
+
+To Customer (Policyholder) as an Auto Surrender Intimation: “Dear Customer, if loan due amount <total amount> is not paid in 30 days, your policy will be processed for auto surrender”.
+
+
+
+
+
+Data Elements:
+
+Field Name
+
+Data Type/ Format
+
+Policy Number
+
+String
+
+
+
+Event Name: Auto Surrender
+
+This SMS will be sent at the time of Approval of Auto Surrender request..
+
+
+
+Alert Periodicity: At the Approval of Auto Surrender request.
+
+
+
+Alert Message: 
+
+To Customer (Policyholder) for Policy getting Automatically Surrendered: “Dear Customer, due to non-repayment of loan interest, your policy no 123456789012345 has been Forced surrendered”.
+
+
+
+
+
+Reports
+
+
+
+To be decided by Business requirement
+
+Letter for Intimation of force surrender due to Loan
+
+
+
+	Page 3 of 131

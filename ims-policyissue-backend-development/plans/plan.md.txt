@@ -1,0 +1,251 @@
+# Policy Issue Microservice - Implementation Plan
+
+## Project Overview
+
+**Service**: Policy Issue Microservice
+**Project**: India Post PLI/RPLI Insurance Management System (IMS)
+**Framework**: N-API Template (Go, Uber FX, Temporal, PostgreSQL)
+**Total APIs**: 62 across 12 categories
+
+---
+
+## Current Phase: Phase 6 - Lookup & Validation APIs
+
+### Phase 6 Overview
+**APIs**: 18 endpoints (Lookup: 10, Validation: 8)
+**Complexity**: Medium (no Temporal workflows, no complex DB operations)
+**Dependencies**: ProductRepository (for eligibility), static enum data from DDL
+
+---
+
+## Phase 6A: Lookup APIs (10 endpoints)
+
+### Architecture Decision: Static In-Memory Data
+
+Since the DDL defines all lookup values as PostgreSQL ENUMs (not database tables), the Lookup APIs will return **static in-memory data** derived from the enum definitions. No database queries needed except for products lookup.
+
+**Rationale**:
+- All lookup values are defined as PostgreSQL ENUMs in the schema
+- No separate lookup/reference tables exist in the DDL
+- Static data approach is performant (no DB round-trips)
+- Enum values are fixed and change only with schema migrations
+
+### Files to Create/Modify
+
+#### 1. `handler/lookup.go` (MODIFY - replace existing skeleton)
+Complete LookupHandler with all 10 endpoints:
+
+| # | API ID | Route | Method | Description |
+|---|--------|-------|--------|-------------|
+| 1 | LU-POL-001 | `/lookup/products` | GET | Product dropdown (delegates to ProductRepository) |
+| 2 | LU-POL-002 | `/lookup/relationships` | GET | Nominee relationships (from relationship_enum) |
+| 3 | LU-POL-003 | `/lookup/salutations` | GET | Salutations (from salutation_enum) |
+| 4 | LU-POL-004 | `/lookup/states` | GET | Indian states (static list) |
+| 5 | LU-POL-005 | `/lookup/occupations` | GET | Occupations (static list) |
+| 6 | LU-POL-006 | `/lookup/age-proof-types` | GET | Age proof types (from age_proof_type_enum) |
+| 7 | LU-POL-007 | `/lookup/payment-modes` | GET | Payment modes (from payment_method_enum + extras) |
+| 8 | LU-POL-008 | `/lookup/document-types` | GET | Document types (from document_type_enum) |
+| 9 | LU-POL-009 | `/lookup/rejection-reasons` | GET | Rejection reasons (static list) |
+| 10 | LU-POL-010 | `/lookup/cancellation-reasons` | GET | FLC cancellation reasons (static list) |
+
+**Constructor Change**: `NewLookupHandler` needs `*repo.ProductRepository` dependency for LU-POL-001.
+
+**Response Schema** (from Swagger):
+```go
+type LookupResponse struct {
+    port.StatusCodeAndMessage
+    Items []LookupItem `json:"items"`
+}
+
+type LookupItem struct {
+    Code        string `json:"code"`
+    Label       string `json:"label"`
+    Description string `json:"description,omitempty"`
+}
+```
+
+#### 2. `handler/response/lookup.go` (CREATE)
+Response DTOs for lookup endpoints.
+
+---
+
+## Phase 6B: Validation APIs (8 endpoints)
+
+### Architecture Decision: Handler-Only Logic + ProductRepository for Eligibility
+
+Validation APIs perform format checks and business rule validations. Most are pure computation (no DB access), except:
+- **VAL-POL-001** (eligibility): Needs `ProductRepository` to fetch product config
+- **VAL-POL-008** (aggregate SA): Needs `ProposalRepository` for existing SA lookup
+
+### Files to Create/Modify
+
+#### 3. `handler/validation.go` (CREATE)
+New ValidationHandler with all 8 endpoints:
+
+| # | API ID | Route | Method | Description | DB Access |
+|---|--------|-------|--------|-------------|-----------|
+| 1 | VAL-POL-001 | `/validate/eligibility` | POST | Age, SA, term eligibility check | Yes (ProductRepo) |
+| 2 | VAL-POL-002 | `/validate/aadhaar-format` | POST | Aadhaar 12-digit format | No |
+| 3 | VAL-POL-003 | `/validate/pan-format` | POST | PAN AAAAA9999A format | No |
+| 4 | VAL-POL-004 | `/validate/pincode` | POST | Pincode 6-digit + state match | No (future: ext svc) |
+| 5 | VAL-POL-005 | `/validate/bank-ifsc` | POST | IFSC 11-char format | No (future: ext svc) |
+| 6 | VAL-POL-006 | `/validate/nominee-shares` | POST | Shares total 100% | No |
+| 7 | VAL-POL-007 | `/validate/date-chain` | POST | Date sequence validation | No |
+| 8 | VAL-POL-008 | `/validate/aggregate-sa` | POST | Aggregate SA limit check | Yes (ProposalRepo) |
+
+**Constructor**: `NewValidationHandler(productRepo *repo.ProductRepository, proposalRepo *repo.ProposalRepository)`
+
+#### 4. `handler/request.go` (MODIFY)
+Add validation request DTOs:
+- `EligibilityCheckRequest`
+- `AadhaarFormatRequest`
+- `PANFormatRequest`
+- `PincodeValidationRequest`
+- `IFSCValidationRequest`
+- `NomineeSharesRequest`
+- `DateChainValidationRequest`
+- `AggregateSACheckRequest`
+
+#### 5. `handler/response/validation.go` (CREATE)
+Add validation response DTOs:
+- `EligibilityCheckResponse` (with eligibility_checks array)
+- `FormatValidationResponse`
+- `PincodeValidationResponse`
+- `IFSCValidationResponse`
+- `ShareValidationResponse`
+- `DateChainValidationResponse`
+- `AggregateSACheckResponse`
+
+---
+
+## Phase 6C: Infrastructure Updates
+
+#### 6. `bootstrap/bootstrapper.go` (MODIFY)
+- Add `NewValidationHandler` to FxHandler module
+- Update `NewLookupHandler` annotation (add ProductRepository dependency)
+
+---
+
+## Implementation Order
+
+### Step 1: Response DTOs
+1. Create `handler/response/lookup.go`
+2. Create `handler/response/validation.go`
+
+### Step 2: Request DTOs
+3. Add validation request structs to `handler/request.go`
+
+### Step 3: Lookup Handler
+4. Rewrite `handler/lookup.go` with all 10 endpoints (full implementation with static data)
+
+### Step 4: Validation Handler
+5. Create `handler/validation.go` with all 8 endpoints
+
+### Step 5: Bootstrapper
+6. Update `bootstrap/bootstrapper.go` to register ValidationHandler and update LookupHandler
+
+### Step 6: Verify Build
+7. Run `go mod tidy` and `go build` to verify compilation
+
+---
+
+## Detailed Implementation Specifications
+
+### Lookup Data Sources (from DDL ENUMs)
+
+**LU-POL-002 Relationships** (relationship_enum):
+FATHER, MOTHER, SPOUSE, SON, DAUGHTER, BROTHER, SISTER, GRANDFATHER, GRANDMOTHER, UNCLE, AUNT, NEPHEW, NIECE, FRIEND, OTHER
+
+**LU-POL-003 Salutations** (salutation_enum):
+MR, MRS, MS, DR, SHRI, SMT, KUM
+
+**LU-POL-006 Age Proof Types** (age_proof_type_enum):
+AADHAAR, BIRTH_CERTIFICATE, SCHOOL_CERTIFICATE, PASSPORT, VOTER_ID, DRIVING_LICENSE, PAN, OTHER_STANDARD, NON_STANDARD_AFFIDAVIT, NON_STANDARD_DECLARATION
+
+**LU-POL-007 Payment Modes** (payment_method_enum + swagger extras):
+CASH, CHEQUE, DD, ONLINE, POSB, NACH, ECS, STANDING_INSTRUCTION, UPI, NEFT, RTGS
+
+**LU-POL-008 Document Types** (document_type_enum):
+PROPOSAL_FORM, DOB_PROOF, ADDRESS_PROOF, PHOTO_ID, MEDICAL_REPORT, PAYMENT_COPY, HEALTH_DECLARATION, PHOTO, INCOME_PROOF, EMPLOYMENT_PROOF, OTHER
+
+### Validation Business Rules
+
+**VAL-POL-001 Eligibility Check**:
+- Calculate age from DOB
+- Fetch product by code from ProductRepository
+- Check: `product.IsEligibleAge(age)`
+- Check: `product.IsEligibleSA(sumAssured)`
+- Check: policy_term within product limits
+- Check: maturity_age <= product.max_maturity_age
+- Return array of check results
+
+**VAL-POL-002 Aadhaar Format** (VR-PI-008):
+- Pattern: `^[0-9]{12}$`
+- Verhoeff checksum validation (optional enhancement)
+
+**VAL-POL-003 PAN Format** (VR-PI-009):
+- Pattern: `^[A-Z]{5}[0-9]{4}[A-Z]{1}$`
+
+**VAL-POL-004 Pincode** (VR-PI-034, VR-PI-035):
+- Pattern: `^[0-9]{6}$`
+- State matching (future: external service integration)
+
+**VAL-POL-005 IFSC** (VR-PI-030):
+- Pattern: `^[A-Z]{4}0[A-Z0-9]{6}$`
+
+**VAL-POL-006 Nominee Shares** (VR-PI-018):
+- Sum of shares must equal exactly 100.0
+- Each share must be > 0 and <= 100
+
+**VAL-POL-007 Date Chain** (BR-POL-018):
+- declaration_date <= receipt_date <= indexing_date <= proposal_date
+- All dates must be valid format
+- Return field-level errors
+
+**VAL-POL-008 Aggregate SA** (INT-POL-002):
+- Fetch existing aggregate SA for customer (from ProposalRepository or external Customer Service)
+- Check: existing_sa + proposed_sa <= max_allowed
+- Return breakdown of current, proposed, max
+
+---
+
+## Traceability
+
+| API ID | Business Rules | Validation Rules | Error Codes | User Journey |
+|--------|---------------|------------------|-------------|--------------|
+| LU-POL-001 | - | - | - | UJ-POL-001 Step 1 |
+| LU-POL-002 | - | - | - | UJ-POL-002 Step 4 |
+| LU-POL-003 | - | - | - | All insured details |
+| LU-POL-004 | - | - | - | Address capture |
+| LU-POL-005 | - | - | - | Employment details |
+| LU-POL-006 | - | - | - | Document upload |
+| LU-POL-007 | - | - | - | Premium payment |
+| LU-POL-008 | - | - | - | Document upload |
+| LU-POL-009 | - | - | - | UJ-POL-006 |
+| LU-POL-010 | - | - | - | UJ-POL-009 |
+| VAL-POL-001 | BR-POL-011, BR-POL-012 | VR-PI-012, VR-PI-013, VR-PI-044 | ERR-POL-031, ERR-POL-033, ERR-POL-036 | UJ-POL-001 |
+| VAL-POL-002 | - | VR-PI-008 | ERR-POL-010 | UJ-POL-002 |
+| VAL-POL-003 | - | VR-PI-009 | ERR-POL-011 | UJ-POL-002 |
+| VAL-POL-004 | - | VR-PI-034, VR-PI-035 | - | UJ-POL-002 |
+| VAL-POL-005 | - | VR-PI-030 | - | UJ-POL-002 |
+| VAL-POL-006 | - | VR-PI-018 | ERR-POL-023 | UJ-POL-002 |
+| VAL-POL-007 | BR-POL-018 | VR-PI-004 to VR-PI-007 | ERR-POL-006 to ERR-POL-009 | UJ-POL-002 |
+| VAL-POL-008 | - | - | - | UJ-POL-002 |
+
+---
+
+## Quality Checklist
+
+- [ ] All 10 Lookup endpoints return proper LookupResponse schema
+- [ ] All 8 Validation endpoints return proper typed responses
+- [ ] LookupResponse uses `items` field (not `data`) per Swagger
+- [ ] All validation patterns match DDL/Swagger definitions
+- [ ] Eligibility check uses ProductRepository (not hardcoded)
+- [ ] Date chain validation returns field-level errors
+- [ ] Nominee shares checks total = 100%
+- [ ] Bootstrapper registers both handlers with FX annotations
+- [ ] All handlers embed `*serverHandler.Base`
+- [ ] All handlers set prefix `/v1`
+- [ ] Traceability comments on all endpoints ([LU-POL-XXX], [VAL-POL-XXX])
+- [ ] No interfaces for repositories (concrete structs)
+- [ ] `go build` succeeds after implementation

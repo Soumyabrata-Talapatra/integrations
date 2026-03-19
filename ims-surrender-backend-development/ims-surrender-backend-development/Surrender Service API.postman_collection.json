@@ -1,0 +1,734 @@
+{
+  "info": {
+    "_postman_id": "2246690c-eda7-4700-a054-4c83d4f7fef2",
+    "name": "Surrender Service API",
+    "description": "API collection for Policy Surrender Service - Voluntary, Forced, and Approval Workflows",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51561985",
+    "_collection_link": "https://go.postman.co/collection/51561985-2246690c-eda7-4700-a054-4c83d4f7fef2?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Approval Workflow",
+      "item": [
+        {
+          "name": "Get Approval Queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "req-001"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/approval/queue?office_code=PUNE&status=PENDING&limit=20&offset=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "queue"
+              ],
+              "query": [
+                {
+                  "key": "office_code",
+                  "value": "PUNE"
+                },
+                {
+                  "key": "status",
+                  "value": "PENDING"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Retrieve approval queue with filtering and pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Approval History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/approval/history?surrender_request_id=550e8400-e29b-41d4-a716-446655440003",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "surrender_request_id",
+                  "value": "550e8400-e29b-41d4-a716-446655440003"
+                }
+              ]
+            },
+            "description": "Retrieve approval workflow history with filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Reserve Approval Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"22508ae7-ed84-4b8b-8cfa-734ca84a5a75\"\n  user_id: \"User1\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/approval/reserve-task",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "reserve-task"
+              ]
+            },
+            "description": "Reserve an approval task for processing"
+          },
+          "response": []
+        },
+        {
+          "name": "Release Approval Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"7c134c4a-50d9-4061-983c-62950fd15e51\",\n  \"user_id\": \"User1\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/approval/release-task",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "release-task"
+              ]
+            },
+            "description": "Reserve an approval task for processing"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Surrender Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"550e8400-e29b-41d4-a716-446655990001\",\n  \"approval_remarks\": \"Document verified and policy eligible for surrender\",\n  \"approved_by\": \"950e8400-e29b-41d4-a716-446655440001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/approval/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "approve"
+              ]
+            },
+            "description": "Approve a surrender request"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Surrender Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"550e8400-e29b-41d4-a716-446655990001\",\n  \"rejection_reason\": \"Incomplete documentation\",\n  \"rejected_by\": \"950e8400-e29b-41d4-a716-446655440001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/approval/reject",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "reject"
+              ]
+            },
+            "description": "Reject a surrender request"
+          },
+          "response": []
+        },
+        {
+          "name": "Escalate Approval Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"550e8400-e29b-41d4-a716-446655990001\",\n  \"escalation_reason\": \"Requires senior management review\",\n  \"escalate_to\": \"admin-user-id\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/approval/escalate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "escalate"
+              ]
+            },
+            "description": "Escalate an approval task"
+          },
+          "response": []
+        },
+        {
+          "name": "Recalculate Surrender Value",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surrender_request_id\": \"22508ae7-ed84-4b8b-8cfa-734ca84a5a75\",\n  \"user_id\": \"vars\",\n  \"recalculation_reason\": \"Policy status changed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/approval/recalculate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "approval",
+                "recalculate"
+              ]
+            },
+            "description": "Recalculate surrender value"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Voluntary Surrender",
+      "item": [
+        {
+          "name": "Validate Eligibility",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": \"650e8400-e29b-41d4-a716-446655440001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/validate-eligibility",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "validate-eligibility"
+              ]
+            },
+            "description": "Validate if a policy is eligible for surrender"
+          },
+          "response": []
+        },
+        {
+          "name": "Calculate Surrender Value",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": \"650e8400-e29b-41d4-a716-446655440001\",\n  \"surrender_date\": \"2026-01-29\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/calculate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "calculate"
+              ]
+            },
+            "description": "Calculate surrender value for a policy"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Surrender Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": \"650e8400-e29b-41d4-a716-446655440001\",\n  \"surrender_date\": \"2026-01-29\",\n  \"reason\": \"Financial hardship\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/confirm",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "confirm"
+              ]
+            },
+            "description": "Confirm a surrender request"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Surrender Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surrender_request_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"document_type\": \"WRITTEN_CONSENT\",\n  \"document_path\": \"/documents/VSR-2026-001/Consent_Letter.pdf\",\n  \"file_size_bytes\": 125000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/documents/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "documents",
+                "upload"
+              ]
+            },
+            "description": "Upload a surrender document"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document Upload Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/documents/status?surrender_request_id=550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "documents",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "surrender_request_id",
+                  "value": "550e8400-e29b-41d4-a716-446655440001"
+                }
+              ]
+            },
+            "description": "Get the status of document uploads"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit for Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surrender_request_id\": \"550e8400-e29b-41d4-a716-446655440001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/submit-for-verification",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "submit-for-verification"
+              ]
+            },
+            "description": "Submit a surrender request for verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Surrender Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/surrender/status?surrender_request_id=550e8400-e29b-41d4-a716-446655440001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "surrender",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "surrender_request_id",
+                  "value": "550e8400-e29b-41d4-a716-446655440001"
+                }
+              ]
+            },
+            "description": "Get the status of a surrender request"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Forced Surrender",
+      "item": [
+        {
+          "name": "Send Forced Surrender Reminder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": \"650e8400-e29b-41d4-a716-446655440004\",\n  \"reminder_level\": \"FIRST\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/send-reminder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "send-reminder"
+              ]
+            },
+            "description": "Send a forced surrender reminder to customer"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Payment Window",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surrender_request_id\": \"550e8400-e29b-41d4-a716-446655440004\",\n  \"policy_id\": \"650e8400-e29b-41d4-a716-446655440004\",\n  \"window_start_date\": \"2026-01-01\",\n  \"window_end_date\": \"2026-01-31\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/create-payment-window",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "create-payment-window"
+              ]
+            },
+            "description": "Create a payment window for forced surrender"
+          },
+          "response": []
+        },
+        {
+          "name": "Record Payment Received",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_window_id\": \"550e8400-e29b-41d4-a716-446655770001\",\n  \"payment_amount\": 110000.00,\n  \"payment_reference\": \"REF-2026-001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/record-payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "record-payment"
+              ]
+            },
+            "description": "Record payment received for forced surrender"
+          },
+          "response": []
+        },
+        {
+          "name": "Initiate Forced Surrender",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": \"650e8400-e29b-41d4-a716-446655440004\",\n  \"surrender_reason\": \"Premium lapsed - automatic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/initiate-forced-surrender",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "initiate-forced-surrender"
+              ]
+            },
+            "description": "Initiate forced surrender for a policy"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Reminders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/pending-reminders?limit=20&offset=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "pending-reminders"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get list of pending forced surrender reminders"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Expired Payment Windows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/expired-payment-windows?limit=20&offset=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "expired-payment-windows"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get list of expired payment windows"
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Monthly Evaluation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"evaluation_month\": \"2026-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/trigger-monthly-evaluation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "trigger-monthly-evaluation"
+              ]
+            },
+            "description": "Trigger monthly forced surrender evaluation"
+          },
+          "response": []
+        },
+        {
+          "name": "Schedule Batch Evaluation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch_id\": \"batch-2026-01-001\",\n  \"scheduled_at\": \"2026-01-30T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/forced-surrender/schedule-batch-evaluation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "forced-surrender",
+                "schedule-batch-evaluation"
+              ]
+            },
+            "description": "Schedule a batch evaluation for forced surrender"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

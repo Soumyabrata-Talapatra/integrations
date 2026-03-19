@@ -1,0 +1,101 @@
+INSERT INTO policy_mgmt.policy (
+policy_number,
+customer_id,
+product_code,
+product_type,
+current_status,
+sum_assured,
+current_premium,
+premium_mode,
+billing_method,
+issue_date,
+policy_inception_date,
+maturity_date,
+paid_to_date,
+next_premium_due_date,
+agent_id,
+policyholder_dob,
+workflow_id
+)
+VALUES
+
+('PLI-2026-000001',10001,'EA','PLI','ACTIVE',500000,2500,'MONTHLY','CASH',
+'2023-01-10','2023-01-10','2038-01-10','2026-02-28','2026-03-31',501,'1985-05-01','plw-1001'),
+
+('PLI-2026-000002',10002,'WLA','PLI','ACTIVE',300000,1500,'QUARTERLY','ONLINE',
+'2022-03-12','2022-03-12','2042-03-12','2026-03-31','2026-06-30',502,'1980-02-11','plw-1002'),
+
+('PLI-2026-000003',10003,'AEA','PLI','VOID_LAPSE',200000,1200,'MONTHLY','CASH',
+'2024-01-01','2024-01-01','2034-01-01','2025-10-31','2025-11-30',503,'1990-08-22','plw-1003'),
+
+('PLI-2026-000004',10004,'CWLA','PLI','INACTIVE_LAPSE',350000,1700,'MONTHLY','PAY_RECOVERY',
+'2020-05-05','2020-05-05','2040-05-05','2025-01-31','2025-02-28',504,'1975-12-01','plw-1004'),
+
+('PLI-2026-000005',10005,'EA','PLI','PAID_UP',250000,1000,'HALF_YEARLY','CASH',
+'2019-04-10','2019-04-10','2034-04-10','2023-12-31','2024-06-30',505,'1982-07-19','plw-1005'),
+
+('PLI-2026-000006',10006,'JEA','PLI','PENDING_MATURITY',400000,2000,'YEARLY','ONLINE',
+'2006-01-10','2006-01-10','2026-01-10','2025-12-31','2026-12-31',506,'1970-01-01','plw-1006'),
+
+('RPLI-2026-000007',10007,'REA','RPLI','ACTIVE',150000,800,'MONTHLY','CASH',
+'2021-09-09','2021-09-09','2031-09-09','2026-02-28','2026-03-31',507,'1992-10-02','plw-1007'),
+
+('RPLI-2026-000008',10008,'RWLA','RPLI','ACTIVE_LAPSE',180000,900,'MONTHLY','PAY_RECOVERY',
+'2020-03-15','2020-03-15','2035-03-15','2024-12-31','2025-01-31',508,'1988-11-21','plw-1008'),
+
+('RPLI-2026-000009',10009,'RCP','RPLI','ACTIVE',220000,1100,'QUARTERLY','ONLINE',
+'2023-06-01','2023-06-01','2033-06-01','2026-03-31','2026-06-30',509,'1995-03-17','plw-1009'),
+
+('RPLI-2026-000010',10010,'GP','RPLI','ACTIVE',120000,700,'MONTHLY','CASH',
+'2024-07-01','2024-07-01','2034-07-01','2026-02-28','2026-03-31',510,'1998-09-15','plw-1010');
+
+
+
+INSERT INTO policy_mgmt.policy_status_history
+(policy_id,from_status,to_status,transition_reason,triggered_by_service)
+VALUES
+(1000000,NULL,'ACTIVE','Policy issued','POLICY_SERVICE'),
+(1000001,NULL,'ACTIVE','Policy issued','POLICY_SERVICE'),
+(1000002,'ACTIVE','VOID_LAPSE','Premium unpaid','BATCH_LAPSATION'),
+(1000003,'ACTIVE','INACTIVE_LAPSE','Remission expired','BATCH_LAPSATION'),
+(1000004,'ACTIVE','PAID_UP','Converted to paid up','CPC'),
+(1000005,'ACTIVE','PENDING_MATURITY','Maturity approaching','MATURITY_SCAN');
+
+
+INSERT INTO policy_mgmt.service_request
+(
+request_id,
+policy_id,
+policy_number,
+request_type,
+request_category,
+status,
+source_channel,
+submitted_by,
+request_payload
+)
+VALUES
+
+(1000000,1000000,'PLI-2026-000001','LOAN','FINANCIAL','RECEIVED','CUSTOMER_PORTAL',2001,'{}'),
+
+(1000001,1000001,'PLI-2026-000002','REVIVAL','FINANCIAL','ROUTED','CPC',2002,'{}'),
+
+(1000002,1000002,'PLI-2026-000003','SURRENDER','FINANCIAL','IN_PROGRESS','AGENT_PORTAL',2003,'{}'),
+
+(1000003,1000003,'PLI-2026-000004','LOAN_REPAYMENT','FINANCIAL','RECEIVED','CUSTOMER_PORTAL',2004,'{}'),
+
+(1000004,1000004,'PLI-2026-000005','NOMINATION_CHANGE','NON_FINANCIAL','RECEIVED','CUSTOMER_PORTAL',2005,'{}');
+
+
+INSERT INTO policy_mgmt.policy_lock
+(policy_id,request_id,request_type,timeout_at)
+VALUES
+(1000000,1000000,'LOAN',NOW() + INTERVAL '10 minutes');
+
+
+INSERT INTO policy_mgmt.policy_event
+(policy_id,event_type,event_payload)
+VALUES
+(1000000,'POLICY_CREATED','{}'),
+(1000002,'POLICY_LAPSED','{}'),
+(1000004,'POLICY_PAID_UP','{}');

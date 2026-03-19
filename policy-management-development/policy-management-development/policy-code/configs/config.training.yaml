@@ -1,0 +1,35 @@
+# Training environment overrides
+appname: "policy-management-training"
+
+db:
+  username: "${DB_USER}"
+  password: "${DB_PASSWORD}"
+  host: "${DB_HOST}"
+  port: "5432"
+  database: "ims_pli_training"
+  schema: "policy_mgmt"
+  maxconns: 15
+  minconns: 2
+
+temporal:
+  hostport: "${TEMPORAL_HOST}"
+  namespace: "pli-insurance"
+  taskqueue: "policy-management-tq"
+
+trace:
+  enabled: false
+
+cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS" 

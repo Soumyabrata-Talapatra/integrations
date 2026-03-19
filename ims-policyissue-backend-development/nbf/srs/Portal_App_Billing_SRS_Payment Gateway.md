@@ -1,0 +1,215 @@
+> INTERNAL APPROVAL FORM
+
+**Project Name:** Payment Gateway
+
+**Version: 1.0**
+
+**Submitted on:**
+
+  ------------------------------------------------------------------------
+               **Name**                                 **Date**
+  ------------ ---------------------------------------- ------------------
+  **Approved                                            
+  By:**                                                 
+
+  **Reviewed                                            
+  By:**                                                 
+
+  **Prepared                                            
+  By: **                                                
+  ------------------------------------------------------------------------
+
+> VERSION CONTROL LOG
+
+  -------------------------------------------------------------------------------
+  **Version**   **Date**   **Prepared     **Remarks**
+                           By**           
+  ------------- ---------- -------------- ---------------------------------------
+  **1**                                   
+
+                                          
+
+                                          
+
+                                          
+
+                                          
+  -------------------------------------------------------------------------------
+
+# Table of Contents {#table-of-contents .TOC-Heading}
+
+[**1. Executive Summary** [4](#executive-summary)](#executive-summary)
+
+[**2. Project Scope** [4](#project-scope)](#project-scope)
+
+[**3. Business Requirements**
+[4](#business-requirements)](#business-requirements)
+
+[**4. Functional Requirements Specification**
+[4](#functional-requirements-specification)](#functional-requirements-specification)
+
+[4.1 Pay Premium page [6](#pay-premium-page)](#pay-premium-page)
+
+[4.2 Payment Gateway Page
+[6](#payment-gateway-page)](#payment-gateway-page)
+
+[4.3 Payment Confirmation page
+[6](#payment-confirmation-page)](#payment-confirmation-page)
+
+[4.4 Auto-Debit Setup page
+[6](#auto-debit-setup-page)](#auto-debit-setup-page)
+
+[4.5 Notifications Page [7](#notifications-page)](#notifications-page)
+
+[**5. Attachments** [7](#attachments)](#attachments)
+
+## **1. Executive Summary**
+
+This document outlines the requirement for integrating the UMANG mobile
+application with the Insurance Management System (IMS) of India Post
+PLI/RPLI. The integration aims to provide seamless digital access to
+insurance services for customers via UMANG.
+
+## **2. Project Scope**
+
+This scope will include the integration of Insurance Management System
+with UMANG Application.
+
+## **3. Business Requirements**
+
+  -----------------------------------------------------------------------------
+  **ID**      **Functionality**   **Requirements**
+  ----------- ------------------- ---------------------------------------------
+  FS_PG_001   Multi-Gateway       Integrate multiple gateways for redundancy
+              Support             and choice.
+
+  FS_PG_002   POSB Integration    Allow direct debit from POSB accounts via
+                                  portal.
+
+  FS_PG_003   Auto-Debit Setup    Enable e-NACH/Standing Instructions for
+                                  recurring payments.
+
+  FS_PG_004   Payment Modes       Support UPI, Net Banking, Debit/Credit Cards,
+                                  Wallets.
+
+  FS_PG_005   Premium Payment     Allow customers to pay renewal/advance
+                                  premiums.
+
+  FS_PG_006   Loan Repayment      Enable loan repayment via gateway.
+
+  FS_PG_007   Revival Payment     Allow revival of lapsed policies through
+                                  payment gateway.
+
+  FS_PG_008   Real-Time Updates   Sync payment status with IMS and accounting
+                                  systems instantly.
+
+  FS_PG_009   Notifications       Send SMS/email alerts for success/failure of
+                                  transactions.
+
+  FS_PG_010   Receipt Generation  Provide downloadable receipts post-payment.
+
+  FS_PG_011   Transaction         Show transaction history, refunds, and status
+              Dashboard           to users.
+
+  FS_PG_012   Admin Reporting     Provide reconciliation reports, failure
+                                  analytics, audit trail.
+
+  FS_PG_013   Security Compliance Ensure PCI-DSS, RBI, MeitY compliance for
+                                  digital payments.
+
+  FS_PG_014   Retry Mechanism     Allow retry for failed transactions with
+                                  proper logging.
+
+  FS_PG_015   Refund Handling     Enable refund initiation and tracking via
+                                  portal.
+  -----------------------------------------------------------------------------
+
+## **4. Functional Requirements Specification**
+
+**Use Case Diagram for Payment Gateway Integration with IMS:** ![A
+diagram of a payment gateway AI-generated content may be
+incorrect.](media/image1.png){width="6.268055555555556in"
+height="4.178472222222222in"}
+
+**Wireframe for the Payment Gateway Pages:**
+
+![](media/image2.png){width="6.268055555555556in"
+height="4.178472222222222in"}
+
+### 4.1 Pay Premium page
+
+- **Purpose:** To allow customers to initiate premium payment by
+  fetching policy details and premium due amount.
+
+- **Fields:**
+
+  - Policy Number: Text: Unique identifier of the policy
+
+  - Date of Birth: Date: Mandatory
+
+  - Premium Amount Due: Auto-populated from backend
+
+### 4.2 Payment Gateway Page
+
+- **Purpose:** To capture payment details and redirect to selected
+  payment gateway.
+
+- **Fields:**
+
+  - Payment Method: Dropdown: Options are Debit Card, Credit Card, Net
+    Banking, UPI, Wallet.
+
+  - Bank/Card/UPI Details: Text: Based on selected method (e.g., card
+    number length, UPI ID format)
+
+  - Pay Now Button: Button: Initiates payment request to gateway
+
+### 4.3 Payment Confirmation page
+
+- **Purpose:** To display transaction status and provide receipt
+  download option.
+
+- **Fields:**
+
+  - Transaction ID: Read-only: Auto-generated by gateway
+
+  - Transaction Status: Text: Values are Success, Failed, Pending
+
+  - Amount Paid: Read-only Text
+
+  - Print Receipt Button: Button: Generates PDF receipt
+
+### 4.4 Auto-Debit Setup page
+
+- **Purpose:** To enable customers to set up recurring premium payments
+  via e-NACH or standing instructions.
+
+- **Fields:**
+
+  - Policy Number: Text: Unique identifier for the policy
+
+  - Date of Birth: Date of Birth for Insured
+
+  - Mandate Setup Details: Form Section: Includes Bank Account Number,
+    IFSC Code, Consent Checkbox
+
+  - Submit: Button: Initiates mandate registration
+
+### 4.5 Notifications Page
+
+- **Purpose:** To configure and send alerts for payment success/failure
+  and mandate updates.
+
+- **Fields:**
+
+  - Policy Number: Text: Unique identifier for the policy
+
+  - Date of Birth: Date of Birth for Insured
+
+  - Mandate Type: Options include SMS, Email, Both
+
+  - Notification Message: Text: Auto-generated template
+
+## **5. Attachments**
+
+The following documents can be referred.

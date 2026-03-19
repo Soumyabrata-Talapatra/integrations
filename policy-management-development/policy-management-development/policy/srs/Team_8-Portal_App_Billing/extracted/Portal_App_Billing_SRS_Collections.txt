@@ -1,0 +1,952 @@
+SRS/FRS- Collection
+
+SRS/FRS- Collection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Postal Life Insurance
+
+Department of Post
+
+
+
+
+
+Software Requirements Specification (SRS)
+
+Collection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INTERNAL APPROVAL FORM
+
+
+
+Project Name: Collection
+
+Version: 1.0
+
+Submitted on: 
+
+
+
+Name
+
+Date
+
+Approved By: 
+
+
+
+
+
+Reviewed By: 
+
+
+
+
+
+Prepared By:  
+
+
+
+
+
+
+
+
+
+VERSION CONTROL LOG
+
+Version
+
+Date
+
+Prepared By
+
+Remarks
+
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+
+
+
+	1. Executive Summary	4
+
+	2. Scope	4
+
+	4. Business Requirements	4
+
+	5. Functional Requirements Specification	5
+
+	5.1 Initial Premium Collection	5
+
+	5.2 Other Individual Collection	7
+
+	5.3 Special Group Collection	12
+
+	6. Test Cases	12
+
+	6. Appendices	16
+
+
+
+
+
+
+
+
+1. Executive Summary
+
+Define functional requirements for Collections lifecycle across PLI products, enabling premium and related financial transactions, receipt lifecycle, reversals, and reporting, while ensuring compliance with India Post and insurance accounting controls.
+
+2. Scope
+
+The following is in scope:
+
+Initial Collection
+
+Renewal Collection
+
+Reinstatement Collection
+
+Revival Lumpsum Collection
+
+Revival Installment Collection
+
+Full Loan Repayment
+
+Partial Loan Repayment
+
+Policy Miscellaneous Collection
+
+Agent Miscellaneous Collection
+
+Special Group Collection
+
+Other features that should also be included:
+
+(F1) Same-day Receipt Cancellation
+
+(F2) Duplicate Receipt Generation
+
+
+
+4. Business Requirements
+
+Requirement ID
+
+Requirement
+
+FS-COL-001
+
+Enable Initial Premium Collection based on Proposal No or Mobile No.
+
+FS-COL-002
+
+Enable Renewal Premium Collections with interest/arrears calculation.
+
+FS-COL-003
+
+Support Reinstatement & Revival (Lump Sum / Installment).
+
+FS-COL-004
+
+Support Full & Partial Loan Repayments with real-time loan balance updates.
+
+FS-COL-005
+
+Support Policy & Agent Miscellaneous Collections.
+
+FS-COL-006
+
+Enable Special Group / Bulk Collections for payroll societies.
+
+FS-COL-007
+
+Support multiple payment modes (cash, UPI, POS, cheque, DD, online).
+
+FS-COL-008
+
+Generate unique digital receipt for all collections.
+
+FS-COL-009
+
+Allow Same Day Receipt Cancellation with Supervisor approval.
+
+FS-COL-010
+
+Support Duplicate Receipt Generation.
+
+FS-COL-011
+
+Validate policy status, loan status, premium due rules.
+
+FS-COL-012
+
+Provide audit trail and transaction logs.
+
+FS-COL-013
+
+Enable search by Proposal No, Policy No, or Mobile Number.
+
+FS-COL-014
+
+Integrate with future digital payment platforms (BBPS, IPPB, UPI autopay).
+
+
+
+5. Functional Requirements Specification
+
+5.1 Initial Premium Collection
+
+Collect the first premium against a proposal pending first premium and generate the receipt. Payment option for new proposal will get displayed once the user input other details in new business page and proceed. However, User should also get the option to search the proposal and perform the payment. 
+
+Workflow for Initial Premium Payment:
+
+
+
+
+
+Search Section:
+
+Search By: Radio (Proposal/Mobile): Mandatory
+
+Proposal No: Text: Required if Proposal selected
+
+Mobile No: Numeric: 10-digit validation
+
+Proposal details:
+
+Proposal No: Auto-populated after search
+
+Customer Name: Auto
+
+Mobile Number: Auto
+
+Sum Assured: Auto
+
+Plan Type: Auto
+
+First Premium Amount: Auto
+
+Payment Details
+
+Payment Mode: mandatory
+
+Instrument Number: Mandatory for cheque/DD
+
+Bank Name: Mandatory for cheque/DD
+
+Amount: Auto-Populated
+
+Date: Auto (Transaction Date)
+
+Receipt Actions
+
+Generate Receipt
+
+Preview Receipt
+
+Print/Download Receipt
+
+Send SMS/Email
+
+
+
+Wireframe for the Initial Collection:
+
+
+
+5.2 Other Individual Collection
+
+A single unified page to perform Renewal, Reinstatement, Revival (Lump Sum & Installment), Loan Repayment (Full/Partial), Policy Miscellaneous, and Agent Miscellaneous collections. The page uses policy validation to render type-specific panels dynamically while keeping one header, one payment section, and one receipt action area.
+
+Page Layout (Top to Bottom)
+
+Header – Policy Context & Validation
+
+Collection Type Selector (Dropdown)
+
+Dynamic Collection Panel (fields depend on selected type)
+
+Payment Details (common component)
+
+Receipt Preview & Actions (generate/print/email/SMS)
+
+Audit & Notes (common component)
+
+
+
+Wireframe for the Collection Screen:
+
+
+
+5.2.1 Policy Context and Validation
+
+Provides the essential policy context required for any collection. The Validate action performs real-time checks with the Insurance Management System (IMS) to load eligibility, schedules, and agent mapping needed for downstream collection processing.
+
+Fields:
+
+Policy: Text (Searchable): Option should also be present to search and select a policy.
+
+Validate (Button): Calls policy validation API. It loads the following information for the policy:
+
+Customer Name
+
+Product Plan
+
+Policy Status
+
+Premium Mode
+
+Next Premium Due Date
+
+Loan Outstanding
+
+Agent Code
+
+View Ledger / History (Button): Opens modal: last 10 transactions, loan ledger entries.
+
+
+
+5.2.2 Collection Type Selector
+
+A single dropdown to choose the collection type—Renewal, Reinstatement, Revival Lump Sum, Revival Installment, Full Loan Repayment, Partial Loan Repayment, Policy Miscellaneous, or Agent Miscellaneous. Selecting a type should dynamically configures the page with the correct fields, validations, and rules, ensuring a streamlined workflow without navigating to different pages.
+
+Fields:
+
+Collection Type Selector: Dropdown: 
+
+Values are as follows:
+
+RENEWAL – Renewal Collection
+
+REINSTATEMENT – Reinstatement Collection
+
+REVIVAL_LUMP_SUM – Revival Lump Sum
+
+REVIVAL_INSTALLMENT – Revival Installment
+
+LOAN_FULL – Full Loan Repayment
+
+LOAN_PARTIAL – Partial Loan Repayment
+
+POLICY_MISC – Policy Miscellaneous Collection
+
+AGENT_MISC – Agent Miscellaneous Collection
+
+Selecting the Dropdown Renders the corresponding Dynamic Collection Panel below.
+
+
+
+5.2.3 Dynamic Collection Panel
+
+Context-sensitive panel that displays the fields and computed amounts for the chosen collection type.
+
+Renewal Collection
+
+Fields:
+
+Current Installment Amount: Read-only text
+
+Late Fee: Read-Only text
+
+GST: Read-Only text
+
+Arrears: Read-Only text
+
+Advance Amount: Text
+
+Total Payable: Read-Only text: Total Amount that needs to be paid.
+
+
+
+Reinstatement Collection (REINSTATEMENT)
+
+Fields:
+
+Reinstatement Fee: Read-Only text
+
+Interest: Read-Only text
+
+Total Payable: Read-Only text
+
+
+
+Revival Lumpsum (REVIVAL_LUMP_SUM)
+
+Fields:
+
+Arrears (Premiums): Read-Only text
+
+Interest on Arrears: Read-Only text
+
+Revival fee: Read-Only text
+
+Total Payable Amount: Read-Only text
+
+
+
+Revival Installment (REVIVAL_INSTALLMENT)
+
+Fields:
+
+Installment Plan ID: Read-Only text
+
+Current Installment No.: Read-Only text
+
+Installment Amount: Text
+
+Remaining Installment Amount: Read-Only text
+
+Total Payable Amount: Read-Only text
+
+
+
+Full Loan Repayment (LOAN_FULL)
+
+Fields:
+
+Loan Principal Outstanding
+
+Accrued Interest
+
+Additional Fee Amount
+
+Assignment Info: Text
+
+Total Closure Amount: Read-only Text
+
+
+
+Partial Loan Repayment (LOAN_PARTIAL)
+
+Fields
+
+Outstanding Balance: Read-only Text
+
+Repayment Amount: Text
+
+New Loan Balance: Read-only Text: Shows expected post allocation balances.
+
+
+
+Policy Miscellaneous (POLICY_MISC)
+
+Fields:
+
+Charge Code: Dropdown: Configured codes (e.g., Endorsement Fee, Duplicate Document Fee, etc.).
+
+Charge Description: Read-only text
+
+Amount: Text
+
+GST: Amount
+
+Total Payable Amount: Read-Only Text
+
+Remarks: Text: Optional
+
+
+
+Agent Miscellaneous (AGENT_MISC)
+
+Fields:
+
+Agent Code: Text with an option to search Agent code using Agent Name, etc.
+
+Agent Name: Auto-populated
+
+Charge Code: Values: Registration Fee, Renewal Fee, Training Fee, Penalty, etc.
+
+Amount: Text
+
+GST: text
+
+Total Amount Payable: Read-Only Text
+
+Remarks: Text
+
+
+
+
+
+5.2.4 Payment Details
+
+Reusable payment capture area supporting Cash, Cheque/DD, UPI, Card (POS), NetBanking. It exposes contextual fields like instrument number, bank name, instrument date, UPI ID, POS reference, and payer contact. Centralized validation ensures correct payment references and readiness for receipting.
+
+Fields:
+
+Payment Method: Dropdown: Cash, Cheque, DD, UPI, Card (POS), Net Banking
+
+Cheque/DD No.: Text
+
+Bank Name: Text
+
+Instrument Date: Date
+
+UPI ID: Text
+
+Payer Mobile: Text: Optional: 10 digit only
+
+Payer Email: Text: Optional: Email Format
+
+
+
+Payment Actions:
+
+Authorize Payment – validates totals & instrument fields; creates transaction.
+
+Generate Receipt – produces receipt with QR/barcode; renders preview.
+
+
+
+5.2.5 Receipt Preview & Actions
+
+Shows the Receipt Number, Issue Date/Time, Itemized Amounts, and QR/Barcode once payment is authorized. Users can Print, Download PDF, or Send via Email/SMS. The format adheres to organizational receipting standards, enabling auditability and customer communication.
+
+Fields:
+
+Receipt No.: Text
+
+Issue Date/Time: Date
+
+Operator/Branch Code: Read-Only Text
+
+Amount Breakdown: Read-Only (itemized lines: base, fees, taxes)
+
+Payment Ref: Read-Only (Cash, UPI, Card, Cheque, DD)
+
+QR/Barcode: Image
+
+Actions:
+
+Print
+
+Download PDF
+
+Send Email/SMS
+
+
+
+5.2.6 Audit & Notes
+
+Captures transaction remarks, supervisor approvals (for overrides or high-value scenarios), and links to the audit trail. Every action is logged with user, timestamp, and reason codes, fulfilling governance requirements and supporting post-transaction reviews.
+
+Fields:
+
+Remarks: Text
+
+User: User ID for the person performing the Transaction
+
+
+
+5.3 Special Group Collection
+
+The system shall provide bulk upload functionality on the Special Group Collection (SGC) page in the PLI application to facilitate creation of SGC entries for premium remittances received from non-postal DDOs or approved organizations. The bulk upload shall allow users to upload policy-wise premium data along with DDO and remittance details, perform validations on file structure, mandatory fields, policy status, and total amount matching the remittance, and upon successful validation, create the SGC record under the appropriate PLI head of account as a temporary holding entry for subsequent adjustment and reconciliation by authorized users.
+
+
+
+6. Test Cases
+
+Scenario
+
+Preconditions
+
+Steps
+
+Expected Result
+
+Search policy by Policy No – valid
+
+Policy exists & active/grace
+
+Enter Policy No → Click Search → Click Validate
+
+Header fields auto-populate (Customer, Product, Status, Mode, Next Due, Loan O/S, Agent). Alerts bar shows any grace/late info.
+
+Search policy – invalid policy
+
+Policy doesn’t exist
+
+Enter Policy No → Search
+
+Inline error: “Policy not found.” No data populated.
+
+Validate without searching
+
+—
+
+Click Validate with empty Policy field
+
+Validation blocked; error: “Enter policy to validate.”
+
+View Ledger/History opens
+
+Validated policy
+
+Click View Ledger/History
+
+Modal shows last 10 transactions & loan entries; view-only.
+
+Policy in Lapse
+
+Policy status = Lapse
+
+Enter Policy No → Search → Validate
+
+Status badge shows Lapse; Renewal panel disabled; info message: “Renewal not allowed for Lapse.”
+
+Collection Type dropdown shows only Renewal
+
+Validated policy
+
+Open Collection Type
+
+Dropdown visible with only Renewal selected; no other options.
+
+Renewal amounts load
+
+Policy Active/Grace with next due
+
+Validate → Ensure panel shows amounts
+
+Current Installment, Late Fee, GST, Arrears, Total Payable show correct computed values (RO).
+
+Advance Amount entry optional
+
+Policy Active; advance allowed
+
+Input Advance Amount
+
+Total Payable updates correctly = current + arrears + late + GST + advance.
+
+Advance Amount over limit
+
+Config max advance = 12 installments
+
+Enter advance exceeding limit
+
+Error: “Advance exceeds allowed limit.” No calculation commit.
+
+Non-numeric advance
+
+—
+
+Enter alphanumeric in Advance
+
+Field validation error: “Enter numeric amount.”
+
+Zero due amount
+
+Policy paid-up scenario for current cycle
+
+Validate
+
+Total Payable shows ₹0; Authorize Payment disabled; info: “No amount due.”
+
+Cash payment – simple
+
+Validated policy; Total > 0
+
+Payment Method=Cash → Authorize
+
+Authorization succeeds; transaction created; Generate Receipt enabled.
+
+Cheque – all mandatory fields
+
+Validated policy
+
+Payment Method=Cheque → Fill Instrument Number, Bank, Date (not future) → Authorize
+
+Authorization succeeds; instrument captured in txn; Generate Receipt enabled.
+
+Cheque – missing instrument number
+
+—
+
+Payment Method=Cheque → Leave InstNo blank → Authorize
+
+Error: “Instrument number is required.” Authorization blocked.
+
+Cheque – future date
+
+—
+
+Payment Method=Cheque → Date > today → Authorize
+
+Error: “Instrument date cannot be in the future.” Blocked.
+
+DD – bank name missing
+
+—
+
+Payment Method=DD → Leave Bank blank → Authorize
+
+Error: “Bank name is required.” Blocked.
+
+UPI – valid VPA
+
+—
+
+Payment Method=UPI → Enter VPA → Authorize
+
+Authorization succeeds; UPI reference captured post-gateway; Generate Receipt enabled.
+
+UPI – invalid VPA format
+
+—
+
+Payment Method=UPI → Enter invalid VPA → Authorize
+
+Inline error: “Enter a valid UPI ID (name@psp).” Blocked.
+
+Card (POS) – reference required
+
+POS available
+
+Payment Method=Card → Leave POS Ref blank → Authorize
+
+Error: “POS reference is required.” Blocked.
+
+NetBanking – success
+
+NB gateway reachable
+
+Payment Method=NetBanking → Authorize
+
+Redirect/flow completes; authorization success; Generate Receipt enabled.
+
+Gateway down (UPI/NB)
+
+Simulate outage
+
+Payment Method=UPI/NetBanking → Authorize
+
+Error banner: “Payment service unavailable. Try later.” Transaction not created.
+
+Payer Mobile validation
+
+—
+
+Enter Mobile with non-10 digits
+
+Error: “Enter 10-digit mobile.”
+
+Payer Email format
+
+—
+
+Enter invalid email
+
+Error: “Enter valid email address.”
+
+Generate Receipt after authorization
+
+Authorization done
+
+Click Generate Receipt
+
+Receipt No generated; Issue Date/Time populated; QR/Barcode shown; Payment Ref captured.
+
+Print & Download
+
+Receipt generated
+
+Click Print & Download PDF
+
+Print dialog opens; PDF downloads; file name pattern RCP-YYYYMM-#####.pdf.
+
+Email/SMS send
+
+Receipt generated; contact present
+
+Click Send Email/SMS
+
+Notifications sent; success toast; audit logged.
+
+Generate without auth
+
+No authorization
+
+Click Generate Receipt
+
+Button disabled; message: “Authorize payment before generating receipt.”
+
+Duplicate Generate attempt
+
+Receipt already issued
+
+Click Generate Receipt again
+
+Idempotency guard; no second receipt; info: “Receipt already generated for this transaction.”
+
+Remarks optional saved
+
+Authorization/receipt done
+
+Enter Remarks → Save
+
+Remarks saved; appears in audit trail with timestamp & user.
+
+User auto-capture
+
+Logged-in user session
+
+Perform transaction
+
+Audit shows UserID, time, action, reason codes (where applicable).
+
+Operator cannot override amounts
+
+Operator role
+
+Attempt to edit RO fields
+
+RO fields locked; no edit allowed; audit logs any attempt (if tracked).
+
+Supervisor required for high cash
+
+Threshold set (e.g., ₹50,000)
+
+Payment Method=Cash; Amount ≥ threshold → Authorize
+
+Supervisor approval prompt; without approval → blocked; with approval → proceed.
+
+Late fee calculation correct
+
+Overdue beyond grace
+
+Validate policy
+
+Late Fee matches rules; Total Payable = sum of all components.
+
+GST component displayed
+
+GST applicable
+
+Validate policy
+
+GST field shows correct tax; included in total.
+
+Negative total prevented
+
+Data anomaly
+
+Validate policy with malformed amounts
+
+System safeguards: totals cannot be negative; error: “Invalid amount calculation.”
+
+Switch policy after partial entry
+
+Have unsaved data
+
+Enter some values → change Policy → Validate
+
+Prompt: “Switching policy will clear entered data. Proceed?” On confirm, panel resets to new policy.
+
+Global error banner styling
+
+Simulate service error
+
+Trigger validation when IMS down
+
+Red banner with actionable message & retry option; no crash.
+
+
+
+
+
+6. Appendices
+
+The Following Documents attached below can be used.
+
+2

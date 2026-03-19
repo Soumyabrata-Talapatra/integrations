@@ -1,0 +1,2145 @@
+openapi: 3.0.3
+info:
+  title: Policy Management Orchestrator API
+  description: |
+    **IMS PLI 2.0 — Policy Management Orchestrator Microservice**
+
+    Single entry point for all policy lifecycle operations in the India Post PLI/RPLI Insurance Management System.
+    All policy requests (financial, non-financial, quotes) are routed through this service.
+
+    **Architecture**: PM is the state gatekeeper. It checks lifecycle state eligibility,
+    registers the request in the central `service_request` registry, and routes to downstream
+    microservices via Temporal child workflows. Domain-specific validation is performed by
+    downstream services.
+
+    **Source**: req_Policy_Management_Orchestrator_v4_1.md (v4.1, March 2026)
+
+    ### Key Concepts
+    - **State Gate**: PM checks if the current policy lifecycle state permits the requested operation
+    - **Service Request Registry**: Central table tracking all requests with PM-generated `request_id`
+    - **Financial Lock**: Mutual exclusion — only one financial request at a time per policy
+    - **Death Preemption**: Death claims override all other operations (BR-PM-031)
+    - **NFR Concurrency**: Non-financial requests run concurrently with financial requests
+  version: 1.0.0
+  contact:
+    name: IMS PLI 2.0 Engineering
+  license:
+    name: Internal Use Only
+
+servers:
+  - url: https://api.pli.gov.in/api/v1
+    description: Production
+  - url: https://staging-api.pli.gov.in/api/v1
+    description: Staging
+  - url: http://localhost:8080/api/v1
+    description: Local Development
+
+tags:
+  - name: Request Submission
+    description: "Submit financial and non-financial policy operations (shifted from downstream services to PM)"
+  - name: Quotes
+    description: "Pre-flight quote/calculation endpoints (proxied to downstream services, no service_request created)"
+  - name: Request Lifecycle
+    description: "Track, manage, and withdraw requests from the central service_request registry"
+  - name: Policy Query
+    description: "Read-only policy status, summary, history, and state gate checks"
+  - name: CPC Operations
+    description: "CPC inbox, dashboard, and operational endpoints"
+  - name: Lookups
+    description: "Reference data for dropdowns and form population"
+
+security:
+  - bearerAuth: []
+
+# ════════════════════════════════════════════════════════════════════
+# PATHS
+# ════════════════════════════════════════════════════════════════════
+
+paths:
+
+  # ──────────────────────────────────────────────────────────────────
+  # A. REQUEST SUBMISSION ENDPOINTS (Financial)
+  # ──────────────────────────────────────────────────────────────────
+
+  /policies/{policy_number}/requests/surrender:
+    post:
+      tags: [Request Submission]
+      operationId: submitSurrenderRequest
+      summary: Submit voluntary surrender request
+      description: |
+        Shifted from Surrender Service (FR-SUR-005).
+        State Gate: BR-PM-011 — Allowed statuses: ACTIVE, VL, IL, AL, PAID_UP.
+        Acquires financial lock. Routes to surrender-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurrenderRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/loan:
+    post:
+      tags: [Request Submission]
+      operationId: submitLoanRequest
+      summary: Submit policy loan request
+      description: |
+        Shifted from Loans Service (POST /api/v1/policies/{pn}/loans).
+        State Gate: BR-PM-012 — Allowed: ACTIVE only. Encumbrance: has_active_loan must be false.
+        Routes to loan-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/loan-repayment:
+    post:
+      tags: [Request Submission]
+      operationId: submitLoanRepayment
+      summary: Submit loan repayment
+      description: |
+        Shifted from Loans Service (POST /api/v1/loans/{id}/repayments).
+        State Gate: BR-PM-020 — Allowed: ACTIVE, ATP, PAS. Encumbrance: has_active_loan must be true.
+        Routes to loan-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanRepaymentPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/revival:
+    post:
+      tags: [Request Submission]
+      operationId: submitRevivalRequest
+      summary: Submit installment revival request
+      description: |
+        Shifted from Revival Service (workflow trigger).
+        State Gate: BR-PM-013 — Allowed: VL, IL, AL.
+        Routes to revival-tq. Timeout: 365 days (configurable).
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevivalRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/death-claim:
+    post:
+      tags: [Request Submission]
+      operationId: submitDeathClaim
+      summary: Submit death claim intimation
+      description: |
+        Shifted from Death Claims Service (FR-CLM-DC-001).
+        State Gate: BR-PM-014 — Allowed: ALL non-terminal (death preempts everything).
+        PREEMPTION (BR-PM-031): Cancels any active financial operation, auto-terminates pending requests.
+        Routes to claims-tq. Timeout: 90 days.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeathClaimPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  /policies/{policy_number}/requests/maturity-claim:
+    post:
+      tags: [Request Submission]
+      operationId: submitMaturityClaim
+      summary: Submit maturity claim
+      description: |
+        Shifted from Maturity Claims Service (FR-CLM-MC-003).
+        State Gate: BR-PM-015 — Allowed: ACTIVE, PENDING_MATURITY.
+        Routes to claims-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaturityClaimPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/survival-benefit:
+    post:
+      tags: [Request Submission]
+      operationId: submitSurvivalBenefit
+      summary: Submit survival benefit claim
+      description: |
+        Shifted from Survival Benefit Service (FR-SB-03).
+        State Gate: BR-PM-016 — Allowed: ACTIVE only.
+        Routes to claims-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurvivalBenefitPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/commutation:
+    post:
+      tags: [Request Submission]
+      operationId: submitCommutationRequest
+      summary: Submit commutation request
+      description: |
+        Shifted from Commutation Service (indexing entry point).
+        State Gate: BR-PM-017 — Allowed: ACTIVE only.
+        Routes to commutation-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommutationRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/conversion:
+    post:
+      tags: [Request Submission]
+      operationId: submitConversionRequest
+      summary: Submit policy conversion request
+      description: |
+        Shifted from Conversion Service (POST /api/conversion/request).
+        State Gate: BR-PM-018 — Allowed: ACTIVE only.
+        Routes to conversion-tq. Timeout: 90 days.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversionRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/freelook:
+    post:
+      tags: [Request Submission]
+      operationId: submitFreelookCancellation
+      summary: Submit free look cancellation
+      description: |
+        Shifted from Freelook Service.
+        State Gate: BR-PM-019 — Allowed: FREE_LOOK_ACTIVE only.
+        Routes to freelook-tq. Timeout: 15 days.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreelookRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/requests/paid-up:
+    post:
+      tags: [Request Submission]
+      operationId: submitVoluntaryPaidUp
+      summary: Submit voluntary paid-up request
+      description: |
+        PM-internal processing (no downstream service).
+        State Gate: BR-PM-022 — Allowed: ACTIVE, AL.
+        PM calculates PU value and transitions internally.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '409':
+          $ref: '#/components/responses/LockConflict'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  # ──────────────────────────────────────────────────────────────────
+  # A. REQUEST SUBMISSION ENDPOINTS (Non-Financial)
+  # ──────────────────────────────────────────────────────────────────
+
+  /policies/{policy_number}/requests/nomination-change:
+    post:
+      tags: [Request Submission]
+      operationId: submitNominationChange
+      summary: Submit nomination change request
+      description: |
+        Shifted from NFS Service (srs_Nomination).
+        State Gate: BR-PM-023 — All non-terminal. No financial lock required.
+        Routes to nfs-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NominationChangePayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  /policies/{policy_number}/requests/billing-method-change:
+    post:
+      tags: [Request Submission]
+      operationId: submitBillingMethodChange
+      summary: Submit billing method change
+      description: |
+        Shifted from NFS Service (srs_BMC). State Gate: BR-PM-023.
+        No financial lock. Routes to nfs-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingMethodChangePayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  /policies/{policy_number}/requests/assignment:
+    post:
+      tags: [Request Submission]
+      operationId: submitAssignment
+      summary: Submit policy assignment request
+      description: |
+        Shifted from NFS Service (srs_Assignment). State Gate: BR-PM-023.
+        No financial lock. Routes to nfs-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  /policies/{policy_number}/requests/address-change:
+    post:
+      tags: [Request Submission]
+      operationId: submitAddressChange
+      summary: Submit address/name change
+      description: |
+        Shifted from NFS Service (srs_NFR_Address). State Gate: BR-PM-023.
+        No financial lock. Routes to nfs-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressChangePayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  /policies/{policy_number}/requests/premium-refund:
+    post:
+      tags: [Request Submission]
+      operationId: submitPremiumRefund
+      summary: Submit premium refund request
+      description: |
+        Shifted from NFS Service (srs_NFR_Refund). State Gate: BR-PM-023.
+        No financial lock. Routes to billing-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PremiumRefundPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  /policies/{policy_number}/requests/duplicate-bond:
+    post:
+      tags: [Request Submission]
+      operationId: submitDuplicateBond
+      summary: Submit duplicate policy bond request
+      description: |
+        Shifted from NFS Service (srs_NFR_Duplicate). State Gate: BR-PM-023.
+        No financial lock. Routes to nfs-tq.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericRequestPayload'
+      responses:
+        '202':
+          $ref: '#/components/responses/RequestAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/TerminalState'
+
+  # ──────────────────────────────────────────────────────────────────
+  # B. QUOTE / PRE-FLIGHT ENDPOINTS
+  # ──────────────────────────────────────────────────────────────────
+
+  /policies/{policy_number}/quotes/surrender:
+    post:
+      tags: [Quotes]
+      operationId: getSurrenderQuote
+      summary: Get surrender value quote
+      description: |
+        Proxied to Surrender Service (FR-SUR-002). PM does state gate check (BR-PM-011)
+        then forwards to Surrender for domain calculation. No service_request created. No lock.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+      responses:
+        '200':
+          description: Surrender value quote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurrenderQuoteResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/quotes/loan:
+    post:
+      tags: [Quotes]
+      operationId: getLoanQuote
+      summary: Get loan eligibility and amount
+      description: |
+        Proxied to Loans Service (FR-POL-LOAN-001). State gate: BR-PM-012.
+        Returns eligibility, max loan amount, interest rate.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+      responses:
+        '200':
+          description: Loan eligibility and quote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanQuoteResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  /policies/{policy_number}/quotes/conversion:
+    post:
+      tags: [Quotes]
+      operationId: getConversionQuote
+      summary: Get conversion quote
+      description: |
+        Proxied to Conversion Service (POST /api/conversion/quote). State gate: BR-PM-018.
+        Returns available conversion products, premium differences, effective date.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversionQuoteRequest'
+      responses:
+        '200':
+          description: Conversion quote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionQuoteResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+        '422':
+          $ref: '#/components/responses/StateGateRejected'
+
+  # ──────────────────────────────────────────────────────────────────
+  # C. REQUEST LIFECYCLE ENDPOINTS
+  # ──────────────────────────────────────────────────────────────────
+
+  /policies/{policy_number}/requests:
+    get:
+      tags: [Request Lifecycle]
+      operationId: listPolicyRequests
+      summary: List all requests for a policy
+      description: |
+        Returns active and historical requests from the central service_request registry.
+        Supports filtering by status and request_type.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [RECEIVED, ROUTED, IN_PROGRESS, COMPLETED, CANCELLED, WITHDRAWN, TIMED_OUT, AUTO_TERMINATED, STATE_GATE_REJECTED]
+        - name: request_type
+          in: query
+          schema:
+            $ref: '#/components/schemas/RequestType'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SortBy'
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestListResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+
+  /policies/{policy_number}/requests/{request_id}:
+    get:
+      tags: [Request Lifecycle]
+      operationId: getRequestDetail
+      summary: Get single request detail
+      description: Returns full detail of a request including timeline events.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Request detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestDetailResponse'
+        '404':
+          description: Request not found
+
+  /policies/{policy_number}/requests/{request_id}/withdraw:
+    put:
+      tags: [Request Lifecycle]
+      operationId: withdrawRequest
+      summary: Withdraw a pending request
+      description: |
+        Cancels downstream workflow, reverts policy state to previous_status,
+        releases financial lock, marks request as WITHDRAWN.
+        Only allowed for status IN (ROUTED, IN_PROGRESS).
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Optional withdrawal reason
+                  example: "Customer changed mind"
+      responses:
+        '200':
+          description: Request withdrawn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalResponse'
+        '404':
+          description: Request not found
+        '409':
+          description: Request already completed or in terminal state
+
+  /requests/pending:
+    get:
+      tags: [CPC Operations]
+      operationId: getCPCInbox
+      summary: CPC inbox — pending requests across all policies
+      description: |
+        Paginated list of all pending requests across all policies.
+        Filterable by request_type, status, source_channel, date range.
+      parameters:
+        - name: request_type
+          in: query
+          schema:
+            $ref: '#/components/schemas/RequestType'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [RECEIVED, ROUTED, IN_PROGRESS]
+        - name: source_channel
+          in: query
+          schema:
+            $ref: '#/components/schemas/SourceChannel'
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [submitted_at, age_hours, request_type]
+            default: submitted_at
+      responses:
+        '200':
+          description: Pending requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingRequestsResponse'
+
+  /requests/pending/summary:
+    get:
+      tags: [CPC Operations]
+      operationId: getCPCDashboardSummary
+      summary: CPC dashboard — counts by request type and status
+      description: Aggregated counts for dashboard tiles.
+      responses:
+        '200':
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummaryResponse'
+
+  # ──────────────────────────────────────────────────────────────────
+  # D. POLICY QUERY ENDPOINTS
+  # ──────────────────────────────────────────────────────────────────
+
+  /policies/{policy_number}/status:
+    get:
+      tags: [Policy Query]
+      operationId: getPolicyStatus
+      summary: Get current lifecycle status and encumbrances
+      description: |
+        Quick status check. Returns lifecycle state, previous state, encumbrance flags,
+        and computed display_status.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+      responses:
+        '200':
+          description: Policy status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyStatusResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+
+  /policies/{policy_number}/summary:
+    get:
+      tags: [Policy Query]
+      operationId: getPolicySummary
+      summary: Get full policy summary
+      description: |
+        Complete policy overview including status, SA, premium, PTD, product, agent,
+        encumbrances, paid-up value, and key dates.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+      responses:
+        '200':
+          description: Policy summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicySummaryResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+
+  /policies/{policy_number}/history:
+    get:
+      tags: [Policy Query]
+      operationId: getPolicyHistory
+      summary: Get status change history
+      description: Chronological list of all state transitions with trigger details.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Status history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyHistoryResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+
+  /policies/{policy_number}/state-gate/{request_type}:
+    get:
+      tags: [Policy Query]
+      operationId: checkStateGate
+      summary: Pre-flight state gate check
+      description: |
+        Checks if the current lifecycle state permits the requested operation.
+        Does NOT create a service_request. Does NOT acquire a lock. Read-only.
+        Use this to enable/disable action buttons on the frontend.
+      parameters:
+        - $ref: '#/components/parameters/PolicyNumber'
+        - name: request_type
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/RequestType'
+      responses:
+        '200':
+          description: State gate result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StateGateResponse'
+        '404':
+          $ref: '#/components/responses/PolicyNotFound'
+
+  /policies/batch-status:
+    get:
+      tags: [Policy Query]
+      operationId: getBatchStatus
+      summary: Bulk status lookup for multiple policies
+      description: Returns status for up to 100 policies in a single call.
+      parameters:
+        - name: policy_numbers
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            maxItems: 100
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: Batch status response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchStatusResponse'
+
+  /policies/dashboard/metrics:
+    get:
+      tags: [CPC Operations]
+      operationId: getDashboardMetrics
+      summary: Aggregate policy metrics
+      description: Counts by lifecycle state, product type, billing method. For admin dashboards.
+      responses:
+        '200':
+          description: Dashboard metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardMetricsResponse'
+
+  # ──────────────────────────────────────────────────────────────────
+  # E. LOOKUP ENDPOINTS
+  # ──────────────────────────────────────────────────────────────────
+
+  /lookups/request-types:
+    get:
+      tags: [Lookups]
+      operationId: getRequestTypes
+      summary: List available request types
+      responses:
+        '200':
+          description: Request types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupListResponse'
+
+  /lookups/source-channels:
+    get:
+      tags: [Lookups]
+      operationId: getSourceChannels
+      summary: List source channels
+      responses:
+        '200':
+          description: Source channels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupListResponse'
+
+  /lookups/disbursement-methods:
+    get:
+      tags: [Lookups]
+      operationId: getDisbursementMethods
+      summary: List disbursement methods
+      responses:
+        '200':
+          description: Disbursement methods
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupListResponse'
+
+  /lookups/nfr-types:
+    get:
+      tags: [Lookups]
+      operationId: getNfrTypes
+      summary: List non-financial request sub-types
+      responses:
+        '200':
+          description: NFR types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupListResponse'
+
+  /lookups/lifecycle-states:
+    get:
+      tags: [Lookups]
+      operationId: getLifecycleStates
+      summary: List all 23 lifecycle states with descriptions
+      responses:
+        '200':
+          description: Lifecycle states
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleStatesResponse'
+
+  /lookups/products:
+    get:
+      tags: [Lookups]
+      operationId: getProducts
+      summary: List PLI/RPLI product codes
+      responses:
+        '200':
+          description: Products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupListResponse'
+
+# ════════════════════════════════════════════════════════════════════
+# COMPONENTS
+# ════════════════════════════════════════════════════════════════════
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ── Parameters ───────────────────────────────────────────────────
+
+  parameters:
+    PolicyNumber:
+      name: policy_number
+      in: path
+      required: true
+      description: Policy number (e.g., PLI/2026/000001)
+      schema:
+        type: string
+        pattern: '^(PLI|RPLI)/\d{4}/\d{6}$'
+        example: "PLI/2026/000001"
+
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      description: PM-generated BIGINT request ID (from seq_service_request_id)
+      schema:
+        type: integer
+        format: int64
+
+    IdempotencyKey:
+      name: X-Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated UUID for safe retries
+      schema:
+        type: string
+        format: uuid
+
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+
+    SortBy:
+      name: sort_by
+      in: query
+      schema:
+        type: string
+        enum: [submitted_at, completed_at, request_type]
+        default: submitted_at
+
+  # ── Schemas ──────────────────────────────────────────────────────
+
+  schemas:
+
+    # ── Enums ────────────────────────────────────────────────────
+
+    RequestType:
+      type: string
+      enum:
+        - SURRENDER
+        - LOAN
+        - LOAN_REPAYMENT
+        - REVIVAL
+        - DEATH_CLAIM
+        - MATURITY_CLAIM
+        - SURVIVAL_BENEFIT
+        - COMMUTATION
+        - CONVERSION
+        - FLC
+        - PAID_UP
+        - NOMINATION_CHANGE
+        - BILLING_METHOD_CHANGE
+        - ASSIGNMENT
+        - ADDRESS_CHANGE
+        - PREMIUM_REFUND
+        - DUPLICATE_BOND
+
+    RequestCategory:
+      type: string
+      enum: [FINANCIAL, NON_FINANCIAL]
+
+    RequestStatus:
+      type: string
+      enum:
+        - RECEIVED
+        - STATE_GATE_REJECTED
+        - ROUTED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+        - WITHDRAWN
+        - TIMED_OUT
+        - AUTO_TERMINATED
+
+    RequestOutcome:
+      type: string
+      enum: [APPROVED, REJECTED, WITHDRAWN, TIMEOUT, PREEMPTED, DOMAIN_REJECTED]
+
+    SourceChannel:
+      type: string
+      enum: [CUSTOMER_PORTAL, CPC, MOBILE_APP, AGENT_PORTAL, BATCH, SYSTEM]
+
+    LifecycleStatus:
+      type: string
+      description: "23 canonical lifecycle states"
+      enum:
+        - FREE_LOOK_ACTIVE
+        - ACTIVE
+        - VOID_LAPSE
+        - INACTIVE_LAPSE
+        - ACTIVE_LAPSE
+        - PAID_UP
+        - REDUCED_PAID_UP
+        - ASSIGNED_TO_PRESIDENT
+        - PENDING_AUTO_SURRENDER
+        - PENDING_SURRENDER
+        - REVIVAL_PENDING
+        - PENDING_MATURITY
+        - DEATH_CLAIM_INTIMATED
+        - DEATH_UNDER_INVESTIGATION
+        - SUSPENDED
+        - VOID
+        - SURRENDERED
+        - TERMINATED_SURRENDER
+        - MATURED
+        - DEATH_CLAIM_SETTLED
+        - FLC_CANCELLED
+        - CANCELLED_DEATH
+        - CONVERTED
+
+    # ── Request Payloads ─────────────────────────────────────────
+
+    GenericRequestPayload:
+      type: object
+      required: [source_channel]
+      properties:
+        source_channel:
+          $ref: '#/components/schemas/SourceChannel'
+        submitted_by:
+          type: integer
+          format: int64
+          nullable: true
+          description: BIGINT user ID of submitter (null for batch/system)
+        payload:
+          type: object
+          description: Request-type-specific payload
+          additionalProperties: true
+        notes:
+          type: string
+          maxLength: 1000
+
+    SurrenderRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              properties:
+                disbursement_method:
+                  type: string
+                  enum: [NEFT, CHEQUE, CASH, MONEY_ORDER]
+                bank_account_id:
+                  type: integer
+                  format: int64
+                  description: Required for NEFT; BIGINT from billing service
+                reason:
+                  type: string
+                  example: "Financial need"
+
+    LoanRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              properties:
+                requested_amount:
+                  type: number
+                  format: double
+                  description: Optional. If omitted, max eligible amount is used.
+                disbursement_method:
+                  type: string
+                  enum: [NEFT, CHEQUE]
+
+    LoanRepaymentPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [loan_id, amount, payment_mode]
+              properties:
+                loan_id:
+                  type: integer
+                  format: int64
+                  description: BIGINT from loan service
+                amount:
+                  type: number
+                  format: double
+                payment_mode:
+                  type: string
+                  enum: [CASH, CHEQUE, ONLINE, PAY_RECOVERY]
+
+    RevivalRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              properties:
+                requested_installments:
+                  type: integer
+                  minimum: 2
+                  maximum: 12
+                  description: Number of installments requested
+
+    DeathClaimPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [customer_id, date_of_death, reported_by, claimant_relationship]
+              properties:
+                customer_id:
+                  type: integer
+                  format: int64
+                  description: BIGINT from customer service
+                date_of_death:
+                  type: string
+                  format: date
+                cause_of_death:
+                  type: string
+                  enum: [NATURAL, ACCIDENTAL, SUICIDE, UNKNOWN]
+                reported_by:
+                  type: string
+                  enum: [NOMINEE, LEGAL_HEIR, ASSIGNEE, POST_OFFICE]
+                claimant_id:
+                  type: integer
+                  format: int64
+                  description: BIGINT from claims service
+                claimant_relationship:
+                  type: string
+                  enum: [SPOUSE, CHILD, PARENT, SIBLING, LEGAL_HEIR, ASSIGNEE, OTHER]
+
+    MaturityClaimPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              properties:
+                disbursement_method:
+                  type: string
+                  enum: [NEFT, CHEQUE, CASH]
+                bank_account_id:
+                  type: integer
+                  format: int64
+                  description: Required for NEFT; BIGINT from billing service
+
+    SurvivalBenefitPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [sb_installment_number]
+              properties:
+                sb_installment_number:
+                  type: integer
+                  description: Which SB installment is being claimed
+                disbursement_method:
+                  type: string
+                  enum: [NEFT, CHEQUE, CASH]
+                bank_account_id:
+                  type: integer
+                  format: int64
+                  description: Required for NEFT; BIGINT from billing service
+
+    CommutationRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              properties:
+                commutation_percentage:
+                  type: number
+                  format: double
+                  minimum: 0
+                  maximum: 100
+                  description: Percentage of SA to commute
+
+    ConversionRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [target_product_code]
+              properties:
+                target_product_code:
+                  type: string
+                  description: Product to convert to (e.g., JLA, CWLA)
+
+    FreelookRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  example: "Not satisfied with terms"
+                original_bond_surrendered:
+                  type: boolean
+                  default: false
+
+    NominationChangePayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [nominees]
+              properties:
+                nominees:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, relationship, share_percentage]
+                    properties:
+                      name:
+                        type: string
+                      relationship:
+                        type: string
+                      share_percentage:
+                        type: number
+                        format: double
+                      date_of_birth:
+                        type: string
+                        format: date
+
+    BillingMethodChangePayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [new_billing_method]
+              properties:
+                new_billing_method:
+                  type: string
+                  enum: [CASH, PAY_RECOVERY, ONLINE]
+                employer_code:
+                  type: string
+                  description: Required when changing to PAY_RECOVERY
+
+    AssignmentRequestPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [assignment_type, assignee_name]
+              properties:
+                assignment_type:
+                  type: string
+                  enum: [ABSOLUTE, CONDITIONAL]
+                assignee_name:
+                  type: string
+                assignee_address:
+                  type: string
+
+    AddressChangePayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              properties:
+                new_address:
+                  type: object
+                  properties:
+                    line1:
+                      type: string
+                    line2:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    pincode:
+                      type: string
+                      pattern: '^\d{6}$'
+                new_name:
+                  type: string
+                  description: If name change is also requested
+
+    PremiumRefundPayload:
+      allOf:
+        - $ref: '#/components/schemas/GenericRequestPayload'
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [receipt_number, refund_amount]
+              properties:
+                receipt_number:
+                  type: string
+                refund_amount:
+                  type: number
+                  format: double
+                refund_reason:
+                  type: string
+
+    QuoteRequest:
+      type: object
+      properties:
+        as_of_date:
+          type: string
+          format: date
+          description: Optional. Calculate as of this date. Defaults to today.
+
+    ConversionQuoteRequest:
+      type: object
+      properties:
+        target_product_code:
+          type: string
+          description: Product to convert to
+        as_of_date:
+          type: string
+          format: date
+
+    # ── Response Schemas ─────────────────────────────────────────
+
+    RequestAcceptedResponse:
+      type: object
+      properties:
+        request_id:
+          type: integer
+          format: int64
+        policy_number:
+          type: string
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        request_category:
+          $ref: '#/components/schemas/RequestCategory'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        state_gate_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+          description: Policy status at time of state gate check
+        downstream_service:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        timeout_at:
+          type: string
+          format: date-time
+        tracking_url:
+          type: string
+          format: uri
+      example:
+        request_id: 100001
+        policy_number: "PLI/2026/000001"
+        request_type: "SURRENDER"
+        request_category: "FINANCIAL"
+        status: "ROUTED"
+        state_gate_status: "ACTIVE_LAPSE"
+        downstream_service: "surrender"
+        submitted_at: "2026-03-05T10:30:00Z"
+        timeout_at: "2026-04-04T10:30:00Z"
+        tracking_url: "/api/v1/policies/PLI/2026/000001/requests/100001"
+
+    StateGateRejectedResponse:
+      type: object
+      properties:
+        request_id:
+          type: integer
+          format: int64
+        status:
+          type: string
+          example: "STATE_GATE_REJECTED"
+        rejection_reason:
+          type: string
+          example: "State VOID not permitted for SURRENDER"
+        current_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        allowed_statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LifecycleStatus'
+        error:
+          $ref: '#/components/schemas/ErrorResponse'
+
+    Encumbrances:
+      type: object
+      properties:
+        has_active_loan:
+          type: boolean
+        loan_id:
+          type: integer
+          format: int64
+          nullable: true
+        loan_outstanding:
+          type: number
+          format: double
+          nullable: true
+        assignment_type:
+          type: string
+          enum: [NONE, ABSOLUTE, CONDITIONAL]
+        assignee_id:
+          type: integer
+          format: int64
+          nullable: true
+        aml_hold:
+          type: boolean
+        dispute_flag:
+          type: boolean
+
+    PolicyStatusResponse:
+      type: object
+      properties:
+        policy_id:
+          type: integer
+          format: int64
+        policy_number:
+          type: string
+        lifecycle_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        previous_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        encumbrances:
+          $ref: '#/components/schemas/Encumbrances'
+        display_status:
+          type: string
+          description: "Computed: lifecycle + encumbrances (e.g., ACTIVE_LOAN)"
+        effective_from:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        updated_at:
+          type: string
+          format: date-time
+
+    PolicySummaryResponse:
+      type: object
+      properties:
+        policy_id:
+          type: integer
+          format: int64
+        policy_number:
+          type: string
+        customer_id:
+          type: integer
+          format: int64
+        product_code:
+          type: string
+          example: "WLA"
+        product_type:
+          type: string
+          enum: [PLI, RPLI]
+        lifecycle_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        display_status:
+          type: string
+        sum_assured:
+          type: number
+          format: double
+        current_premium:
+          type: number
+          format: double
+        premium_mode:
+          type: string
+          enum: [MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY]
+        billing_method:
+          type: string
+          enum: [CASH, PAY_RECOVERY, ONLINE]
+        issue_date:
+          type: string
+          format: date
+        maturity_date:
+          type: string
+          format: date
+        paid_to_date:
+          type: string
+          format: date
+        next_premium_due_date:
+          type: string
+          format: date
+        encumbrances:
+          $ref: '#/components/schemas/Encumbrances'
+        paid_up_value:
+          type: number
+          format: double
+          nullable: true
+        agent_id:
+          type: integer
+          format: int64
+          nullable: true
+        version:
+          type: integer
+          format: int64
+
+    PolicyHistoryResponse:
+      type: object
+      properties:
+        policy_number:
+          type: string
+        total_transitions:
+          type: integer
+        transitions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              from_status:
+                $ref: '#/components/schemas/LifecycleStatus'
+              to_status:
+                $ref: '#/components/schemas/LifecycleStatus'
+              trigger_signal:
+                type: string
+              triggered_by_service:
+                type: string
+              request_id:
+                type: integer
+                format: int64
+                nullable: true
+              effective_date:
+                type: string
+                format: date-time
+              metadata_snapshot:
+                type: object
+                additionalProperties: true
+
+    StateGateResponse:
+      type: object
+      properties:
+        policy_number:
+          type: string
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        state_gate_passed:
+          type: boolean
+        current_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        allowed_statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LifecycleStatus'
+        encumbrances:
+          $ref: '#/components/schemas/Encumbrances'
+        has_pending_financial_lock:
+          type: boolean
+        rejection_reason:
+          type: string
+          nullable: true
+          description: "Present only when state_gate_passed=false"
+
+    RequestDetailResponse:
+      type: object
+      properties:
+        request_id:
+          type: integer
+          format: int64
+        policy_number:
+          type: string
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        request_category:
+          $ref: '#/components/schemas/RequestCategory'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        source_channel:
+          $ref: '#/components/schemas/SourceChannel'
+        submitted_by:
+          type: integer
+          format: int64
+          nullable: true
+        submitted_at:
+          type: string
+          format: date-time
+        state_gate_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        routed_at:
+          type: string
+          format: date-time
+          nullable: true
+        downstream_service:
+          type: string
+          nullable: true
+        downstream_workflow_id:
+          type: string
+          nullable: true
+        timeout_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        outcome:
+          $ref: '#/components/schemas/RequestOutcome'
+        outcome_reason:
+          type: string
+          nullable: true
+        timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              event:
+                type: string
+              at:
+                type: string
+                format: date-time
+              detail:
+                type: string
+                nullable: true
+
+    RequestListResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestSummary'
+
+    RequestSummary:
+      type: object
+      properties:
+        request_id:
+          type: integer
+          format: int64
+        policy_number:
+          type: string
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        request_category:
+          $ref: '#/components/schemas/RequestCategory'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        source_channel:
+          $ref: '#/components/schemas/SourceChannel'
+        submitted_at:
+          type: string
+          format: date-time
+        outcome:
+          $ref: '#/components/schemas/RequestOutcome'
+        age_hours:
+          type: number
+          format: double
+          description: Hours since submission
+
+    PendingRequestsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestSummary'
+
+    WithdrawalResponse:
+      type: object
+      properties:
+        request_id:
+          type: integer
+          format: int64
+        status:
+          type: string
+          example: "WITHDRAWN"
+        withdrawn_at:
+          type: string
+          format: date-time
+        previous_policy_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+        reverted_policy_status:
+          $ref: '#/components/schemas/LifecycleStatus'
+
+    DashboardSummaryResponse:
+      type: object
+      properties:
+        summary:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              RECEIVED:
+                type: integer
+              ROUTED:
+                type: integer
+              IN_PROGRESS:
+                type: integer
+          example:
+            SURRENDER: { "RECEIVED": 5, "ROUTED": 32, "IN_PROGRESS": 8 }
+            REVIVAL: { "RECEIVED": 2, "ROUTED": 18, "IN_PROGRESS": 3 }
+            DEATH_CLAIM: { "ROUTED": 8, "IN_PROGRESS": 4 }
+        total_pending:
+          type: integer
+          example: 152
+        oldest_request_age_hours:
+          type: number
+          format: double
+
+    BatchStatusResponse:
+      type: object
+      properties:
+        policies:
+          type: array
+          items:
+            type: object
+            properties:
+              policy_number:
+                type: string
+              lifecycle_status:
+                $ref: '#/components/schemas/LifecycleStatus'
+              display_status:
+                type: string
+              has_pending_request:
+                type: boolean
+
+    DashboardMetricsResponse:
+      type: object
+      properties:
+        policies_by_status:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            ACTIVE: 2150000
+            VOID_LAPSE: 120000
+            INACTIVE_LAPSE: 85000
+            PAID_UP: 340000
+        policies_by_product:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            WLA: 1200000
+            EA: 800000
+        policies_by_billing_method:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            PAY_RECOVERY: 2100000
+            CASH: 900000
+        requests_today:
+          type: integer
+        requests_pending:
+          type: integer
+
+    SurrenderQuoteResponse:
+      type: object
+      properties:
+        policy_number:
+          type: string
+        quote_type:
+          type: string
+          example: "SURRENDER"
+        gross_surrender_value:
+          type: number
+          format: double
+        bonus_accumulated:
+          type: number
+          format: double
+        loan_deduction:
+          type: number
+          format: double
+        interest_deduction:
+          type: number
+          format: double
+        net_surrender_value:
+          type: number
+          format: double
+        breakdown:
+          type: object
+          properties:
+            base_sv_factor:
+              type: number
+              format: double
+            premiums_paid_months:
+              type: integer
+            total_premiums_payable:
+              type: integer
+        valid_until:
+          type: string
+          format: date-time
+
+    LoanQuoteResponse:
+      type: object
+      properties:
+        policy_number:
+          type: string
+        eligible:
+          type: boolean
+        max_loan_amount:
+          type: number
+          format: double
+        interest_rate:
+          type: number
+          format: double
+        surrender_value:
+          type: number
+          format: double
+        existing_loan_balance:
+          type: number
+          format: double
+        ineligibility_reason:
+          type: string
+          nullable: true
+
+    ConversionQuoteResponse:
+      type: object
+      properties:
+        policy_number:
+          type: string
+        current_product:
+          type: string
+        available_conversions:
+          type: array
+          items:
+            type: object
+            properties:
+              target_product:
+                type: string
+              effective_date:
+                type: string
+                format: date
+              new_premium:
+                type: number
+                format: double
+              premium_difference:
+                type: number
+                format: double
+              new_sum_assured:
+                type: number
+                format: double
+
+    LookupListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              label:
+                type: string
+              description:
+                type: string
+                nullable: true
+
+    LifecycleStatesResponse:
+      type: object
+      properties:
+        states:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/LifecycleStatus'
+              short_code:
+                type: string
+                example: "VL"
+              category:
+                type: string
+                enum: [Active, Lapsed, Pending, Terminal]
+              description:
+                type: string
+              is_terminal:
+                type: boolean
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code (ERR-PM-XXX)
+          example: "ERR-PM-006"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Policy state does not permit this operation"
+        details:
+          type: object
+          additionalProperties:
+            type: string
+          description: Field-level errors (for validation failures)
+        trace_id:
+          type: string
+          format: uuid
+          description: Distributed tracing ID
+
+  # ── Reusable Responses ─────────────────────────────────────────
+
+  responses:
+    RequestAccepted:
+      description: Request accepted and routed to downstream service
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestAcceptedResponse'
+
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "ERR-PM-002"
+            message: "Invalid signal payload (missing required fields)"
+            details:
+              source_channel: "required field"
+            trace_id: "550e8400-e29b-41d4-a716-446655440001"
+
+    PolicyNotFound:
+      description: Policy not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "ERR-PM-003"
+            message: "Policy with number PLI/2026/999999 not found"
+            trace_id: "550e8400-e29b-41d4-a716-446655440002"
+
+    StateGateRejected:
+      description: Policy state does not permit this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StateGateRejectedResponse'
+
+    LockConflict:
+      description: Financial lock already held by another request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "ERR-PM-005"
+            message: "Financial lock already held by request REQ-123"
+            details:
+              active_request_id: 100001
+              active_request_type: "SURRENDER"
+              locked_since: "2026-03-05T09:00:00Z"
+            trace_id: "550e8400-e29b-41d4-a716-446655440003"
+
+    TerminalState:
+      description: Policy is in terminal state — no operations allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "ERR-PM-011"
+            message: "Policy is in terminal state VOID — no operations allowed"
+            trace_id: "550e8400-e29b-41d4-a716-446655440004"

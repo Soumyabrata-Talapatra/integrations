@@ -1,0 +1,219 @@
+Postal Life Insurance
+
+Department of Post
+
+
+
+
+
+Software Requirements Specification (SRS)
+
+
+
+                                   1. Policy – paid up/auto paid up
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Executive Summary
+
+ 
+
+This document outlines the business requirements for  conditions under which a policy is treated as paid up/auto paid up in the Insurance Management System (IMS). It intends to notify under which circumstances, the policy is declared as paid up and auto paid up .
+
+ 
+
+Business Objectives
+
+ 
+
+The IMS project addresses the requirement of declaring a policy as paid up /auto paid up. The insurant should be able to get the proceeds upon declaring the policy as paid up/auto paid up 
+
+ 
+
+Project Scope
+
+The scope is limited to declare a policy as paid up/auto paid up under the conditions laid down in POLI Rules 2011, to facilitate the insurant to receive the proceeds accordingly
+
+
+
+ 
+
+RFP Req No.
+
+Requirement Description
+
+(Pl refer FR 22,223,343,925& 1246)
+
+SR-PAID UP-1
+
+Must have facility  to flag the first unpaid premium , as well as the inception date and date of last instalment, as the basic parameters to decide whether the policy has to be decided as paid up. 
+
+SR-Paid up-2
+
+System should have the facility to identify different kind of policies and its business rules to declare a policy as paid up
+
+SR-Paid up-3
+
+Policies which are in-force for more than 3 years only are eligible for paid up or auto paid up.
+
+SR-Paid up-4
+
+An insured person is not to be considered as in arrears of premium for any month so long as he has not been able to draw his pay, pension or subsistence allowance during suspension, or, if the insured person is on leave in India, any leave allowance though due, for the month next before it is due because of circumstances beyond his control. Therefore system should be able to distinguish and calculate paid up value accordingly.
+
+SR-Paid up-5
+
+System should be able to distinguish between cash policy and pay recovery policies to determine a policy to be paid up considering the above parameters.
+
+SR-Paid up-6
+
+System should take cognizance of pay recovery policies only in respect of the parameters laid down under SR-PAID UP-6, as above.
+
+SR-Paid up-7
+
+ In case of pay recovery policies, no policy will be treated as paid  until 11 months from the date month of the first un paid premium, and auto paid up or paid up value to be determined by the system accordingly.
+
+SR- Paid up-8
+
+If a policy is intended to be treated as forced surrender, then the system should be able to flag the last instalment date and treat the policy as auto paid up.
+
+SR-Paid up 9
+
+In case of revival by instalment process, if the revival instalments are not paid on time, the last instalment paid before the revival application, is to be flagged by the system, and auto paid up value to be calculated accordingly.
+
+SR-Paid up 10
+
+In case of policies incepted after _____________**, if the non credits crosses 60 months , but  after 36 months from the month of inception, then such policies should be declared as auto paid up by the system.
+
+SR-Paid up-8 
+
+SMS/Email /Whatsapp messages have to be sent whenever a policy is declared as paid up/auto paid up.
+
+
+
+** date to be ascertained from the files concerned.
+
+
+
+
+
+In-Scope
+
+Following PLI products are in scope:
+
+
+
+PLI/RPLI
+
+Product Name
+
+Product Type
+
+PLI
+
+Suraksha
+
+Whole Life Assurance
+
+PLI
+
+Santosh
+
+Endowment Assurance
+
+PLI
+
+Suvidha
+
+Convertible Whole Life Assurance
+
+PLI
+
+Sumangal
+
+Anticipated Endowment Assurance
+
+PLI
+
+Child Policy
+
+Child Policy
+
+PLI
+
+Yugal Suraksha
+
+Joint Life Assurance
+
+RPLI
+
+Gram Suraksha
+
+Whole Life Assurance
+
+RPLI
+
+Gram Santosh
+
+Endowment Assurance
+
+RPLI
+
+Gram Suvidha
+
+Convertible Whole Life Assurance
+
+RPLI
+
+Gram Sumangal
+
+Anticipated Endowment Assurance
+
+RPLI
+
+Child policy
+
+Child policy
+
+RPLI
+
+Gram Priya
+
+Anticipated Endowment Assurance
+
+
+
+Business Rules
+
+1. A paid-up policy is one where the policy holder stops paying regular premiums, but continues to enjoy partial insurance coverage
+
+2. When a policy  is converted into a paid-up policy, there is no further obligation to pay regular premium and no premium is to be permitted to be paid.
+
+3. The policyholder or beneficiaries do not receive the policy’s original coverage, and it is reduced to the extent of the paid up value plus applicable bonus, as the case may be.
+
+4. The formula for paid up or auto paid up value is
+
+      Sum Assured ( No. of instalments paid (in months)/Total number of instalments (in months)

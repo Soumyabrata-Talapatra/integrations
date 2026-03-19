@@ -1,0 +1,49 @@
+# Production environment overrides
+appname: "policy-management"
+
+db:
+  username: "${DB_USER}"
+  password: "${DB_PASSWORD}"
+  host: "${DB_HOST}"
+  port: "${DB_PORT}"
+  database: "ims_pli"
+  schema: "policy_mgmt"
+  # Tuned for 3M active policies + 20K requests/day
+  maxconns: 50
+  minconns: 10
+  maxconnlifetime: 30
+  maxconnidletime: 10
+  healthcheckperiod: 5
+  QueryTimeoutLow: 2s
+  QueryTimeoutMed: 5s
+
+temporal:
+  hostport: "${TEMPORAL_HOST}"
+  namespace: "pli-insurance"
+  taskqueue: "policy-management-tq"
+
+trace:
+  enabled: true
+  processor:
+    type: "otlp-grpc"
+    options:
+      host: "${OTEL_ENDPOINT}"
+  sampler:
+    type: parent-based-trace-id-ratio
+    options:
+      ratio: 0.05
+
+cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS" 

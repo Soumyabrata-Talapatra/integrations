@@ -1,0 +1,1222 @@
+Ministry of Communications
+
+
+
+Department of Posts
+
+
+
+
+
+
+
+
+
+
+
+
+
+Insurance 
+
+Management Solution
+
+
+
+
+
+
+
+Software Requirements Specification (SRS)
+
+
+
+
+
+Document Management System
+
+
+
+
+
+
+
+
+Oct 2025
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Index
+
+
+
+
+
+Sl.
+
+Name
+
+Page No.
+
+1
+
+Version History
+
+3
+
+2
+
+Executive Summary
+
+3
+
+3
+
+Business Objectives
+
+3
+
+4
+
+Stakeholders
+
+3
+
+5
+
+Type of Documents
+
+3
+
+6
+
+Functionality Description
+
+4
+
+7
+
+Business Rules (POLI) 
+
+4
+
+8
+
+Prerequisites
+
+4
+
+9
+
+File Format / Nomenclature
+
+4
+
+10
+
+Suggested Enhancements
+
+5
+
+11
+
+Business Requirements
+
+5
+
+12
+
+Business Logic
+
+7
+
+13
+
+Screen
+
+7
+
+14
+
+Error Messages
+
+8
+
+15
+
+Report format to Operational & Admin Units
+
+10
+
+16
+
+Appendices
+
+10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+01.	Version History : 
+
+
+
+Date
+
+Version
+
+Description of Changes
+
+Author
+
+20.10.2025
+
+1.0
+
+Initial version
+
+R. Venkat Ragavan
+
+
+
+1.1
+
+
+
+
+
+
+
+1.2
+
+
+
+
+
+
+
+1.3
+
+
+
+
+
+
+
+1.4
+
+
+
+
+
+
+
+1.5
+
+
+
+
+
+
+
+1.6
+
+
+
+
+
+
+
+1.7
+
+
+
+
+
+
+
+02.	Executive Summary :
+
+This document outlines the business requirements to Scan & upload the required Documents in the Document Management System for the usage of Users of Insurance Management System (IMS) to View Retrieve, Download, Print as and when requires. 
+
+
+
+03.	Business Objectives :
+
+The IMS project addresses the requirements of Scanning & Uploading the Documents of a Policy by the Insurant or DoP User and when required. 
+
+
+
+04.	Stakeholders : 
+
+Insurant.
+
+DoP Users like DE, Approver
+
+DoP License Issuing Authority (DH, RH).
+
+All types of Sales Force
+
+Medical Examiners
+
+Under Writers
+
+DoP Business Team.
+
+DoP IT Team.
+
+DoP Accounts Team. 
+
+Actuary.
+
+DPLI Kolkatta.
+
+Investment Dn, Mumbai.
+
+TPA. 
+
+
+
+05.	Types of Documents :
+
+Proposal Forms.
+
+Any other Documents related to Proposals.
+
+Photograph
+
+Specimen Signature
+
+Cheque.
+
+KYC.
+
+Specimen Signature.
+
+Consent, Declaration etc.
+
+Policy Bond.
+
+All types of Service Request forms.
+
+Medical Certificates, Life Certificate, Divorce Documents.
+
+Documents related to Maturity, Death, Surrender like Legal Heir, Legal, Death Certificate etc.
+
+Documents related to all types of Sales Force like Educational Qualifications, KYC, Income etc.
+
+Documents related to all types of Medical Examiner like License, Place etc.
+
+Documents related to all types of Under Writers like Educational Qualifications, License etc.
+
+Documents related to Actuary.
+
+Documents related to DPLI Kolkatta, Investment Dn Mumbai etc. 
+
+Documents related to other Stakeholders like IRDA, RBI, MoF etc.
+
+Documents related to Third Party Service Providers. 
+
+Documents related to Payment Gateway.
+
+Digital Data related to DoP Admin. 
+
+All types of Rules, Regulations, Circulars, SOPs, User Manuals etc issued by PLI Dte.
+
+Legal Documents. 
+
+
+
+	06.	Functionality Description :
+
+Before processing the Proposals, Service Requests the required Forms, Documents etc must be Scanned & readily available for Upload as Uploading is a part of Workflow.
+
+Proposal : Insurant or DoP Users need to Scan all the required documents & upload into CMS.
+
+Service Request : Insurant or DoP Users need to Scan all the required documents & upload into CMS.
+
+Soft copy of the documents available in DMS shall be downloaded by DoP Users, Insurant as and when required for processing in IMS as per the Workflow.
+
+
+
+07.	Business Rules (POLI) :
+
+	To amend. 
+
+
+
+08.	Prerequisites :
+
+Scanner.
+
+Convert into pdf format.
+
+Integration with IMS to upload the Documents.
+
+
+
+09.	File Format / Nomenclature : in pdf, JPEG, PNG. 
+
+
+
+Sl.
+
+Name of Service Request
+
+Algorithm in PLI
+
+01.
+
+Proposal Form
+
+PLI_<customerId>_<ProposalNo>_<ddmmyy01>.pdf
+
+02.
+
+Proposal Form KYC
+
+PLI_<customerId>_<ProposalNo>_< ddmmyy 02>.pdf
+
+03.
+
+Policy Servicing
+
+PS_<customerId>_<PolicyNo>_<SerReqNo>_< ddmmyy 01>.pdf
+
+04.
+
+Policy Servicing Addl Docs
+
+PS_<customerId>_<PolicyNo>_<SerReqNo>_< ddmmyy 02>.pdf
+
+
+
+Sl.
+
+Name of Service Request
+
+Algorithm in RPLI
+
+01.
+
+Proposal Form
+
+RPLI_<customerId>_<ProposalNo>_< ddmmyy 01>.pdf
+
+02.
+
+Proposal Form KYC
+
+RPLI_<customerId>_<ProposalNo>_< ddmmyy 02>.pdf
+
+
+
+
+
+
+
+
+
+
+
+
+
+10.	Suggested Enhancements : 
+
+
+
+Sl.
+
+Current Process
+
+Suggested Process
+
+01.
+
+DataCap & FileNet Utility
+
+May be discarded
+
+02.
+
+ECMS Alternate Solution
+
+May be discarded
+
+03.
+
+ECMS Optional
+
+Part of Workflow in IMS
+
+04.
+
+New
+
+Users needs to upload Docs as per the IMS Workflow in pdf, JPEG, PNG format. IMS must provide facility to Upload in the relevant Screen, Card. 
+
+
+
+11.	Business Requirements :
+
+
+
+RFP Req No.
+
+Requirement Description
+
+FRS Ref #
+
+CMS-1
+
+File Formats shall be pdf, JPEG, PNG and other Formats are not permitted. 
+
+874
+
+CMS-2
+
+System should restrict FILE SIZE limits as per the Business Standards, usually 10mb per file as per Workflow. Other than Workflow Users, no limit
+
+808, 890
+
+CMS-3
+
+All types of Uploads are part of Workflow as per the respective Users like Insurant, DE, Approver, License Issuing Authority, Business Team, IT Team etc.
+
+875
+
+CMS-4
+
+System should have a Unique Identifier to all the Docs for easy retrieval
+
+878
+
+CMS-5
+
+System should allow the Insurant to Upload all the required Forms during Proposal stage.
+
+1225, 1259, 30
+
+CMS-6
+
+System should allow the Insurant to Retrieve, View, Download & Print all the Documents related to his / her Policy only but not limited to Proposal Form, Policy Bond, Service Request Forms etc.
+
+
+
+CMS-7
+
+System should allow the DoP Users like DE, Approver etc to Upload all the required Forms during Proposal stage.
+
+816, 889
+
+CMS-8
+
+System should allow the DoP Users like DE, Approver etc to Retrieve, View, Download & Print all the Documents related to any Policy.
+
+816, 882
+
+CMS -9
+
+System should allow the Insurant to Upload all the required Forms, Docs in all types of Service Requests stage related to his / her Policy only.
+
+50, 149
+
+CMS -10
+
+System should allow the DoP User like DE, Approver etc to Upload all the required Forms, Docs in all types of Service Requests stage.
+
+50, 149
+
+CMS -11
+
+System should allow all the Sales Force to Upload the required Forms, Docs.
+
+877, 1005, 30
+
+CMS -12
+
+System should allow the License Issuing Authorities to Upload the required Forms, Docs.
+
+1034
+
+CMS -13
+
+System should allow the Sales Force to Retrieve, View, Download & Print all the Forms, Docs related to Policies under his / her Agency. And also Docs related to his / her Agency like License etc. 
+
+
+
+CMS -14
+
+System should allow all the Medical Examiners to Upload the required Forms, Docs.
+
+1090
+
+CMS -15 
+
+System should allow the Medical Examiners to Retrieve, View, Download & Print all the Forms, Docs related to his / her Medical Documents only as per Business Rules.
+
+
+
+CMS -17
+
+System should allow all the Under Writers to Upload the required Forms, Docs.
+
+547, 620, 663, 825, 828
+
+CMS -18
+
+System should allow the Under Writers to View all the Forms, Docs related to the Policies assigned to them as per Business Rules.
+
+674,
+
+CMS -19
+
+System should allow the Actuary to View the Forms, Docs, Data of all the Policies as per Business Rules.
+
+
+
+CMS -20
+
+System should allow the DPLI Kolkatta Users to View the Forms, Docs, Data of all the Policies as per Business Rules.
+
+
+
+CMS -21
+
+System should allow the Investment Dn to View the Forms, Documents, Data of all the Policies as per Business Rules.
+
+593, 597
+
+CMS -22
+
+System should allow the DoP IT Team to Upload the Data, Docs, Forms.
+
+754
+
+CMS -23
+
+System should allow the DoP Business Team to Upload the Data, Docs, Forms.
+
+597, 754
+
+CMS -24
+
+System should allow all the DoP Users to View, Download the Forms, Documents, Data hosted by DoP IT Team & Business Team.
+
+
+
+CMS -25
+
+System should allow the DoP Admin to Upload, View, Download the Data, Forms, Documents available in CMS. 
+
+
+
+CMS -26
+
+System should allow the authorized Users to View, Download the Digital Data in CSV, Excel, PDF formats. 
+
+
+
+CMS -27
+
+System should allow the restricted Users to Search (exclusive Docs Search Card) the available Documents, Forms related to any Policy as per Business Rules. 
+
+881
+
+CMS -28
+
+System should display the successful upload window “Uploaded successfully” with Green Button. 
+
+
+
+CMS -29
+
+System should allow some other Users also like IT Team, Business Team etc apart from the IMS Workflow. 
+
+192
+
+CMS -30
+
+If any Document uploading is Optional as per Business Rules then System should allow on par with Workflow. 
+
+
+
+CMS -31
+
+System should allow the Bulk Customer to Upload the Data, Docs, Forms.
+
+460
+
+CMS -32
+
+System should allow the Fund Managers to Upload, View the Data, Forms, Documents available in CMS. Further allow to Download the Digital Data in XL, CSV, PDF Formats. 
+
+606
+
+CMS -33
+
+System should have a provision, integration to fetch, View, Validate & download the Data from DigiLocker, UID, eKYC, PAN, NSDL, PennyDrop, eIA, DoP Solutions etc. 
+
+792, 887
+
+CMS -34
+
+System should be capable to Auto Storing of any Data from integral Systems, Modules etc and retrievable by the Users like Payroll, Group Upload, Cash Upload (Meghdoot),  Incentive Statement, Commission Statement, License, MER Data, UW Data, various Reports, Recon, Digital payments Data, Claims, Manual & Auto generated Letters, BCP, KYC,  etc. 
+
+844, 893
+
+CMS -35
+
+System should be capable to Scan & Upload Docs in OCR & ICR
+
+1204
+
+CMS -36
+
+System should be capable to Scan & Upload Cheque Leaf, Cheque Returned details etc
+
+1220
+
+CMS -37
+
+System should be capable to manage the Data in DMS as per Data Retention Policy of the Dept which includes Archival, Soft & Hard Deletion.
+
+58, 884
+
+CMS -38
+
+System should allow the IT, Business Users to configure Archival Policy with Timeline for all types of Data through Front end. 
+
+893, 895
+
+CMS -39
+
+System should have a provision to retrieve the Archived Data, Soft Deleted Data to a restricted User Groups
+
+60
+
+CMS -40
+
+System should allow the Users to upload the Docs through Online & Offline
+
+875
+
+CMS -41
+
+System should allow the Insurant, Users etc to Upload Docs, Forms from any Channels like Portal, App, TPA etc
+
+886
+
+CMS -42
+
+Configuration : System should allow the IT, Business Users to Archie the Data through Front end.
+
+895
+
+CMS -43
+
+Configuration : System should allow the IT, Business Team to Configure the FILE FORMAT, FILE SIZE, Algorithm through Front end.
+
+890
+
+CMS -44
+
+System must trigger SMS, email, critical Alerts to IT Team due to Threshold breach, Security Threat etc.
+
+896
+
+
+
+12.	Business Logic : 
+
+ 
+
+Activity
+
+Docs
+
+By User
+
+Proposal Indexing
+
+Proposal Forms, KYC, Docs
+
+Insurant
+
+Proposal Indexing
+
+Proposal Forms, KYC, Docs
+
+DE, Approver
+
+Policy Servicing
+
+Relevant Forms, KYC, Docs
+
+Insurant
+
+Policy Servicing
+
+Relevant Forms, KYC, Docs
+
+DE, Approver
+
+Digital Data
+
+
+
+DoP IT Team
+
+Forms, SOPs, Rules
+
+
+
+DoP Business Team
+
+Documents
+
+Related to Sales Force, MER, UW, Licensing Authority, Actuary, Investment Dn, Business Team, IT Team.
+
+Relevant Teams
+
+
+
+
+
+13.	Screen : 	
+
+“Upload” Button at the bottom of the Screens of  a. Proposal ie) Indexing, DE, Approver, b. Service Request, c. Sales Force, d. Medical Examiner, e. Under Writer. 
+
+”View Documents” at the Right Top of the Screens of a. Proposal ie) Indexing, DE, Approver, b. Service Request, c. Sales Force, d. Medical Examiner, e. Under Writer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+14.	Error Messages : 
+
+
+
+Indexing Level by Insurant & DoP User : 
+
+
+
+Sl.
+
+Field Name 
+
+Condition 
+
+Error Message 
+
+Required Action 
+
+1
+
+Policy No 
+
+If numeric field is entered with non-numeric value. 
+
+Policy Number should be in the numeric format 
+
+Users must enter a numeric value. 
+
+2
+
+Policy No 
+
+If Policy Number field is entered with more than allowed digits. 
+
+NA 
+
+System should not allow entering more than 13 digits. 
+
+3
+
+Policy No 
+
+If left blank. 
+
+Missing Policy No 
+
+Users must enter the Policy No. 
+
+4
+
+Date 
+
+Date field filled with non-date value, special characters other than '/' 
+
+Date should be in the date format 
+
+Users must enter the Date in the date format. 
+
+5
+
+Date 
+
+Date entered in MMDDYYYY format or YYYYMMDD format 
+
+Date should be in DDMMYYYY format 
+
+Users must enter the Date in DDMMYYYY format. 
+
+6
+
+Date 
+
+Date entered is invalid 
+
+Date entered is invalid 
+
+Users must enter a valid date. 
+
+7
+
+Date
+
+If Date field is mentioned in the past where the system does not expect so
+
+Date should be more than or equal to today's date
+
+No back date is allowed in case of quote. Users must enter a date which is more than or equal to today’s date.
+
+8
+
+Date
+
+Entered date is lesser than policy issue
+
+Date should not be less than Policy issue date
+
+Users must enter a date which is not less than Policy issue date.
+
+9
+
+Date 
+
+If left blank 
+
+Missing Date 
+
+Users must enter a date 
+
+
+
+Processing level : 
+
+Data Entry Stage : 
+
+
+
+Sl.
+
+Field Name
+
+Condition
+
+Error Message
+
+Required Action
+
+1
+
+Product
+
+If 'None'
+
+Please select any product
+
+ 
+
+2
+
+Service Type
+
+If 'None'
+
+Please select any Service Type
+
+Insurant, DoP User needs to select any one of the Service Request
+
+3
+
+Request Missing Documents
+
+If document name is selected and date and status are left blank
+
+Missing document request date and status
+
+On selection of the document from the dropdown request date and status should also be selected
+
+4
+
+Document Name
+
+If left blank
+
+Select at least one document
+
+ 
+
+5
+
+Document Request Date
+
+Date field filled with non-date value, special characters other than '/'
+
+Date should be in the date format
+
+ 
+
+6
+
+Document Request Date
+
+Date entered in MMDDYYYY
+format or YYYYMMDD format
+
+Date should be in DDMMYYYY format
+
+ 
+
+7
+
+Document Request Date
+
+Date entered is invalid
+
+Document Request
+date entered is invalid
+
+ 
+
+8
+
+Document Request Date
+
+Entered date is lesser than policy issue date
+
+Date should not be less than Policy issue date
+
+ 
+
+9
+
+Document Request Date
+
+If left blank
+
+Missing document request date
+
+ 
+
+10
+
+Users
+
+User trying to Upload must be an Authorized User as per Workflow
+
+Not an Authorized User
+
+Pl try to Upload with Authorized User ID.
+
+11
+
+Users
+
+User trying to View, Download must be an Authorized User as per Workflow
+
+Not an Authorized User
+
+Pl try to View, Download with Authorized User ID.
+
+12
+
+Format
+
+Should be PDF, JPEG, PNG
+
+Supports PDF, JPEG, PNG Formats only.
+
+ 
+
+13
+
+Size
+
+File size should be below 10mb
+
+Size of the file is above 10mb
+
+Pl reduce the size & try to upload. 
+
+14
+
+Digital Data
+
+Upload any Data by selected Users
+
+Not an Authorized User
+
+Pl try to Upload with Authorized User ID.
+
+
+
+Approver Stage : 
+
+
+
+Sl.
+
+Field Name
+
+Condition
+
+Error Message
+
+Required Action
+
+1
+
+Reason for Reject
+
+If not entered.
+
+Missing Reason for Reject
+
+The user must enter the reason for rejection.
+
+2
+
+Reason for Reject
+
+If only special characters or numbers or repeated values are entered.
+
+Reason for reject should be valid
+
+The user must enter the valid reason for rejection.
+
+3
+
+List of documents
+
+If left blank.
+
+Missing list of documents
+
+The user must select at least one of the documents.
+
+4
+
+Request Missing Documents
+
+If document name is selected and date and status are left blank
+
+Missing document request date and status
+
+On selection of the document from the drop-down, the user must also select the request date and status.
+
+
+
+
+
+
+
+15.	Report format to Operational & Admin Units : 
+
+
+
+16. 	Appendices :
+
+	POLI Rules
+
+	ECMS SOP.
+
+
+
+*** End ***
+
+
+
+
+
+
+
+Document Mgmt System		Page 3 of 10

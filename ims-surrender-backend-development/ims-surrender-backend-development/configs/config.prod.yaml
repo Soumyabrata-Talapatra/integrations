@@ -1,0 +1,16 @@
+# Production environment overrides
+db:
+  host: "${DB_HOST}"
+  password: "${DB_PASSWORD}"
+  database: "surrender_db"
+  maxconns: 50
+  minconns: 10
+
+trace:
+  enabled: true
+
+cache:
+  islocalcacheenabled: true
+
+temporal:
+  hostport: "${TEMPORAL_HOST}"

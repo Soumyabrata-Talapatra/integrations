@@ -1,0 +1,124 @@
+appname: "pli-policy-issue"
+trace:
+  enabled: false #trace enable/disable
+  processor: 
+    type: "otlp-grpc"
+    options:
+      host: "localhost:4317"
+  sampler:
+    type: always-on
+    # type: parent-based-trace-id-ratio
+    options: 
+      ratio: 0.1
+
+cache:
+  redisserver: 172.28.13.166:6379
+  redispassword: FY7gQIK8Q4AXAhSP04Wae5vLXIEKy9eyPKSG16c44nMBSLswvI15UV9EwX3k6NRp
+  redisdbindex: 1
+  redisexpirationtime: 20m
+  lccapacity: 10000
+  lcnumshards: 20
+  lcttl: 2m 
+  lcevictionpercentage: 10
+  lcminrefreshdelay: 15m
+  lcmaxrefreshdelay: 30m
+  lcretrybasedelay: 1s
+  lcbatchsize: 10
+  lcbatchbuffertimeout: 30s
+  isredisenabled: true
+  islocalcacheenabled: false
+
+# Database configuration (PostgreSQL)
+db:
+
+  username: "policyissue_admin_user" 
+  password: "Dop@1234" 
+  host: 172.28.13.162 
+  port: "5432" 
+  database: "policyissuedb" 
+  schema: "policy_issue"
+
+  # Connection pool settings
+  maxconns: 10                # Maximum connections
+  minconns: 1                 # Minimum connections
+  maxconnlifetime: 30         # Max connection lifetime (minutes)
+  maxconnidletime: 10         # Max idle time (minutes)
+  healthcheckperiod: 5        # Health check interval (minutes)
+
+  # Query timeouts
+  QueryTimeoutLow: 2s         # Simple queries
+  QueryTimeoutMed: 5s         # Complex queries/aggregations
+  QueryTimeoutHigh: 10s       # Batch operations
+
+# Application info (for Swagger)
+info:
+  name: "PLI Policy Issue"
+  version: "1.0.0"
+  description: "API for managing policy issue, approval, flc and related data."
+
+# Temporal workflow configuration (for long-running processes)
+# WF-002: Agent Onboarding Workflow
+temporal:
+  host: 
+  port: 
+  namespace: "default"
+  taskqueue: "policy-issue-task-queue"
+
+  # Worker configuration
+  worker:
+    max_concurrent_workflow: 100        # Max concurrent workflow executions
+    max_concurrent_activities: 200      # Max concurrent activity executions
+    max_concurrent_local_activities: 50 # Max concurrent local activity executions
+    max_pollers: 2                      # Number of pollers for task queue
+metrics:
+  expose: false   #metrics enable/disable.
+  buckets: 
+  collect: 
+    build: false
+    go: false
+    process: false  
+    routes: true
+server: 
+  debug:
+    stats:
+      expose: true #stats enable/disable
+      path: "/debug/statsviz"
+    pprof:
+      expose: true #pprof enable/disable
+      path: "/debug/pprof"
+  dashboard:
+    Enabled: true #dashboard enable/disable
+  healthcheck:
+    expose: true     #healthcheck enable/disable
+    path: "/healthzz"   
+  bodylimit: 2097152
+  readbuffersize: 16384
+  addr: ":8080"
+  readtimeout: 10s
+  writetimeout: 60s
+  timeout: 40 ## Over all timeout for the request  
+  cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"  
+log:
+  level: "debug"
+  format: "json"
+  output: "stdout"
+client: 
+  baseurl: "https://dev.cept.gov.in/beimspolicyissue/healthz"
+  smsurl:  "https://apiservices.cept.gov.in"
+
+swagger:
+  generation:
+    mode: "build"
