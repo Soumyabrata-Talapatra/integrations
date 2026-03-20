@@ -794,7 +794,7 @@
             "type": "integer"
           },
           "estimated_completion": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "file_name": {
@@ -819,7 +819,7 @@
             "type": "integer"
           },
           "completed_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "error_report": {
@@ -847,7 +847,7 @@
             "type": "array"
           },
           "started_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "status": {
@@ -952,7 +952,61 @@
           },
           "address": {
             "items": {
-              "$ref": "#/components/schemas/AddressInput"
+              "properties": {
+                "address_1": {
+                  "type": "string"
+                },
+                "address_2": {
+                  "type": "string"
+                },
+                "address_type": {
+                  "type": "string"
+                },
+                "approved_by": {
+                  "type": "string"
+                },
+                "change_reason": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "district": {
+                  "type": "string"
+                },
+                "mandal": {
+                  "type": "string"
+                },
+                "pin_code": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "taluka": {
+                  "type": "string"
+                },
+                "version_id": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "village": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "address_type",
+                "address_1",
+                "city",
+                "district",
+                "state",
+                "country",
+                "pin_code"
+              ],
+              "type": "object"
             },
             "type": "array"
           },
@@ -1189,7 +1243,7 @@
             "type": "string"
           },
           "CreatedAt": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "CustomerID": {
@@ -1209,7 +1263,7 @@
             "type": "boolean"
           },
           "UpdatedAt": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           }
         },
@@ -1235,22 +1289,7 @@
           },
           "contacts": {
             "items": {
-              "properties": {
-                "contact_type": {
-                  "type": "string"
-                },
-                "contact_value": {
-                  "type": "string"
-                },
-                "is_primary": {
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "contact_type",
-                "contact_value"
-              ],
-              "type": "object"
+              "$ref": "#/components/schemas/ContactInput"
             },
             "type": "array"
           },
@@ -1270,49 +1309,49 @@
       "CustomerContactOutput": {
         "properties": {
           "contact": {
-            "properties": {
-              "ApprovedBy": {
-                "type": "string"
-              },
-              "ChangeReason": {
-                "type": "string"
-              },
-              "ContactType": {
-                "type": "string"
-              },
-              "ContactValue": {
-                "type": "string"
-              },
-              "CreatedAt": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
-                "type": "string"
-              },
-              "CustomerID": {
-                "type": "string"
-              },
-              "ID": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "IsActive": {
-                "type": "boolean"
-              },
-              "IsPrimary": {
-                "type": "boolean"
-              },
-              "IsVerified": {
-                "type": "boolean"
-              },
-              "UpdatedAt": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/CustomerContact"
           },
           "contacts": {
             "items": {
-              "$ref": "#/components/schemas/CustomerContact"
+              "properties": {
+                "ApprovedBy": {
+                  "type": "string"
+                },
+                "ChangeReason": {
+                  "type": "string"
+                },
+                "ContactType": {
+                  "type": "string"
+                },
+                "ContactValue": {
+                  "type": "string"
+                },
+                "CreatedAt": {
+                  "example": "2026-03-20T12:37:07.3117194+05:30",
+                  "type": "string"
+                },
+                "CustomerID": {
+                  "type": "string"
+                },
+                "ID": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "IsActive": {
+                  "type": "boolean"
+                },
+                "IsPrimary": {
+                  "type": "boolean"
+                },
+                "IsVerified": {
+                  "type": "boolean"
+                },
+                "UpdatedAt": {
+                  "example": "2026-03-20T12:37:07.3117194+05:30",
+                  "type": "string"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -1333,49 +1372,49 @@
           "data": {
             "properties": {
               "contact": {
-                "properties": {
-                  "ApprovedBy": {
-                    "type": "string"
-                  },
-                  "ChangeReason": {
-                    "type": "string"
-                  },
-                  "ContactType": {
-                    "type": "string"
-                  },
-                  "ContactValue": {
-                    "type": "string"
-                  },
-                  "CreatedAt": {
-                    "example": "2026-03-17T12:07:03.8864869+05:30",
-                    "type": "string"
-                  },
-                  "CustomerID": {
-                    "type": "string"
-                  },
-                  "ID": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "IsActive": {
-                    "type": "boolean"
-                  },
-                  "IsPrimary": {
-                    "type": "boolean"
-                  },
-                  "IsVerified": {
-                    "type": "boolean"
-                  },
-                  "UpdatedAt": {
-                    "example": "2026-03-17T12:07:03.8864869+05:30",
-                    "type": "string"
-                  }
-                },
-                "type": "object"
+                "$ref": "#/components/schemas/CustomerContact"
               },
               "contacts": {
                 "items": {
-                  "$ref": "#/components/schemas/CustomerContact"
+                  "properties": {
+                    "ApprovedBy": {
+                      "type": "string"
+                    },
+                    "ChangeReason": {
+                      "type": "string"
+                    },
+                    "ContactType": {
+                      "type": "string"
+                    },
+                    "ContactValue": {
+                      "type": "string"
+                    },
+                    "CreatedAt": {
+                      "example": "2026-03-20T12:37:07.3117194+05:30",
+                      "type": "string"
+                    },
+                    "CustomerID": {
+                      "type": "string"
+                    },
+                    "ID": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "IsActive": {
+                      "type": "boolean"
+                    },
+                    "IsPrimary": {
+                      "type": "boolean"
+                    },
+                    "IsVerified": {
+                      "type": "boolean"
+                    },
+                    "UpdatedAt": {
+                      "example": "2026-03-20T12:37:07.3117194+05:30",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -1471,7 +1510,22 @@
           },
           "contacts": {
             "items": {
-              "$ref": "#/components/schemas/ContactInput"
+              "properties": {
+                "contact_type": {
+                  "type": "string"
+                },
+                "contact_value": {
+                  "type": "string"
+                },
+                "is_primary": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "contact_type",
+                "contact_value"
+              ],
+              "type": "object"
             },
             "type": "array"
           },
@@ -1504,61 +1558,7 @@
                 "type": "string"
               },
               "employer_address": {
-                "properties": {
-                  "address_1": {
-                    "type": "string"
-                  },
-                  "address_2": {
-                    "type": "string"
-                  },
-                  "address_type": {
-                    "type": "string"
-                  },
-                  "approved_by": {
-                    "type": "string"
-                  },
-                  "change_reason": {
-                    "type": "string"
-                  },
-                  "city": {
-                    "type": "string"
-                  },
-                  "country": {
-                    "type": "string"
-                  },
-                  "district": {
-                    "type": "string"
-                  },
-                  "mandal": {
-                    "type": "string"
-                  },
-                  "pin_code": {
-                    "type": "string"
-                  },
-                  "state": {
-                    "type": "string"
-                  },
-                  "taluka": {
-                    "type": "string"
-                  },
-                  "version_id": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "village": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "address_type",
-                  "address_1",
-                  "city",
-                  "district",
-                  "state",
-                  "country",
-                  "pin_code"
-                ],
-                "type": "object"
+                "$ref": "#/components/schemas/AddressInput"
               },
               "monthly_income": {
                 "format": "double",
@@ -2801,7 +2801,7 @@
             "type": "string"
           },
           "upload_date": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           }
         },
@@ -2842,7 +2842,7 @@
                   "type": "string"
                 },
                 "upload_date": {
-                  "example": "2026-03-17T12:07:03.8864869+05:30",
+                  "example": "2026-03-20T12:37:07.3117194+05:30",
                   "type": "string"
                 }
               },
@@ -2934,7 +2934,7 @@
             "type": "boolean"
           },
           "uploaded_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           }
         },
@@ -3073,61 +3073,7 @@
             "type": "string"
           },
           "employer_address": {
-            "properties": {
-              "address_1": {
-                "type": "string"
-              },
-              "address_2": {
-                "type": "string"
-              },
-              "address_type": {
-                "type": "string"
-              },
-              "approved_by": {
-                "type": "string"
-              },
-              "change_reason": {
-                "type": "string"
-              },
-              "city": {
-                "type": "string"
-              },
-              "country": {
-                "type": "string"
-              },
-              "district": {
-                "type": "string"
-              },
-              "mandal": {
-                "type": "string"
-              },
-              "pin_code": {
-                "type": "string"
-              },
-              "state": {
-                "type": "string"
-              },
-              "taluka": {
-                "type": "string"
-              },
-              "version_id": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "village": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "address_type",
-              "address_1",
-              "city",
-              "district",
-              "state",
-              "country",
-              "pin_code"
-            ],
-            "type": "object"
+            "$ref": "#/components/schemas/AddressInput"
           },
           "monthly_income": {
             "format": "double",
@@ -3557,7 +3503,7 @@
                 "type": "integer"
               },
               "expires_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-20T12:37:07.3117194+05:30",
                 "type": "string"
               },
               "gst_amount": {
@@ -3588,7 +3534,7 @@
                 "type": "string"
               },
               "proposer_dob": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-20T12:37:07.3117194+05:30",
                 "type": "string"
               },
               "proposer_email": {
@@ -4267,7 +4213,7 @@
             "type": "integer"
           },
           "noted_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "noted_by": {
@@ -4288,7 +4234,7 @@
             "type": "string"
           },
           "resolved_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "resolved_by": {
@@ -4309,7 +4255,7 @@
             "type": "boolean"
           },
           "waived_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "waived_by": {
@@ -4340,7 +4286,7 @@
                 "type": "integer"
               },
               "noted_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-20T12:37:07.3117194+05:30",
                 "type": "string"
               },
               "noted_by": {
@@ -4361,7 +4307,7 @@
                 "type": "string"
               },
               "resolved_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-20T12:37:07.3117194+05:30",
                 "type": "string"
               },
               "resolved_by": {
@@ -4382,7 +4328,7 @@
                 "type": "boolean"
               },
               "waived_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-20T12:37:07.3117194+05:30",
                 "type": "string"
               },
               "waived_by": {
@@ -4852,11 +4798,11 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "effective_date": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "last_updated": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "policy_id": {
@@ -5459,7 +5405,7 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "last_updated": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "proposal_id": {
@@ -5558,7 +5504,7 @@
                   "type": "string"
                 },
                 "timestamp": {
-                  "example": "2026-03-17T12:07:03.8864869+05:30",
+                  "example": "2026-03-20T12:37:07.3117194+05:30",
                   "type": "string"
                 },
                 "to_status": {
@@ -6067,7 +6013,7 @@
             "type": "integer"
           },
           "expires_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "gst_amount": {
@@ -6098,7 +6044,7 @@
             "type": "string"
           },
           "proposer_dob": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "proposer_email": {
@@ -6230,7 +6176,16 @@
       "QuoteGenerateResponse": {
         "properties": {
           "StatusCodeAndMessage": {
-            "$ref": "#/components/schemas/StatusCodeAndMessage"
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "status_code": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
           },
           "calculation_basis": {
             "properties": {
@@ -6374,28 +6329,14 @@
                 "type": "integer"
               },
               "expires_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-20T12:37:07.3117194+05:30",
                 "type": "string"
               }
             },
             "type": "object"
           },
           "workflow_state": {
-            "properties": {
-              "current_step": {
-                "type": "string"
-              },
-              "metadata": {
-                "type": "object"
-              },
-              "next_step": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/WorkflowStateResponse"
           }
         },
         "type": "object"
@@ -6418,7 +6359,7 @@
             "type": "integer"
           },
           "expires_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           }
         },
@@ -6519,16 +6460,7 @@
       "StartDataEntryResponse": {
         "properties": {
           "StatusCodeAndMessage": {
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "status_code": {
-                "format": "int64",
-                "type": "integer"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "assigned_at": {
             "type": "string"
@@ -6690,7 +6622,7 @@
             "type": "string"
           },
           "timestamp": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "to_status": {
@@ -6743,16 +6675,50 @@
       },
       "WorkflowStateResponse": {
         "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
           "current_step": {
             "type": "string"
           },
-          "metadata": {
+          "last_activity": {
+            "example": "2026-03-20T12:37:07.3117194+05:30",
+            "type": "string"
+          },
+          "pending_signals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "progress": {
+            "properties": {
+              "completed_steps": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "percentage": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "total_steps": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
             "type": "object"
           },
-          "next_step": {
+          "start_time": {
+            "example": "2026-03-20T12:37:07.3117194+05:30",
             "type": "string"
           },
           "status": {
+            "type": "string"
+          },
+          "workflow_id": {
+            "type": "string"
+          },
+          "workflow_type": {
             "type": "string"
           }
         },
@@ -6928,7 +6894,7 @@
                           "type": "integer"
                         },
                         "completed_at": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         },
                         "error_report": {
@@ -6956,7 +6922,7 @@
                           "type": "array"
                         },
                         "started_at": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         },
                         "status": {
@@ -7196,7 +7162,7 @@
                           "type": "integer"
                         },
                         "estimated_completion": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         },
                         "file_name": {
@@ -8468,7 +8434,53 @@
                   "success": false
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/APIErrorResponse"
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "field_errors": {
+                          "items": {
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "success": {
+                      "default": false,
+                      "example": false,
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
                 }
               }
             },
@@ -8602,7 +8614,61 @@
                   },
                   "address": {
                     "items": {
-                      "$ref": "#/components/schemas/AddressInput"
+                      "properties": {
+                        "address_1": {
+                          "type": "string"
+                        },
+                        "address_2": {
+                          "type": "string"
+                        },
+                        "address_type": {
+                          "type": "string"
+                        },
+                        "approved_by": {
+                          "type": "string"
+                        },
+                        "change_reason": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "district": {
+                          "type": "string"
+                        },
+                        "mandal": {
+                          "type": "string"
+                        },
+                        "pin_code": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "taluka": {
+                          "type": "string"
+                        },
+                        "version_id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "village": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "address_type",
+                        "address_1",
+                        "city",
+                        "district",
+                        "state",
+                        "country",
+                        "pin_code"
+                      ],
+                      "type": "object"
                     },
                     "type": "array"
                   },
@@ -8649,25 +8715,25 @@
               "application/json": {
                 "example": {
                   "CustomerAddressOutput": {
-                    "address": null,
+                    "address": {
+                      "address_id": 0,
+                      "address_type": "string",
+                      "city": "string",
+                      "country": "string",
+                      "district": "string",
+                      "is_active": true,
+                      "line1": "string",
+                      "line2": "string",
+                      "pin_code": "string",
+                      "state": "string",
+                      "taluka": "string",
+                      "village": "string"
+                    },
                     "address_id": [
                       0
                     ],
                     "addresses": [
-                      {
-                        "address_id": null,
-                        "address_type": null,
-                        "city": null,
-                        "country": null,
-                        "district": null,
-                        "is_active": null,
-                        "line1": null,
-                        "line2": null,
-                        "pin_code": null,
-                        "state": null,
-                        "taluka": null,
-                        "village": null
-                      }
+                      null
                     ],
                     "customer_id": "string",
                     "status": "string"
@@ -8928,22 +8994,7 @@
                   },
                   "contacts": {
                     "items": {
-                      "properties": {
-                        "contact_type": {
-                          "type": "string"
-                        },
-                        "contact_value": {
-                          "type": "string"
-                        },
-                        "is_primary": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "contact_type",
-                        "contact_value"
-                      ],
-                      "type": "object"
+                      "$ref": "#/components/schemas/ContactInput"
                     },
                     "type": "array"
                   },
@@ -9005,49 +9056,49 @@
                         "data": {
                           "properties": {
                             "contact": {
-                              "properties": {
-                                "ApprovedBy": {
-                                  "type": "string"
-                                },
-                                "ChangeReason": {
-                                  "type": "string"
-                                },
-                                "ContactType": {
-                                  "type": "string"
-                                },
-                                "ContactValue": {
-                                  "type": "string"
-                                },
-                                "CreatedAt": {
-                                  "example": "2026-03-17T12:07:03.8864869+05:30",
-                                  "type": "string"
-                                },
-                                "CustomerID": {
-                                  "type": "string"
-                                },
-                                "ID": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "IsActive": {
-                                  "type": "boolean"
-                                },
-                                "IsPrimary": {
-                                  "type": "boolean"
-                                },
-                                "IsVerified": {
-                                  "type": "boolean"
-                                },
-                                "UpdatedAt": {
-                                  "example": "2026-03-17T12:07:03.8864869+05:30",
-                                  "type": "string"
-                                }
-                              },
-                              "type": "object"
+                              "$ref": "#/components/schemas/CustomerContact"
                             },
                             "contacts": {
                               "items": {
-                                "$ref": "#/components/schemas/CustomerContact"
+                                "properties": {
+                                  "ApprovedBy": {
+                                    "type": "string"
+                                  },
+                                  "ChangeReason": {
+                                    "type": "string"
+                                  },
+                                  "ContactType": {
+                                    "type": "string"
+                                  },
+                                  "ContactValue": {
+                                    "type": "string"
+                                  },
+                                  "CreatedAt": {
+                                    "example": "2026-03-20T12:37:07.3117194+05:30",
+                                    "type": "string"
+                                  },
+                                  "CustomerID": {
+                                    "type": "string"
+                                  },
+                                  "ID": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "IsActive": {
+                                    "type": "boolean"
+                                  },
+                                  "IsPrimary": {
+                                    "type": "boolean"
+                                  },
+                                  "IsVerified": {
+                                    "type": "boolean"
+                                  },
+                                  "UpdatedAt": {
+                                    "example": "2026-03-20T12:37:07.3117194+05:30",
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -9296,7 +9347,22 @@
                   },
                   "contacts": {
                     "items": {
-                      "$ref": "#/components/schemas/ContactInput"
+                      "properties": {
+                        "contact_type": {
+                          "type": "string"
+                        },
+                        "contact_value": {
+                          "type": "string"
+                        },
+                        "is_primary": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "contact_type",
+                        "contact_value"
+                      ],
+                      "type": "object"
                     },
                     "type": "array"
                   },
@@ -9329,61 +9395,7 @@
                         "type": "string"
                       },
                       "employer_address": {
-                        "properties": {
-                          "address_1": {
-                            "type": "string"
-                          },
-                          "address_2": {
-                            "type": "string"
-                          },
-                          "address_type": {
-                            "type": "string"
-                          },
-                          "approved_by": {
-                            "type": "string"
-                          },
-                          "change_reason": {
-                            "type": "string"
-                          },
-                          "city": {
-                            "type": "string"
-                          },
-                          "country": {
-                            "type": "string"
-                          },
-                          "district": {
-                            "type": "string"
-                          },
-                          "mandal": {
-                            "type": "string"
-                          },
-                          "pin_code": {
-                            "type": "string"
-                          },
-                          "state": {
-                            "type": "string"
-                          },
-                          "taluka": {
-                            "type": "string"
-                          },
-                          "version_id": {
-                            "format": "int64",
-                            "type": "integer"
-                          },
-                          "village": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "address_type",
-                          "address_1",
-                          "city",
-                          "district",
-                          "state",
-                          "country",
-                          "pin_code"
-                        ],
-                        "type": "object"
+                        "$ref": "#/components/schemas/AddressInput"
                       },
                       "monthly_income": {
                         "format": "double",
@@ -10825,29 +10837,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "items": {
-                          "items": {
-                            "properties": {
-                              "code": {
-                                "type": "string"
-                              },
-                              "description": {
-                                "type": "string"
-                              },
-                              "label": {
-                                "type": "string"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/LookupResponse"
                     },
                     "message": {
                       "example": "success",
@@ -11191,7 +11181,29 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/LookupResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "items": {
+                          "items": {
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -13095,11 +13107,11 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "effective_date": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         },
                         "last_updated": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         },
                         "policy_id": {
@@ -15634,7 +15646,60 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/AuditLogsResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "audit_logs": {
+                          "items": {
+                            "properties": {
+                              "audit_id": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "change_reason": {
+                                "type": "string"
+                              },
+                              "change_type": {
+                                "type": "string"
+                              },
+                              "changed_at": {
+                                "type": "string"
+                              },
+                              "changed_by": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "entity_id": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "entity_type": {
+                                "type": "string"
+                              },
+                              "field_name": {
+                                "type": "string"
+                              },
+                              "metadata": {
+                                "type": "string"
+                              },
+                              "new_value": {
+                                "type": "string"
+                              },
+                              "old_value": {
+                                "type": "string"
+                              },
+                              "proposal_id": {
+                                "format": "int64",
+                                "type": "integer"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -15885,7 +15950,7 @@
                           "type": "boolean"
                         },
                         "uploaded_at": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         }
                       },
@@ -15940,53 +16005,7 @@
                   "success": false
                 },
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "properties": {
-                        "code": {
-                          "format": "int64",
-                          "type": "integer"
-                        },
-                        "field_errors": {
-                          "items": {
-                            "properties": {
-                              "field": {
-                                "type": "string"
-                              },
-                              "message": {
-                                "type": "string"
-                              },
-                              "value": {
-                                "type": "object"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "id": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "status_code": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "success": {
-                      "default": false,
-                      "example": false,
-                      "type": "boolean"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/APIErrorResponse"
                 }
               }
             },
@@ -16524,60 +16543,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "audit_logs": {
-                          "items": {
-                            "properties": {
-                              "audit_id": {
-                                "format": "int64",
-                                "type": "integer"
-                              },
-                              "change_reason": {
-                                "type": "string"
-                              },
-                              "change_type": {
-                                "type": "string"
-                              },
-                              "changed_at": {
-                                "type": "string"
-                              },
-                              "changed_by": {
-                                "format": "int64",
-                                "type": "integer"
-                              },
-                              "entity_id": {
-                                "format": "int64",
-                                "type": "integer"
-                              },
-                              "entity_type": {
-                                "type": "string"
-                              },
-                              "field_name": {
-                                "type": "string"
-                              },
-                              "metadata": {
-                                "type": "string"
-                              },
-                              "new_value": {
-                                "type": "string"
-                              },
-                              "old_value": {
-                                "type": "string"
-                              },
-                              "proposal_id": {
-                                "format": "int64",
-                                "type": "integer"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/AuditLogsResponse"
                     },
                     "message": {
                       "example": "success",
@@ -17546,7 +17512,7 @@
                               "type": "integer"
                             },
                             "noted_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-20T12:37:07.3117194+05:30",
                               "type": "string"
                             },
                             "noted_by": {
@@ -17567,7 +17533,7 @@
                               "type": "string"
                             },
                             "resolved_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-20T12:37:07.3117194+05:30",
                               "type": "string"
                             },
                             "resolved_by": {
@@ -17588,7 +17554,7 @@
                               "type": "boolean"
                             },
                             "waived_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-20T12:37:07.3117194+05:30",
                               "type": "string"
                             },
                             "waived_by": {
@@ -18659,7 +18625,7 @@
                                 "type": "string"
                               },
                               "upload_date": {
-                                "example": "2026-03-17T12:07:03.8864869+05:30",
+                                "example": "2026-03-20T12:37:07.3117194+05:30",
                                 "type": "string"
                               }
                             },
@@ -19643,18 +19609,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "updated_at": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/SectionUpdateResponse"
                     },
                     "message": {
                       "example": "success",
@@ -20447,7 +20402,18 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/SectionUpdateResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -20654,16 +20620,7 @@
                     "data": {
                       "properties": {
                         "StatusCodeAndMessage": {
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            },
-                            "status_code": {
-                              "format": "int64",
-                              "type": "integer"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "assigned_at": {
                           "type": "string"
@@ -20872,7 +20829,7 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "last_updated": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
                           "type": "string"
                         },
                         "proposal_id": {
@@ -21519,7 +21476,7 @@
                                 "type": "string"
                               },
                               "timestamp": {
-                                "example": "2026-03-17T12:07:03.8864869+05:30",
+                                "example": "2026-03-20T12:37:07.3117194+05:30",
                                 "type": "string"
                               },
                               "to_status": {
@@ -21795,10 +21752,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "StatusCodeAndMessage": {
-                    "message": "string",
-                    "status_code": 0
-                  },
+                  "StatusCodeAndMessage": null,
                   "pdf_document": {
                     "document_id": "string",
                     "download_url": "string"
@@ -21822,10 +21776,24 @@
                     "expires_at": "string"
                   },
                   "workflow_state": {
+                    "StatusCodeAndMessage": {
+                      "message": "string",
+                      "status_code": 0
+                    },
                     "current_step": "string",
-                    "metadata": {},
-                    "next_step": "string",
-                    "status": "string"
+                    "last_activity": "string",
+                    "pending_signals": [
+                      "string"
+                    ],
+                    "progress": {
+                      "completed_steps": 0,
+                      "percentage": 0,
+                      "total_steps": 0
+                    },
+                    "start_time": "string",
+                    "status": "string",
+                    "workflow_id": "string",
+                    "workflow_type": "string"
                   }
                 },
                 "schema": {
@@ -22074,10 +22042,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "StatusCodeAndMessage": {
-                    "message": "string",
-                    "status_code": 0
-                  },
+                  "StatusCodeAndMessage": null,
                   "calculation_basis": {
                     "gst_rate": 0,
                     "premium_table": "string",
@@ -22113,10 +22078,24 @@
                     }
                   ],
                   "workflow_state": {
+                    "StatusCodeAndMessage": {
+                      "message": "string",
+                      "status_code": 0
+                    },
                     "current_step": "string",
-                    "metadata": {},
-                    "next_step": "string",
-                    "status": "string"
+                    "last_activity": "string",
+                    "pending_signals": [
+                      "string"
+                    ],
+                    "progress": {
+                      "completed_steps": 0,
+                      "percentage": 0,
+                      "total_steps": 0
+                    },
+                    "start_time": "string",
+                    "status": "string",
+                    "workflow_id": "string",
+                    "workflow_type": "string"
                   }
                 },
                 "schema": {
@@ -22429,7 +22408,17 @@
                         "maturity_age": null,
                         "reject_reason": null
                       },
-                      "premium_breakdown": null,
+                      "premium_breakdown": {
+                        "base_premium": null,
+                        "cgst": null,
+                        "igst": null,
+                        "net_premium": null,
+                        "rebate": null,
+                        "sgst": null,
+                        "stamp_duty": null,
+                        "total_gst": null,
+                        "total_payable": null
+                      },
                       "sum_assured": 0
                     }
                   ],
@@ -22437,17 +22426,7 @@
                     "document_id": "string",
                     "download_url": "string"
                   },
-                  "premium_breakdown": {
-                    "base_premium": 0,
-                    "cgst": 0,
-                    "igst": 0,
-                    "net_premium": 0,
-                    "rebate": 0,
-                    "sgst": 0,
-                    "stamp_duty": 0,
-                    "total_gst": 0,
-                    "total_payable": 0
-                  },
+                  "premium_breakdown": null,
                   "product_category": "string",
                   "quote_id": "string",
                   "quote_ref_number": "string",
@@ -22457,10 +22436,21 @@
                     "expires_at": "string"
                   },
                   "workflow_state": {
+                    "StatusCodeAndMessage": null,
                     "current_step": "string",
-                    "metadata": {},
-                    "next_step": "string",
-                    "status": "string"
+                    "last_activity": "string",
+                    "pending_signals": [
+                      "string"
+                    ],
+                    "progress": {
+                      "completed_steps": 0,
+                      "percentage": 0,
+                      "total_steps": 0
+                    },
+                    "start_time": "string",
+                    "status": "string",
+                    "workflow_id": "string",
+                    "workflow_type": "string"
                   }
                 },
                 "schema": {
@@ -22468,7 +22458,16 @@
                     "data": {
                       "properties": {
                         "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                          "properties": {
+                            "message": {
+                              "type": "string"
+                            },
+                            "status_code": {
+                              "format": "int64",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
                         },
                         "calculation_basis": {
                           "properties": {
@@ -22612,28 +22611,14 @@
                               "type": "integer"
                             },
                             "expires_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-20T12:37:07.3117194+05:30",
                               "type": "string"
                             }
                           },
                           "type": "object"
                         },
                         "workflow_state": {
-                          "properties": {
-                            "current_step": {
-                              "type": "string"
-                            },
-                            "metadata": {
-                              "type": "object"
-                            },
-                            "next_step": {
-                              "type": "string"
-                            },
-                            "status": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/WorkflowStateResponse"
                         }
                       },
                       "type": "object"
@@ -23067,7 +23052,7 @@
                               "type": "integer"
                             },
                             "expires_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-20T12:37:07.3117194+05:30",
                               "type": "string"
                             },
                             "gst_amount": {
@@ -23098,7 +23083,7 @@
                               "type": "string"
                             },
                             "proposer_dob": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-20T12:37:07.3117194+05:30",
                               "type": "string"
                             },
                             "proposer_email": {
@@ -23551,7 +23536,18 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/FormatValidationResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "is_valid": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -24898,18 +24894,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "is_valid": {
-                          "type": "boolean"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/FormatValidationResponse"
                     },
                     "message": {
                       "example": "success",
@@ -25508,15 +25493,77 @@
             "content": {
               "application/json": {
                 "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0
+                  },
                   "current_step": "string",
-                  "metadata": {},
-                  "next_step": "string",
-                  "status": "string"
+                  "last_activity": "string",
+                  "pending_signals": [
+                    "string"
+                  ],
+                  "progress": {
+                    "completed_steps": 0,
+                    "percentage": 0,
+                    "total_steps": 0
+                  },
+                  "start_time": "string",
+                  "status": "string",
+                  "workflow_id": "string",
+                  "workflow_type": "string"
                 },
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/WorkflowStateResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "current_step": {
+                          "type": "string"
+                        },
+                        "last_activity": {
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
+                          "type": "string"
+                        },
+                        "pending_signals": {
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "progress": {
+                          "properties": {
+                            "completed_steps": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "percentage": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "total_steps": {
+                              "format": "int64",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "start_time": {
+                          "example": "2026-03-20T12:37:07.3117194+05:30",
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "workflow_id": {
+                          "type": "string"
+                        },
+                        "workflow_type": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",

@@ -125,7 +125,7 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 		logger.Error("Validation failed", "error", err)
 		result.Status = "VALIDATION_FAILED"
 		result.Error = err.Error()
-		return result, nil
+		return result, nil 
 	}
 	if !validateResult.IsValid {
 		result.Status = "VALIDATION_FAILED"
@@ -525,8 +525,21 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 	// Step 10: Signal PM service to start lifecycle workflow
 	logger.Info("Step 10: Signalling PM lifecycle for issued policy")
 	pmSignalInput := activities.StartPMLifecycleInput{
-		PolicyNumber: policyNumberResult.PolicyNumber,
-		PolicyType:   string(input.PolicyType),
+		PolicyNumber:           policyNumberResult.PolicyNumber,
+		PolicyType:             string(input.PolicyType),
+		ProductType:            string(input.PolicyType), // ProductType should be same as PolicyType (PLI/RPLI)
+		ProposalID:             input.ProposalID,
+		ProposalNumber:         input.ProposalNumber,
+		CustomerID:             input.CustomerID,
+		ProductCode:            input.ProductCode,
+		SumAssured:             input.SumAssured,
+		PolicyTerm:             input.PolicyTerm,
+		AgeAtEntry:             input.AgeAtEntry,
+		Gender:                 input.Gender,
+		PremiumPaymentFrequency: string(input.PremiumPaymentFrequency),
+		AgeProofType:           input.AgeProofType,
+		InsuredState:           input.InsuredState,
+		ProposalDate:           input.ProposalDate,
 	}
 	if err := workflow.ExecuteActivity(externalCallOpts, "StartPMLifecycleActivity", pmSignalInput).Get(ctx, nil); err != nil {
 		// PM signal failure must not block the issuance result — the reconciliation

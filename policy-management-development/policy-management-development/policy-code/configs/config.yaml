@@ -23,7 +23,7 @@ trace:
 # ---------------------------------------------------------------------------
 db:
   username: "postgres"
-  password: "${DB_PASSWORD}"
+  password: "admin"
   host: "localhost"
   port: "5432"
   database: "ims_pli"
@@ -46,7 +46,7 @@ db:
 # ---------------------------------------------------------------------------
 temporal:
   hostport: "localhost:7233"
-  namespace: "pli-insurance"
+  namespace: "default"
   # Single task queue for all PM workflows and activities
   taskqueue: "policy-management-tq"
 
