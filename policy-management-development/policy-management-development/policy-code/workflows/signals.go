@@ -128,6 +128,7 @@ type PolicyMetadata struct {
 	IssueDate                   time.Time  `json:"issue_date"`
 	MaturityDate                time.Time  `json:"maturity_date"`
 	PaidToDate                  time.Time  `json:"paid_to_date"`
+	PolicyholderDOB             time.Time  `json:"policyholder_dob"`
 	AgentID                     *int64     `json:"agent_id,omitempty"` // Nullable BIGINT [Review-Fix-5]
 	LoanOutstanding             float64    `json:"loan_outstanding"`
 	AssignmentStatus            string     `json:"assignment_status"`

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
@@ -125,7 +126,7 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 		logger.Error("Validation failed", "error", err)
 		result.Status = "VALIDATION_FAILED"
 		result.Error = err.Error()
-		return result, nil 
+		return result, nil
 	}
 	if !validateResult.IsValid {
 		result.Status = "VALIDATION_FAILED"
@@ -239,7 +240,7 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 			}
 			logger.Info("QC approved")
 
-			qcDone = true  
+			qcDone = true
 
 		case "RETURNED":
 
@@ -524,22 +525,63 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 
 	// Step 10: Signal PM service to start lifecycle workflow
 	logger.Info("Step 10: Signalling PM lifecycle for issued policy")
+
+	// Calculate dates for PM signal
+	policyIssueDate := workflow.Now(ctx)
+	policyCommencementDate := input.ProposalDate
+
+	// Generate UUIDs for policy audit cross-reference and request tracking
+
+	requestUUID := uuid.New().String()
+
+	// Calculate modal premium based on payment frequency
+	modalPremium := premiumResult.TotalPayable
+	annualPremiumEquivalent := premiumResult.TotalPayable
+
+	// TODO: Implement proper modal premium calculation based on payment frequency
+	// For now, assume TotalPayable is the modal premium for the selected frequency
+	// and AnnualPremiumEquivalent needs to be calculated
+	switch input.PremiumPaymentFrequency {
+	case domain.FrequencyMonthly:
+		annualPremiumEquivalent = premiumResult.TotalPayable * 12
+	case domain.FrequencyQuarterly:
+		annualPremiumEquivalent = premiumResult.TotalPayable * 4
+	case domain.FrequencyHalfYearly:
+		annualPremiumEquivalent = premiumResult.TotalPayable * 2
+	case domain.FrequencyYearly:
+		annualPremiumEquivalent = premiumResult.TotalPayable
+	}
+
 	pmSignalInput := activities.StartPMLifecycleInput{
-		PolicyNumber:           policyNumberResult.PolicyNumber,
-		PolicyType:             string(input.PolicyType),
-		ProductType:            string(input.PolicyType), // ProductType should be same as PolicyType (PLI/RPLI)
-		ProposalID:             input.ProposalID,
-		ProposalNumber:         input.ProposalNumber,
-		CustomerID:             input.CustomerID,
-		ProductCode:            input.ProductCode,
-		SumAssured:             input.SumAssured,
-		PolicyTerm:             input.PolicyTerm,
-		AgeAtEntry:             input.AgeAtEntry,
-		Gender:                 input.Gender,
+		PolicyNumber: policyNumberResult.PolicyNumber,
+
+		RequestID:               requestUUID,
+		PolicyType:              string(input.PolicyType),
+		ProductType:             string(input.PolicyType), // ProductType should be same as PolicyType (PLI/RPLI)
+		ProposalID:              input.ProposalID,
+		ProposalNumber:          input.ProposalNumber,
+		CustomerID:              input.CustomerID,
+		ProductCode:             input.ProductCode,
+		SumAssured:              input.SumAssured,
+		PolicyTerm:              input.PolicyTerm,
+		AgeAtEntry:              input.AgeAtEntry,
+		Gender:                  input.Gender,
 		PremiumPaymentFrequency: string(input.PremiumPaymentFrequency),
-		AgeProofType:           input.AgeProofType,
-		InsuredState:           input.InsuredState,
-		ProposalDate:           input.ProposalDate,
+		AgeProofType:            input.AgeProofType,
+		InsuredState:            input.InsuredState,
+		ProposalDate:            input.ProposalDate,
+		PolicyIssueDate:         policyIssueDate,
+		PolicyCommencementDate:  policyCommencementDate,
+		// Premium data from calculation
+		BasePremium:             premiumResult.BasePremium,
+		GSTAmount:               premiumResult.GSTAmount,
+		TotalPremium:            premiumResult.TotalPayable,
+		ModalPremium:            modalPremium,
+		AnnualPremiumEquivalent: annualPremiumEquivalent,
+		AdditionalPremium:       0, // TODO: Calculate if there are additional premiums
+		// Note: FirstPremiumDate, DeclarationDate, ReceiptDate, IndexingDate would need to be fetched from DB
+		// For now, we use ProposalDate as a fallback for FirstPremiumDate
+		FirstPremiumDate: input.ProposalDate,
 	}
 	if err := workflow.ExecuteActivity(externalCallOpts, "StartPMLifecycleActivity", pmSignalInput).Get(ctx, nil); err != nil {
 		// PM signal failure must not block the issuance result — the reconciliation

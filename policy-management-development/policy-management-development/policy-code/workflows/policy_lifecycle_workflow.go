@@ -820,7 +820,7 @@ func handlePolicyCreated(ctx workflow.Context, state *PolicyLifecycleState, sig 
 	CurrentStatusKey := temporal.NewSearchAttributeKeyKeyword("CurrentStatus")
 	ProductTypeKey := temporal.NewSearchAttributeKeyKeyword("ProductType")
 	BillingMethodKey := temporal.NewSearchAttributeKeyKeyword("BillingMethod")
-	IssueDateKey := temporal.NewSearchAttributeKeyTime("IssueDate")
+	IssueDateKey := temporal.NewSearchAttributeKeyTime("IssuedDate")
 	if _, seen := state.ProcessedSignalIDs[sig.RequestID]; seen {
 		return
 	}

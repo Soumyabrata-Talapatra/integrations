@@ -66,21 +66,24 @@ func NewPMLifecycleActivities(
 type StartPMLifecycleInput struct {
 	// PolicyNumber uniquely identifies the issued policy (e.g. "PLI/2026/GJ/000001").
 	PolicyNumber string `json:"policy_number"`
+	// RequestID is a UUID for the policy creation request
+	RequestID string `json:"request_id,omitempty"`
 	// PolicyType is "PLI" or "RPLI", used to build the PM workflow ID.
 	PolicyType string `json:"policy_type"`
 	// Additional parameters from PolicyIssuanceWorkflow
-	ProposalID              int64  `json:"proposal_id"`
-	ProposalNumber          string `json:"proposal_number"`
-	CustomerID              string `json:"customer_id"`
-	ProductCode             string `json:"product_code"`
-	ProductType             string `json:"product_type,omitempty"`
-	SumAssured              float64 `json:"sum_assured"`
-	PolicyTerm              int    `json:"policy_term"`
-	AgeAtEntry              int    `json:"age_at_entry,omitempty"`
-	Gender                  string `json:"gender,omitempty"`
-	PremiumPaymentFrequency string `json:"premium_payment_frequency"`
-	AgeProofType            string `json:"age_proof_type,omitempty"`
-	InsuredState            string `json:"insured_state,omitempty"`
+	ProposalID              int64     `json:"proposal_id"`
+	ProposalNumber          string    `json:"proposal_number"`
+	CustomerID              string    `json:"customer_id"`
+	PolicyholderDOB         time.Time `json:"policyholder_dob,omitempty"`
+	ProductCode             string    `json:"product_code"`
+	ProductType             string    `json:"product_type,omitempty"`
+	SumAssured              float64   `json:"sum_assured"`
+	PolicyTerm              int       `json:"policy_term"`
+	AgeAtEntry              int       `json:"age_at_entry,omitempty"`
+	Gender                  string    `json:"gender,omitempty"`
+	PremiumPaymentFrequency string    `json:"premium_payment_frequency"`
+	AgeProofType            string    `json:"age_proof_type,omitempty"`
+	InsuredState            string    `json:"insured_state,omitempty"`
 	ProposalDate            time.Time `json:"proposal_date,omitempty"`
 	// Additional fields from proposals table
 	SpouseCustomerID        *int64  `json:"spouse_customer_id,omitempty"`
@@ -99,35 +102,36 @@ type StartPMLifecycleInput struct {
 	Channel                 string  `json:"channel"`
 	CurrentStage            string  `json:"current_stage"`
 	// Dates from proposal_indexing
-	DeclarationDate         time.Time `json:"declaration_date,omitempty"`
-	ReceiptDate             time.Time `json:"receipt_date,omitempty"`
-	IndexingDate            time.Time `json:"indexing_date,omitempty"`
+	DeclarationDate time.Time `json:"declaration_date,omitempty"`
+	ReceiptDate     time.Time `json:"receipt_date,omitempty"`
+	IndexingDate    time.Time `json:"indexing_date,omitempty"`
 	// Dates from proposal_issuance
-	PolicyIssueDate         time.Time `json:"policy_issue_date,omitempty"`
-	AcceptanceDate          time.Time `json:"acceptance_date,omitempty"`
-	PolicyCommencementDate  time.Time `json:"policy_commencement_date,omitempty"`
-	DispatchDate            time.Time `json:"dispatch_date,omitempty"`
-	DeliveryDate            time.Time `json:"delivery_date,omitempty"`
-	FLCStartDate            time.Time `json:"flc_start_date,omitempty"`
-	FLCEndDate              time.Time `json:"flc_end_date,omitempty"`
+	PolicyIssueDate        time.Time `json:"policy_issue_date,omitempty"`
+	AcceptanceDate         time.Time `json:"acceptance_date,omitempty"`
+	PolicyCommencementDate time.Time `json:"policy_commencement_date,omitempty"`
+	DispatchDate           time.Time `json:"dispatch_date,omitempty"`
+	DeliveryDate           time.Time `json:"delivery_date,omitempty"`
+	FLCStartDate           time.Time `json:"flc_start_date,omitempty"`
+	FLCEndDate             time.Time `json:"flc_end_date,omitempty"`
 	// Payment information
-	FirstPremiumPaid        bool      `json:"first_premium_paid"`
-	FirstPremiumDate        time.Time `json:"first_premium_date,omitempty"`
-	FirstPremiumReference   string    `json:"first_premium_reference,omitempty"`
-	FirstPremiumReceiptNumber string  `json:"first_premium_receipt_number,omitempty"`
-	PremiumPaymentMethod    string    `json:"premium_payment_method,omitempty"`
+	FirstPremiumPaid          bool      `json:"first_premium_paid"`
+	FirstPremiumDate          time.Time `json:"first_premium_date,omitempty"`
+	FirstPremiumReference     string    `json:"first_premium_reference,omitempty"`
+	FirstPremiumReceiptNumber string    `json:"first_premium_receipt_number,omitempty"`
+	PremiumPaymentMethod      string    `json:"premium_payment_method,omitempty"`
 	// Location information
-	POCode                  string    `json:"po_code,omitempty"`
-	IssueCircle             string    `json:"issue_circle,omitempty"`
-	IssueHO                 string    `json:"issue_ho,omitempty"`
-	IssuePostOffice         string    `json:"issue_post_office,omitempty"`
+	POCode          string `json:"po_code,omitempty"`
+	IssueCircle     string `json:"issue_circle,omitempty"`
+	IssueHO         string `json:"issue_ho,omitempty"`
+	IssuePostOffice string `json:"issue_post_office,omitempty"`
 }
 
 // PMCreatedSignal is the signal payload sent to PM's lifecycle workflow.
 // This must match the PolicyLifecycleState struct expected by PolicyLifecycleWorkflow.
 type PMCreatedSignal struct {
 	PolicyNumber                   string               `json:"policy_number"`
-	PolicyID                       string               `json:"policy_id"`    // UUID from Policy Issue (audit cross-ref)
+	PolicyID                       string               `json:"policy_id"` // UUID from Policy Issue (audit cross-ref)
+	RequestID                      string               `json:"request_id"`
 	PolicyDBID                     int64                `json:"policy_db_id"` // BIGINT from PM seq_policy_id [A13]
 	CurrentStatus                  string               `json:"current_status"`
 	PreviousStatus                 string               `json:"previous_status"`
@@ -156,6 +160,7 @@ type PMCreatedSignal struct {
 // decisions, eligibility checks, and activity calls. [§9.1]
 type PolicyMetadata struct {
 	CustomerID                  int64      `json:"customer_id"`
+	PolicyholderDOB             time.Time  `json:"policyholder_dob"`
 	ProductCode                 string     `json:"product_code"`
 	ProductType                 string     `json:"product_type"` // PLI or RPLI
 	SumAssured                  float64    `json:"sum_assured"`
@@ -230,7 +235,7 @@ func (a *PMLifecycleActivities) StartPMLifecycleActivity(ctx context.Context, in
 
 	// For a newly issued policy, we need to set initial state
 	now := time.Now().UTC()
-	
+
 	// Parse customer ID from string to int64
 	var customerID int64
 	if input.CustomerID != "" {
@@ -240,12 +245,34 @@ func (a *PMLifecycleActivities) StartPMLifecycleActivity(ctx context.Context, in
 			customerID = 0
 		}
 	}
-	
+
+	// Calculate PolicyholderDOB if not provided
+	//TODO: Integrate with customer service to fetch DOB using customerID if not provided in input, instead of calculating approximate DOB
+	policyholderDOB := input.PolicyholderDOB
+	if policyholderDOB.IsZero() && input.AgeAtEntry > 0 && !input.PolicyCommencementDate.IsZero() {
+		// Calculate approximate DOB by subtracting age from policy commencement date
+		policyholderDOB = input.PolicyCommencementDate.AddDate(-input.AgeAtEntry, 0, 0)
+	}
+
+	// Use PolicyID from input (generated by workflow)
+	// If empty, PM service will generate one
+
+	// Create financial lock with request ID if provided
+	var activeLock *FinancialLock
+	if input.RequestID != "" {
+		activeLock = &FinancialLock{
+			RequestID:   input.RequestID,
+			RequestType: "POLICY_CREATION",
+			LockedAt:    now,
+			TimeoutAt:   now.Add(24 * time.Hour), // 24-hour lock for policy creation
+		}
+	}
+
 	signal := PMCreatedSignal{
 		PolicyNumber:                   input.PolicyNumber,
-		PolicyID:                       "", // Will be generated by PM service
-		PolicyDBID:                     0,  // Will be assigned by PM service
+		PolicyDBID:                     0, // Will be assigned by PM service
 		CurrentStatus:                  "ACTIVE",
+		RequestID:                      input.RequestID,
 		PreviousStatus:                 "",
 		PreviousStatusBeforeSuspension: "",
 		Encumbrances: EncumbranceFlags{
@@ -257,7 +284,7 @@ func (a *PMLifecycleActivities) StartPMLifecycleActivity(ctx context.Context, in
 		DisplayStatus:      "ACTIVE",
 		Version:            1,
 		PendingRequests:    []PendingRequest{},
-		ActiveLock:         nil,
+		ActiveLock:         activeLock,
 		ProcessedSignalIDs: make(map[string]time.Time),
 		EventCount:         0,
 		LastCANTime:        time.Time{},
@@ -268,6 +295,7 @@ func (a *PMLifecycleActivities) StartPMLifecycleActivity(ctx context.Context, in
 		MaturityDate:       calculateMaturityDate(input.PolicyCommencementDate, input.PolicyTerm),
 		Metadata: PolicyMetadata{
 			CustomerID:                  customerID,
+			PolicyholderDOB:             policyholderDOB,
 			ProductCode:                 input.ProductCode,
 			ProductType:                 input.ProductType,
 			SumAssured:                  input.SumAssured,
