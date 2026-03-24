@@ -1,0 +1,387 @@
+package tests
+
+import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateOSResource_Sucess(t *testing.T) {
+	rawBody := `{
+    "first_name": "Rishi",
+    "last_name": "Ragula",
+    "father_name": "Prasad",
+    "date_of_birth": "1992-11-25T00:00:00Z",
+    "community": "General",
+    "gender": "Male",
+    "address1": "Bhagath Nagar",
+    "address4": "Karimnagar",
+    "pin_code": 505001,
+    "personal_email_id": "jaggu.prd@gmail.com",
+    "mobile_no": "9832107654",
+    "aadhaar_number": 341234893422,
+    "pan_number": "ACDEB1349H",
+    "education_qualification": "Bachelor of Science",
+    "approver_post_id": "30007706",
+    "created_by": 10015845,
+    "remarks": "Temporary assignment",
+    "login_required": true,
+    "sub_division_id": 65798097,
+    "bank_acc_no": "01228464586",
+    "ifsc_code": "IPOS0000DOP",
+    "bank_type": "POSB"
+}`
+	req := httptest.NewRequest("POST", "/v1/outsourced-resources", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateOSResource_BindingError(t *testing.T) {
+	rawBody := `{
+    "first_name": "Rishi",
+    "last_name": "Ragula",
+    "father_name": "Prasad",
+    "date_of_birth": "1992-11-25T00:00:00Z",
+    "community": "General",
+    "gender": "Male",
+    "address1": "Bhagath Nagar",
+    "address4": "Karimnagar",
+    "pin_code": 505001,
+    "personal_email_id": "jaggu.prd@gmail.com",
+    "mobile_no": 9832107654,
+    "aadhaar_number": 341234893412,
+    "pan_number": "ACDEB1234F",
+    "education_qualification": "Bachelor of Science",
+    "approver_post_id": "30007706",
+    "created_by": "10015845",
+    "remarks": "Temporary assignment",
+    "login_required": true,
+    "sub_division_id": 65798097,
+    "bank_acc_no": "01228464586",
+    "ifsc_code": "IPOS0000DOP",
+    "bank_type": "POSB"
+}`
+	req := httptest.NewRequest("POST", "/v1/outsourced-resources", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateOSResource_ValidationError(t *testing.T) {
+	rawBody := `{
+    "first_name": "Rishi",
+    "last_name": "Ragula",
+    "father_name": "Prasad",
+    "date_of_birth": "1992-11-25T00:00:00Z",
+    "community": "General",
+    "gender": "Male",
+    "address1": "Bhagath Nagar",
+    "address4": "Karimnagar",
+    "pin_code": 505001,
+    "personal_email_id": "jaggu.prd@gmail.com",
+    "aadhaar_number": 341234893412,
+    "pan_number": "ACDEB123F",
+    "education_qualification": "Bachelor of Science",
+    "approver_post_id": "30007706",
+    "created_by": 10015845,
+    "remarks": "Temporary assignment",
+    "login_required": true,
+    "sub_division_id": 65798097,
+    "bank_acc_no": "01228464586",
+    "ifsc_code": "IPOS0000DOP",
+    "bank_type": "POSB"
+}`
+	req := httptest.NewRequest("POST", "/v1/outsourced-resources", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateOSResource_MissingRequiredFields(t *testing.T) {
+	rawBody := `{
+    "last_name": "Ragula",
+    "father_name": "Prasad",
+    "community": "General",
+    "gender": "Male",
+    "address1": "Bhagath Nagar",
+    "pin_code": 505001,
+    "mobile_no": "9832107654",
+    "pan_number": "ACDEB134FH",
+    "education_qualification": "Bachelor of Science",
+    "approver_post_id": "30007706",
+    "created_by": 10015845,
+    "sub_division_id": 65798097,
+    "bank_acc_no": "01228464586",
+    "ifsc_code": "IPOS0000DOP",
+    "bank_type": "POSB"
+}` // Missing "first_name" and "date_of_birth"
+	req := httptest.NewRequest("POST", "/v1/outsourced-resources", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateOSResource_DatabaseError(t *testing.T) {
+	rawBody := `{
+    "first_name": "Rishi",
+    "last_name": "Ragula",
+    "father_name": "Prasad",
+    "date_of_birth": "1992-11-25T00:00:00Z",
+    "community": "General",
+    "gender": "Male",
+    "address1": "Bhagath Nagar",
+    "pin_code": 505001,
+    "mobile_no": "9832107654",
+    "aadhaar_number": 341234893422,
+    "pan_number": "ACDEB134FH",
+    "education_qualification": "Bachelor of Science",
+    "approver_post_id": "30007706",
+    "created_by": 1001584534582986,
+    "remarks": "Temporary assignment",
+    "login_required": true,
+    "sub_division_id": 65798097,
+    "bank_acc_no": "01228464586",
+    "ifsc_code": "IPOS0000DOP",
+    "bank_type": "POSB"
+}`
+	req := httptest.NewRequest("POST", "/v1/outsourced-resources", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Simulate a database error by injecting a mock repository
+	// that returns an error
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateTempArrangement_Success(t *testing.T) {
+	// Define a valid request payload
+	requestPayload := `{
+    "arrangement_type_id": 1,
+    "employee_id": 10047161,
+    "old_employee_type": 1,
+    "old_employee_group_id": 4,
+    "old_post_id": 30007163,
+    "old_cadre_id": 154,
+    "old_designation_id": 154,
+    "old_office_id": 21260701,
+    "old_subdivision_office_id": 21260203,
+    "old_division_office_id": 21260000,
+    "new_employee_type": 1,
+    "new_employee_group_id": 5,
+    "new_post_id": 70001275,
+    "new_cadre_id": 211,
+    "new_designation_id": 211,
+    "new_office_id": 21260701,
+    "new_subdivision_id": 21260203,
+    "new_division_id": 21260000,
+    "arrangement_from_date": "2024-07-26T00:00:00Z",
+    "arrangement_to_date": "2024-07-27T00:00:00Z",
+    "remarks": "",
+    "created_by": "10265109",
+    "approve_authority_id": 10265109,
+    "substitute_type":"S"
+	}`
+
+	req := httptest.NewRequest("POST", "/v1/temp-arrangements", bytes.NewBuffer([]byte(requestPayload)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+	// Validate the response
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateTempArrangement_ValidationError(t *testing.T) {
+	// Missing required "arrangement_type_id"
+	requestPayload := `{
+		"employee_id": 12345678,
+		"old_employee_type": 1,
+		"new_employee_type": 2,
+		"arrangement_from_date": "2025-01-01T00:00:00Z",
+		"arrangement_to_date": "2025-06-01T00:00:00Z",
+		"created_by": "admin_user",
+		"approve_authority_id": 1234,
+		"substitute_type": "temporary"
+	}`
+
+	req := httptest.NewRequest("POST", "/v1/temp-arrangements", bytes.NewBuffer([]byte(requestPayload)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+
+	// Validate the response
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateTempArrangement_BindingError(t *testing.T) {
+	// Invalid JSON
+	requestPayload := `{
+		"old_employee_type": 1,
+		"employee_id": "12345678",`
+
+	req := httptest.NewRequest("POST", "/v1/temp-arrangements", bytes.NewBuffer([]byte(requestPayload)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+
+	// Validate the response
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateOutsiderArrangement_Success(t *testing.T) {
+	// Define a valid request payload
+	requestPayload := `{
+	"arrangement_type_id": 5,
+    "resource_id": 100009,
+    "new_employee_type": 2,
+    "new_employee_group_id": 5,
+    "new_post_id": 30118295,
+    "new_cadre_id": 154,
+    "new_designation_id": 161,
+    "new_office_id": 21282313,
+    "new_subdivision_id": 21280000,
+    "new_division_id": 21280000,
+    "arrangement_from_date": "2024-08-28T00:00:00Z",
+    "arrangement_to_date": "2024-08-28T00:00:00Z",
+    "remarks": "",
+    "substitute_type": "S",
+    "created_by": "10040464",
+    "approve_authority_id": 10040464
+	}`
+
+	req := httptest.NewRequest("POST", "/v1/outsource-arrangements", bytes.NewBuffer([]byte(requestPayload)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+
+	// Validate the response
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateOutsiderArrangement_ValidationError(t *testing.T) {
+	// Missing required "arrangement_type_id"
+	requestPayload := `{
+		"resource_id": 123,
+		"new_employee_type": 2,
+		"new_employee_group_id": 3,
+		"new_post_id": 1001,
+		"arrangement_from_date": "2025-01-01T00:00:00Z",
+		"arrangement_to_date": "2025-06-01T00:00:00Z",
+		"created_by": "admin_user",
+		"approve_authority_id": 5678,
+		"substitute_type": "outsourced"
+	}`
+
+	req := httptest.NewRequest("POST", "/v1/outsource-arrangements", bytes.NewBuffer([]byte(requestPayload)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+
+	// Validate the response
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateOutsiderArrangement_BindingError(t *testing.T) {
+	// Invalid JSON
+	requestPayload := `{
+	"arrangement_type_id": 5,
+    "resource_id": "100009",
+    "new_employee_type": 2,
+    "new_employee_group_id": 5,
+    "new_post_id": 30118295,
+    "new_cadre_id": 154,
+    "new_designation_id": 161,
+    "new_office_id": 21282313,
+    "new_subdivision_id": 21280000,
+    "new_division_id": 21280000,
+    "arrangement_from_date": "2024-08-28T00:00:00Z",
+    "arrangement_to_date": "2024-08-28T00:00:00Z",
+    "remarks": "",
+    "substitute_type": "S",
+    "created_by": "10040464",
+    "approve_authority_id": 10040464
+		}`
+
+	req := httptest.NewRequest("POST", "/v1/outsource-arrangements", bytes.NewBuffer([]byte(requestPayload)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+
+	// Validate the response
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetTempArrangementByOfficeID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/temp-arrangements?office-id=21282313&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetTempArrangementByOfficeID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/temp-arrangements", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetTempArrangementByOfficeID_BindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/temp-arrangements?office-id=invalid&skip=0&limit=10", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetOSResourcesBySubDivID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/outsourced-resources?sub-division-id=21260204&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetOSResourcesBySubDivID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/outsourced-resources?sub-division-id=2161100", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetOSResourcesBySubDivID_BindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/outsourced-resources?sub-division-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetOSResourcesByResourceID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/outsourced-resources?resource-id=100005", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetOSResources_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/outsourced-resources", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}

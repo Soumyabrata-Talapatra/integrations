@@ -6,7 +6,6 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/stretchr/testify v1.11.1
 	gitlab.cept.gov.in/it-2.0-common/api-config v0.0.17
 	gitlab.cept.gov.in/it-2.0-common/api-log v1.1.5
 	gitlab.cept.gov.in/it-2.0-common/n-api-bootstrapper v0.0.18
@@ -102,6 +101,7 @@ require (
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/templatedop/universal-translator-master v0.0.0-20240227080223-5b6b6a60935e // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect

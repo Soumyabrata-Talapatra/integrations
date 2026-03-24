@@ -12,6 +12,7 @@ import (
 	serverHandler "gitlab.cept.gov.in/it-2.0-common/n-api-server/handler"
 	"go.uber.org/fx"
 
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/worker"
@@ -201,6 +202,9 @@ func ensurePMReconciliationSchedule(ctx context.Context, c client.Client, cfg *c
 			RetryPolicy: &temporal.RetryPolicy{
 				MaximumAttempts: 1, // the schedule itself is the retry loop
 			},
+		},
+		Policies: client.SchedulePolicies{
+			Overlap: enums.SCHEDULE_OVERLAP_POLICY_SKIP, // skip if previous run still in progress
 		},
 	})
 

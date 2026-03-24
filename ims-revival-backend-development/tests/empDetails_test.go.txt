@@ -1,0 +1,1913 @@
+package tests
+
+import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+// CreateEmpMaster test cases
+func TestCreateEmpMaster_Success(t *testing.T) {
+	input := `{
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "1987-01-02T00:00:00Z",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_post": "Group C",
+	"post_id": 70431281,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+	}`
+	req := httptest.NewRequest("POST", "/v1/emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateEmpMaster_InvalidInput(t *testing.T) {
+	input := `{
+	"employee_first_name": "A",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "1987-01-02T00:00:00Z",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": "169 cm",
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_post": "Group C",
+	"post_id": 70431281,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+	}`
+	req := httptest.NewRequest("POST", "/v1/emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateEmpMaster_MissingFields(t *testing.T) {
+	input := `{
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra"
+	}`
+	req := httptest.NewRequest("POST", "/v1/emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateEmpMaster_InvalidDate(t *testing.T) {
+	input := `{
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "invalid-date",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_post": "Group C",
+	"post_id": 70431281,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+	}`
+	req := httptest.NewRequest("POST", "/v1/emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// CreateExistingEmp test cases
+func TestCreateExistingEmp_Success(t *testing.T) {
+	input := `{
+	"employee_id": 74000741,
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "1987-01-02T00:00:00Z",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_id": 4,
+	"group_post": "Group C",
+	"post_id": 74032181,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"emp_status_id": 5,
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+}`
+	req := httptest.NewRequest("POST", "/v1/exist-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateExistingEmp_InvalidInput(t *testing.T) {
+	input := `{
+	"employee_id": "invalid_id",
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "1987-01-02T00:00:00Z",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_id": 4,
+	"group_post": "Group C",
+	"post_id": 74032181,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"emp_status_id": 5,
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+}`
+	req := httptest.NewRequest("POST", "/v1/exist-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateExistingEmp_MissingFields(t *testing.T) {
+	input := `{
+	"employee_id": 74000741,
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra"
+}`
+	req := httptest.NewRequest("POST", "/v1/exist-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateExistingEmp_InvalidDate(t *testing.T) {
+	input := `{
+	"employee_id": 74000741,
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "invalid-date",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_id": 4,
+	"group_post": "Group C",
+	"post_id": 74032181,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"emp_status_id": 5,
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+}`
+	req := httptest.NewRequest("POST", "/v1/exist-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// GetEmpBasicDetails test cases
+
+func TestGetEmpBasicDetails_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-basic-details/10169932", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetEmpBasicDetails_NotFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-basic-details/99999999", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestGetEmpBasicDetails_UnprocessableEntity(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-basic-details/500", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetEmpFullDetails test cases
+func TestGetEmpFullDetails_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-full-details/10169932", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetEmpFullDetails_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-full-details/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetEmpFullDetails_NotFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-full-details/99999999", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestGetEmpFullDetails_UnprocessableEntity(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-full-details/500", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetCadrewiseEmpDetails test cases
+
+func TestGetCadrewiseEmpDetailsForEmployees_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=154&query-type=employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetailsForSubstituteEmployees_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=154&query-type=substitute_employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetails_InvalidOfficeID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=invalid&cadre-id=154&query-type=employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetails_InvalidCadreID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=invalid&query-type=employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetails_InvalidQueryType(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=154&query-type=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetails_MissingOfficeID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?cadre-id=154&query-type=employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetails_MissingQueryType(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=154", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// InitiateExit test cases
+
+func TestInitiateExit_Success(t *testing.T) {
+	input := `{
+	"updated_by": "10015845"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/initiate-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestInitiateExit_InvalidID(t *testing.T) {
+	input := `{
+	"updated_by": "10015845"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/invalid-id/initiate-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestInitiateExit_MissingFields(t *testing.T) {
+	input := `{}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/initiate-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestInitiateExit_NotFound(t *testing.T) {
+	input := `{
+	"updated_by": "10015845"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/99999999/initiate-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestInitiateExit_InvalidUpdatedBy(t *testing.T) {
+	input := `{
+	"updated_by": ""
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/initiate-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// ApproveExit test cases
+func TestApproveExit_Success(t *testing.T) {
+	input := `{
+	"emp_status_type": "Resignation",
+	"date_of_exit": "2024-10-22T00:00:00Z",
+	"updated_by": "10015845"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveExit_InvalidID(t *testing.T) {
+	input := `{
+	"emp_status_id": 8,
+	"emp_status_type": "Resignation",
+	"date_of_exit": "2024-10-22T00:00:00Z",
+	"updated_by": "10015845"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/invalid-id/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveExit_MissingFields(t *testing.T) {
+	input := `{
+	"emp_status_id": 8,
+	"emp_status_type": "Resignation"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveExit_InvalidDate(t *testing.T) {
+	input := `{
+		"emp_status_id": 8,
+		"emp_status_type": "Resignation",
+	"date_of_exit": "invalid-date",
+	"updated_by": "10015845"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveExit_NotFound(t *testing.T) {
+	input := `{
+	"emp_status_id": 8,
+	"emp_status_type": "Resignation",
+	"date_of_exit": "2024-10-22T00:00:00Z",
+	"updated_by": "10015845"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/99999999/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveExit_InvalidUpdatedBy(t *testing.T) {
+	input := `{
+	"emp_status_id": 8,
+	"emp_status_type": "Resignation",
+	"date_of_exit": "2024-10-22T00:00:00Z",
+	"updated_by": ""
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// UpdateEmpLeaveStatus test cases
+
+func TestUpdateEmpLeaveStatus_Success(t *testing.T) {
+	req := httptest.NewRequest("PUT", "/v1/emp-details/update-leave-status", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// UpdateEmpSubstituteStatus test cases
+func TestUpdateEmpSubstituteStatus_Success(t *testing.T) {
+	req := httptest.NewRequest("PUT", "/v1/emp-details/update-substitute-status", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// AddApproveEmpMasterMaker test cases
+func TestAddApproveEmpMasterMaker_Success(t *testing.T) {
+	input := `{
+	"employee_id": 74000384,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/266/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestAddApproveEmpMasterMaker_InvalidID(t *testing.T) {
+	input := `{
+	"employee_id": 74000384,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/invalid-id/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestAddApproveEmpMasterMaker_MissingFields(t *testing.T) {
+	input := `{
+	"employee_id": 74000384,
+	"approver_id": "30007706"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/266/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestAddApproveEmpMasterMaker_NotFound(t *testing.T) {
+	input := `{
+		"employee_id": 74000384,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/141/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestAddApproveEmpMasterMaker_InvalidApproverID(t *testing.T) {
+	input := `{
+	"employee_id": 74000384,
+	"approver_id": "",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/266/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetDivisionEmps test cases
+
+func TestGetDivisionEmpsWithDivisionIdAndCadreId_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/division-employees?division-id=21260000&cadre-id=50", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetDivisionEmpsWithDivisionId_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/division-employees?division-id=21260000", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetDivisionEmps_InvalidDivisionId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/division-employees?division-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetDivisionEmps_InvalidCadreId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/division-employees?division-id=21260000&cadre-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetDivisionEmps_MissingDivisionId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/division-employees?cadre-id=50", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetEmployeeDetailsByOfficeId_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-master-details?office-id=21611002", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetEmployeeDetailsByPostId_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-master-details?post-id=30007706", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetEmployeeDetails_InvalidOfficeId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-master-details?office-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetEmployeeDetails_InvalidPostId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-master-details?post-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetEmployeeDetails_MissingOfficeIdAndPostId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-master-details", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// DriverDetailsByOfficeID test cases
+func TestDriverDetailsByOfficeID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/driver-details?office-id=21010000", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestDriverDetailsByOfficeID_InvalidOfficeID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/driver-details?office-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestDriverDetailsByOfficeID_MissingOfficeID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/driver-details", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetDepEmpListByDivId test cases
+func TestGetDepEmpListByDivId_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-employees?division-id=21260000", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetDepEmpListByDivId_InvalidDivisionId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-employees?division-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetDepEmpListByDivId_MissingDivisionId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetDepEmpDetailsByEmpId test cases
+func TestGetDepEmpDetailsByEmpId_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-emp-details/10015845", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetDepEmpDetailsByEmpId_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-emp-details/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetDepEmpDetailsByEmpId_NotFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-emp-details/99999999", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestCreateEmpMaster_DBError(t *testing.T) {
+	input := `{
+	"employee_first_name": "AnandAnandAnandAnandAnandAnandAnandAnandAnandAnandAnandAnand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "1987-01-02T00:00:00Z",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "Married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_post": "Group C",
+	"post_id": 70431281,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+	}`
+	req := httptest.NewRequest("POST", "/v1/emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateExistingEmpMaster_DBError(t *testing.T) {
+	input := `{
+	"employee_first_name": "Anand",
+	"employee_middle_name": "Kumar",
+	"employee_last_name": "Dhathra",
+	"employee_father_name": "Yerriswamy",
+	"employee_date_of_birth": "1987-01-02T00:00:00Z",
+	"gender": "Male",
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"marital_status": "married",
+	"employee_height": 169,
+	"blood_group": "O +ve",
+	"pwd": false,
+	"employee_nationality": "Indian",
+	"ex_service_man_flag": false,
+	"personal_identification_mark1": "a black scar on forehead",
+	"personal_identification_mark2": "",
+	"permanent_addr1": "address1",
+	"permanent_addr2": "address2",
+	"permanent_addr3": "address3",
+	"permanent_addr4": "address4",
+	"permanent_pin": 500001,
+	"home_town": "Hyderabad",
+	"date_of_join_in_department": "2024-09-01T00:00:00Z",
+	"employee_type": "DOP",
+	"recruitment_mode": "DR",
+	"date_of_join_in_present_cadre": "2024-09-01T00:00:00Z",
+	"office_id": 21260701,
+	"group_post": "Group C",
+	"post_id": 70431281,
+	"designation_id": 154,
+	"employee_designation": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"cadre": "Postal Assistant(PA)",
+	"tax_regime": "New",
+	"nps_id": null,
+	"driver_licence_number": "",
+	"date_of_substantive_entry": "2024-09-01T00:00:00Z",
+	"date_of_retirement": "2047-01-31T00:00:00Z",
+	"remarks": "created for test purpose",
+	"deputation_status": false,
+	"facility_mapped": "21260701",
+	"division_office_id": 21260000,
+	"region_office_id": 21900003,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"created_by": "10021629",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706
+	}`
+	req := httptest.NewRequest("POST", "/v1/exist-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// GetEmpBasicDetails test cases
+func TestGetEmpBasicDetails_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-basic-details/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetailsForEmployeesSuccessCadreId_Case2(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=161&query-type=employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetCadrewiseEmpDetailsForEmployeesSuccessCadreIdCase_Default(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=180&query-type=employees&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetCadrewiseEmpDetailsForSubstituteEmployees_DBError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&query-type=substitute_employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetCadrewiseEmpDetailsForRMSEmployees_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-details?office-id=21630208&cadre-id=154&query-type=rms_employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// InitiateExit test cases
+func TestInitiateExit_BindingError(t *testing.T) {
+	input := `{
+	"updated_by": 10015845
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/initiate-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// ApproveExit test cases
+func TestApproveExit_DBError(t *testing.T) {
+	input := `{
+	"emp_status_id": 8,
+	"emp_status_type": "Passive",
+	"date_of_exit": "2024-10-22T00:00:00Z",
+	"updated_by": "10015845"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-details/74000251/approve-exit", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// AddApproveEmpMasterMaker test cases
+func TestAddApproveEmpMasterMaker_DBError(t *testing.T) {
+	input := `{
+	"employee_id": 74000384,
+	"approver_id": "30007706",
+	"approve_status": "Passive status with more than thirty characters",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/266/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestAddApproveEmpMasterMaker_BindingError(t *testing.T) {
+	input := `{
+	"employee_id": "74000384",
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/266/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestAddApproveEmpMasterMaker_InvalidStatus(t *testing.T) {
+	input := `{
+	"employee_id": 74000384,
+	"approver_id": "30007706",
+	"approve_status": "InvalidStatus"
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/266/add-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// ModApproveEmpMasterMaker test cases
+func TestModApproveEmpMasterMaker_Success(t *testing.T) {
+	input := `{
+	"employee_id": 74000385,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/267/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestModApproveEmpMasterMaker_BindingError(t *testing.T) {
+	input := `{
+	"employee_id": "74000385",
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/267/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestModApproveEmpMasterMaker_DBError(t *testing.T) {
+	input := `{
+	"employee_id": 74000385,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/267/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestModApproveEmpMasterMaker_InvalidID(t *testing.T) {
+	input := `{
+	"employee_id": 74000385,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/invalid-id/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestModApproveEmpMasterMaker_MissingFields(t *testing.T) {
+	input := `{
+	"employee_id": 74000385,
+	"approver_id": "30007706"
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/267/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestModApproveEmpMasterMaker_InvalidStatus(t *testing.T) {
+	input := `{
+	"employee_id": 74000385,
+	"approver_id": "30007706",
+	"approve_status": "InvalidStatus"
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/267/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestModApproveEmpMasterMaker_NotFound(t *testing.T) {
+	input := `{
+	"employee_id": 74000739,
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/284/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestModApproveEmpMasterMaker_InvalidApproverID(t *testing.T) {
+	input := `{
+	"employee_id": 74000385,
+	"approver_id": "",
+	"approve_status": "Approved",
+	"approver_remarks": "The emp details have been reviewed and approved."
+}`
+	req := httptest.NewRequest("PUT", "/v1/emp-makers/267/modify-approve", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetEmployeeDetails test cases
+func TestGetEmployeeDetailsByOfficeId_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-master-details?office-id=216110021456", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetDepEmpDetailsByEmpId test cases
+func TestGetDepEmpDetailsByEmpId_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/deputed-emp-details/123456789", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetPendEmpMakerDetailsByEmpID test cases
+func TestGetPendEmpMakerDetailsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-makers?emp-id=74000385", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetPendEmpMakerDetailsByEmpID_Validation(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-makers?emp-id=123456789", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetPendEmpMakerDetailsByEmpID_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-makers?emp-id=invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// CreateEmpMasterMaker test cases
+func TestCreateEmpMasterMaker_Success(t *testing.T) {
+	input := `{
+	"employee_id": 10015845,
+	"employee_first_name": "yash",
+	"employee_middle_name": "yash",
+	"employee_last_name": "yash",
+	"employee_father_name": "yash",
+	"employee_date_of_birth": "1998-12-10T05:30:00Z",
+	"community_id": 1,
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"gender": "Male",
+	"gender_id": 1,
+	"marital_status": "Married",
+	"marital_id": 1,
+	"permanent_addr1": "Add",
+	"permanent_addr2": "add",
+	"permanent_addr3": "ada",
+	"permanent_addr4": "add",
+	"permanent_pin": 123321,
+	"employee_nationality": "Indian",
+	"personal_identification_mark1": "mark",
+	"personal_identification_mark2": "mark",
+	"employee_height": 123,
+	"recruitment_mode": "DR",
+	"recruitment_type_id": 1,
+	"pwd": false,
+	"ex_service_man_flag": false,
+	"employee_type": "DOP",
+	"date_of_join_in_department": "2022-12-10T05:30:00Z",
+	"cadre": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"designation_id": 154,
+	"date_of_join_in_present_cadre": "2023-12-10T05:30:00Z",
+	"group_post": "Group C",
+	"office_id": 21260000,
+	"post_id": 30002975,
+	"employee_designation": "Multi Tasking Staff",
+	"division_office_id": 21260000,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"home_town": "ind",
+	"nps_id": 123321,
+	"gpf_id": "gpfid123",
+	"driver_licence_number": "licence123",
+	"date_of_substantive_entry": "2023-12-10T05:30:00Z",
+	"date_of_retirement": "2058-12-31T05:30:00+05:30",
+	"remarks": "hii",
+	"pwd_sub_cat": "",
+	"created_by": "10041759",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706,
+	"region_office_id": 21900003,
+	"deputation_status": false,
+	"blood_group": "AB Positive",
+	"tax_regime": "Old",
+	"updated_by": "10041759"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateEmpMasterMakerDeputationStatus_TrueSuccess(t *testing.T) {
+	input := `{
+	"employee_id": 10015845,
+	"employee_first_name": "yash",
+	"employee_middle_name": "yash",
+	"employee_last_name": "yash",
+	"employee_father_name": "yash",
+	"employee_date_of_birth": "1998-12-10T05:30:00Z",
+	"community_id": 1,
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"gender": "Male",
+	"gender_id": 1,
+	"marital_status": "Married",
+	"marital_id": 1,
+	"permanent_addr1": "Add",
+	"permanent_addr2": "add",
+	"permanent_addr3": "ada",
+	"permanent_addr4": "add",
+	"permanent_pin": 123321,
+	"employee_nationality": "Indian",
+	"personal_identification_mark1": "mark",
+	"personal_identification_mark2": "mark",
+	"employee_height": 123,
+	"recruitment_mode": "DR",
+	"recruitment_type_id": 1,
+	"pwd": false,
+	"ex_service_man_flag": false,
+	"employee_type": "DOP",
+	"date_of_join_in_department": "2022-12-10T05:30:00Z",
+	"cadre": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"designation_id": 154,
+	"date_of_join_in_present_cadre": "2023-12-10T05:30:00Z",
+	"group_post": "Group C",
+	"office_id": 21260000,
+	"post_id": 30002975,
+	"employee_designation": "Multi Tasking Staff",
+	"division_office_id": 21260000,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"home_town": "ind",
+	"nps_id": 123321,
+	"gpf_id": "gpfid123",
+	"driver_licence_number": "licence123",
+	"date_of_substantive_entry": "2023-12-10T05:30:00Z",
+	"date_of_retirement": "2058-12-31T05:30:00+05:30",
+	"remarks": "hii",
+	"pwd_sub_cat": "",
+	"created_by": "10041759",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706,
+	"region_office_id": 21900003,
+	"deputation_status": true,
+	"blood_group": "AB Positive",
+	"tax_regime": "Old",
+	"updated_by": "10041759"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateEmpMasterMaker_DBError(t *testing.T) {
+	input := `{
+	"employee_id": 10015845,
+	"employee_first_name": "yash",
+	"employee_middle_name": "yash",
+	"employee_last_name": "yash",
+	"employee_father_name": "yash",
+	"employee_date_of_birth": "1998-12-10T05:30:00Z",
+	"community_id": 1,
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"gender": "Male",
+	"marital_status": "married",
+	"permanent_addr1": "Add",
+	"permanent_addr2": "add",
+	"permanent_addr3": "ada",
+	"permanent_addr4": "add",
+	"permanent_pin": 123321,
+	"employee_nationality": "Indian",
+	"personal_identification_mark1": "mark",
+	"personal_identification_mark2": "mark",
+	"employee_height": 123,
+	"recruitment_mode": "DR",
+	"pwd": false,
+	"ex_service_man_flag": false,
+	"employee_type": "DOP",
+	"date_of_join_in_department": "2022-12-10T05:30:00Z",
+	"cadre": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"designation_id": 154,
+	"date_of_join_in_present_cadre": "2023-12-10T05:30:00Z",
+	"group_post": "Group C",
+	"office_id": 21260000,
+	"post_id": 30002975,
+	"employee_designation": "Multi Tasking Staff",
+	"division_office_id": 21260000,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"home_town": "ind",
+	"nps_id": 123321,
+	"gpf_id": "gpfid123",
+	"driver_licence_number": "licence123",
+	"date_of_substantive_entry": "2023-12-10T05:30:00Z",
+	"date_of_retirement": "2058-12-31T05:30:00+05:30",
+	"remarks": "hii",
+	"pwd_sub_cat": "",
+	"created_by": "10041759",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706,
+	"region_office_id": 21900003,
+	"deputation_status": false,
+	"blood_group": "AB Positive",
+	"tax_regime": "Old",
+	"updated_by": "10041759"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateEmpMasterMaker_InvalidInput(t *testing.T) {
+	input := `{
+	"employee_id": "invalid_id",
+	"employee_first_name": "yash",
+	"employee_middle_name": "yash",
+	"employee_last_name": "yash",
+	"employee_father_name": "yash",
+	"employee_date_of_birth": "1998-12-10T05:30:00Z",
+	"community_id": 1,
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"gender": "Male",
+	"gender_id": 1,
+	"marital_status": "Married",
+	"marital_id": 1,
+	"permanent_addr1": "Add",
+	"permanent_addr2": "add",
+	"permanent_addr3": "ada",
+	"permanent_addr4": "add",
+	"permanent_pin": 123321,
+	"employee_nationality": "Indian",
+	"personal_identification_mark1": "mark",
+	"personal_identification_mark2": "mark",
+	"employee_height": 123,
+	"recruitment_mode": "DR",
+	"recruitment_type_id": 1,
+	"pwd": false,
+	"ex_service_man_flag": false,
+	"employee_type": "DOP",
+	"date_of_join_in_department": "2022-12-10T05:30:00Z",
+	"cadre": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"designation_id": 154,
+	"date_of_join_in_present_cadre": "2023-12-10T05:30:00Z",
+	"group_post": "Group C",
+	"office_id": 21260000,
+	"post_id": 30002975,
+	"employee_designation": "Multi Tasking Staff",
+	"division_office_id": 21260000,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"home_town": "ind",
+	"nps_id": 123321,
+	"gpf_id": "gpfid123",
+	"driver_licence_number": "licence123",
+	"date_of_substantive_entry": "2023-12-10T05:30:00Z",
+	"date_of_retirement": "2058-12-31T05:30:00+05:30",
+	"remarks": "hii",
+	"pwd_sub_cat": "",
+	"created_by": "10041759",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706,
+	"region_office_id": 21900003,
+	"deputation_status": false,
+	"blood_group": "AB Positive",
+	"tax_regime": "Old",
+	"updated_by": "10041759"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateEmpMasterMaker_MissingFields(t *testing.T) {
+	input := `{
+	"employee_id": 10015845,
+	"employee_first_name": "yash",
+	"employee_middle_name": "yash",
+	"employee_last_name": "yash"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateEmpMasterMaker_InvalidDate(t *testing.T) {
+	input := `{
+	"employee_id": 10015845,
+	"employee_first_name": "yash",
+	"employee_middle_name": "yash",
+	"employee_last_name": "yash",
+	"employee_father_name": "yash",
+	"employee_date_of_birth": "invalid-date",
+	"community_id": 1,
+	"employee_community": "UR",
+	"selected_community": "UR",
+	"gender": "Male",
+	"gender_id": 1,
+	"marital_status": "Married",
+	"marital_id": 1,
+	"permanent_addr1": "Add",
+	"permanent_addr2": "add",
+	"permanent_addr3": "ada",
+	"permanent_addr4": "add",
+	"permanent_pin": 123321,
+	"employee_nationality": "Indian",
+	"personal_identification_mark1": "mark",
+	"personal_identification_mark2": "mark",
+	"employee_height": 123,
+	"recruitment_mode": "DR",
+	"recruitment_type_id": 1,
+	"pwd": false,
+	"ex_service_man_flag": false,
+	"employee_type": "DOP",
+	"date_of_join_in_department": "2022-12-10T05:30:00Z",
+	"cadre": "Postal Assistant(PA)",
+	"cadre_id": 154,
+	"designation_id": 154,
+	"date_of_join_in_present_cadre": "2023-12-10T05:30:00Z",
+	"group_post": "Group C",
+	"office_id": 21260000,
+	"post_id": 30002975,
+	"employee_designation": "Multi Tasking Staff",
+	"division_office_id": 21260000,
+	"circle_office_id": 21000000,
+	"employment_status": "Pending",
+	"home_town": "ind",
+	"nps_id": 123321,
+	"gpf_id": "gpfid123",
+	"driver_licence_number": "licence123",
+	"date_of_substantive_entry": "2023-12-10T05:30:00Z",
+	"date_of_retirement": "2058-12-31T05:30:00+05:30",
+	"remarks": "hii",
+	"pwd_sub_cat": "",
+	"created_by": "10041759",
+	"approver_post_id": 30007706,
+	"reporting_office_id": 21260551,
+	"reporting_authority_post_id": 30007706,
+	"region_office_id": 21900003,
+	"deputation_status": false,
+	"blood_group": "AB Positive",
+	"tax_regime": "Old",
+	"updated_by": "10041759"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// GetPendEmpMakerDetailsByPostID test cases
+func TestGetPendEmpMakerDetailsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-post-makers?post-id=30007706", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetPendEmpMakerDetailsByPostID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-post-makers", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetPendEmpMakerDetailsByPostID_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-post-makers?post-id=invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// CreateDepEmpDetails test cases
+func TestCreateDepEmpDetails_Success(t *testing.T) {
+	input := `{
+  "employee_id": 10015845,
+  "parent_division": "Division XYZ",
+  "parent_division_id": 456,
+  "parent_office_id": 78946793,
+  "parent_office_wkg": "Office ABC",
+  "parent_post_id": 101,
+  "parent_cadre_id": 202,
+  "deputation_start_date": "2024-06-20T00:00:00Z",
+  "deputation_end_date": "2025-06-20T00:00:00Z",
+  "remarks": "This is a sample remark",
+  "created_by": "10015845"
+}`
+	req := httptest.NewRequest("POST", "/v1/deputed-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateDepEmpDetails_DBError(t *testing.T) {
+	input := `{
+  "employee_id": 10015845,
+  "parent_division": "Division XYZ",
+  "parent_division_id": 456,
+  "parent_office_id": 78946793,
+  "parent_office_wkg": "Office ABC",
+  "parent_post_id": 101,
+  "parent_cadre_id": 202,
+  "deputation_start_date": "2024-06-20T00:00:00Z",
+  "deputation_end_date": "2025-06-20T00:00:00Z",
+  "remarks": "This is a sample remark that is intentionally made very long to exceed the 200 characters limit. This is done to simulate a database error due to the length of the remarks field. The remarks field should not accept such a long string.",
+  "created_by": "10015845"
+}`
+	req := httptest.NewRequest("POST", "/v1/deputed-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateDepEmpDetails_InvalidInput(t *testing.T) {
+	input := `{
+  "employee_id": "invalid_id",
+  "parent_division": "Division XYZ",
+  "parent_division_id": 456,
+  "parent_office_id": 78946793,
+  "parent_office_wkg": "Office ABC",
+  "parent_post_id": 101,
+  "parent_cadre_id": 202,
+  "deputation_start_date": "2024-06-20T00:00:00Z",
+  "deputation_end_date": "2025-06-20T00:00:00Z",
+  "remarks": "This is a sample remark",
+  "created_by": "10015845"
+}`
+	req := httptest.NewRequest("POST", "/v1/deputed-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateDepEmpDetails_MissingFields(t *testing.T) {
+	input := `{
+  "employee_id": 10015845,
+  "parent_division": "Division XYZ",
+  "parent_division_id": 456,
+  "parent_office_id": 78946793,
+  "parent_office_wkg": "Office ABC"
+}`
+	req := httptest.NewRequest("POST", "/v1/deputed-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateDepEmpDetails_InvalidDate(t *testing.T) {
+	input := `{
+  "employee_id": 10015845,
+  "parent_division": "Division XYZ",
+  "parent_division_id": 456,
+  "parent_office_id": 78946793,
+  "parent_office_wkg": "Office ABC",
+  "parent_post_id": 101,
+  "parent_cadre_id": 202,
+  "deputation_start_date": "invalid-date",
+  "deputation_end_date": "2025-06-20T00:00:00Z",
+  "remarks": "This is a sample remark",
+  "created_by": "10015845"
+}`
+	req := httptest.NewRequest("POST", "/v1/deputed-emp-details", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// GetPendDepEmpData test cases
+func TestGetPendDepEmpData_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-pending-deputations/74000143", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetPendDepEmpData_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-pending-deputations/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetPendDepEmpData_UnprocessableEntity(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-pending-deputations/500", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetNameChangeModsByEmpID test cases
+func TestGetNameChangeModsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?emp-id=10015845&start-date=2024-12-02&end-date=2024-12-02", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNameChangeModsByEmpID_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?emp-id=invalid-id&start-date=2024-12-02&end-date=2024-12-02", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNameChangeModsByEmpID_InvalidStartDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?emp-id=10015845&start-date=invalid-date&end-date=2024-12-02", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNameChangeModsByEmpID_InvalidEndDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?emp-id=10015845&start-date=2024-12-02&end-date=invalid-date", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNameChangeModsByEmpID_MissingEmpID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?start-date=2024-12-02&end-date=2024-12-02", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetNameChangeModsByEmpID_MissingStartDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?emp-id=10015845&end-date=2024-12-02", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetNameChangeModsByEmpID_MissingEndDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/name-revised-employees?emp-id=10015845&start-date=2024-12-02", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetWorkingEmpCount test cases
+func TestGetWorkingEmpCount_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/working-employees?office-id=21260000", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetWorkingEmpCount_InvalidOfficeID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/working-employees?office-id=invalid", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetWorkingEmpCountMissing_OfficeID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/working-employees", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// BulkApproveEmpMasterMaker test cases
+func TestBulkApproveEmpMasterMaker_Success(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": 136,
+			"employee_id": 74000385
+		},
+		{
+			"modification_id": 135,
+			"employee_id": 74000386
+		}
+	],
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "All documents verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestBulkApproveEmpMasterMaker_DBError(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": 136,
+			"employee_id": 74000385
+		},
+		{
+			"modification_id": 135,
+			"employee_id": 74000386
+		}
+	],
+	"approver_id": "30007706",
+	"approve_status": "Approved status with more than thirty characters",
+	"approver_remarks": "All documents verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestBulkApproveEmpMasterMaker_InvalidInput(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": "invalid_id",
+			"employee_id": 74000385
+		},
+		{
+			"modification_id": 135,
+			"employee_id": 74000386
+		}
+	],
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "All documents verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestBulkApproveEmpMasterMaker_MissingFields(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": 136,
+			"employee_id": 74000385
+		}
+	],
+	"approver_id": "30007706"
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestBulkApproveEmpMasterMaker_InvalidStatus(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": 136,
+			"employee_id": 74000385
+		},
+		{
+			"modification_id": 135,
+			"employee_id": 74000386
+		}
+	],
+	"approver_id": "30007706",
+	"approve_status": "InvalidStatus"
+	"approver_remarks": "All documents verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestBulkApproveEmpMasterMaker_NotFound(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": 99999999,
+			"employee_id": 74000385
+		},
+		{
+			"modification_id": 99999998,
+			"employee_id": 74000386
+		}
+	],
+	"approver_id": "30007706",
+	"approve_status": "Approved",
+	"approver_remarks": "All documents verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestBulkApproveEmpMasterMake_InvalidApproverID(t *testing.T) {
+	input := `{
+	"approvals": [
+		{
+			"modification_id": 136,
+			"employee_id": 74000385
+		},
+		{
+			"modification_id": 135,
+			"employee_id": 74000386
+		}
+	],
+	"approver_id": "",
+	"approve_status": "Approved",
+	"approver_remarks": "All documents verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/emp-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+// GetExitEmpDetailsHandler test cases
+func TestGetExitEmpDetailsHandler_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/exit-emp-details/10024225", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetExitEmpDetailsHandler_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/exit-emp-details/123456789", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetExitEmpDetailsHandler_InvalidID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/exit-emp-details/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetExitEmpDetailsHandler_NotFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/exit-emp-details/99999999", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}

@@ -1,0 +1,1324 @@
+{
+  "info": {
+    "_postman_id": "509d4db9-30b5-426e-90bb-4cfbe60aa02e",
+    "name": "Revival Workflow API",
+    "description": "Complete workflow for testing Policy Revival process with Temporal integration.\n\n## Workflow Sequence:\n1. **Index Revival Request** - Create request and start Temporal workflow\n2. **Data Entry** - Submit revival details and send signal to workflow\n3. **Quality Check** - Validate data and send signal\n4. **Approval** - Approve request, start SLA timer, send signal\n5. **First Collection** - Process dual payment, send signal, activate policy\n\n## Prerequisites:\n- Temporal server running on localhost:7233\n- PostgreSQL database with test data\n- API server running on localhost:8080\n- Test policy: 0000000000001 (eligible for revival)\n\n## Usage:\n1. Set environment variables (base_url, ticket_id)\n2. Run requests in sequence\n3. Check Temporal UI: http://localhost:8089\n4. Verify database updates",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51561985",
+    "_collection_link": "https://go.postman.co/collection/51561985-509d4db9-30b5-426e-90bb-4cfbe60aa02e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1. Index Revival Request",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Clear any previous ticket_id before indexing",
+              "pm.environment.unset('ticket_id');",
+              "pm.environment.unset('workflow_id');",
+              "console.log('Starting fresh revival request...');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Validate response",
+              "pm.test('Status code is 200 or 201', function () {",
+              "    pm.expect([200, 201]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Response has success status', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('success');",
+              "});",
+              "",
+              "pm.test('Response contains ticket_id', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('ticket_id');",
+              "});",
+              "",
+              "pm.test('Workflow started successfully', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('workflow_id');",
+              "});",
+              "",
+              "// Store ticket_id and workflow_id for subsequent requests",
+              "const jsonData = pm.response.json();",
+              "if (jsonData.data && jsonData.data.ticket_id) {",
+              "    pm.environment.set('ticket_id', jsonData.data.ticket_id);",
+              "    console.log('✅ Saved ticket_id:', jsonData.data.ticket_id);",
+              "}",
+              "if (jsonData.data && jsonData.data.workflow_id) {",
+              "    pm.environment.set('workflow_id', jsonData.data.workflow_id);",
+              "    console.log('✅ Saved workflow_id:', jsonData.data.workflow_id);",
+              "}",
+              "",
+              "console.log('✅ Index Request completed:', jsonData);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"policy_number\": \"0000000000001\",\n  \"customer_id\": \"CUST0000000001\",\n  \"customer_name\": \"John Doe\",\n  \"request_date_time\": \"{{$isoTimestamp}}\",\n  \"request_owner\": \"BRANCH_USER_001\",\n  \"indexed_by\": \"POSTMAN_USER\",\n  \"office\": \"HEAD_OFFICE\",\n  \"revival_eligibility\": {\n    \"eligible\": true,\n    \"revival_count\": 0,\n    \"max_revivals_allowed\": 2,\n    \"max_installments\": 12\n  },\n  \"documents\": [\n    {\n      \"document_type\": \"REVIVAL_APPLICATION\",\n      \"document_id\": \"DOC001\"\n    },\n    {\n      \"document_type\": \"ID_PROOF\",\n      \"document_id\": \"DOC002\"\n    },\n    {\n      \"document_type\": \"ADDRESS_PROOF\",\n      \"document_id\": \"DOC003\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/index",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "index"
+          ]
+        },
+        "description": "Creates a new revival request and starts the Temporal workflow.\n\n**Database Operations:**\n- INSERT into revival_requests\n- UPDATE revival_requests (workflow_id, run_id)\n- INSERT into workflow_state\n\n**Workflow Actions:**\n- Starts InstallmentRevivalWorkflow\n- Waits for signal: data-entry-complete\n\n**Test Policy:** 0000000000001 (John Doe, LAPSED, 0 revivals)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Requests",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Clear any previous ticket_id before indexing",
+              "pm.environment.unset('ticket_id');",
+              "pm.environment.unset('workflow_id');",
+              "console.log('Starting fresh revival request...');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Validate response",
+              "pm.test('Status code is 200 or 201', function () {",
+              "    pm.expect([200, 201]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Response has success status', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('success');",
+              "});",
+              "",
+              "pm.test('Response contains ticket_id', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('ticket_id');",
+              "});",
+              "",
+              "pm.test('Workflow started successfully', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('workflow_id');",
+              "});",
+              "",
+              "// Store ticket_id and workflow_id for subsequent requests",
+              "const jsonData = pm.response.json();",
+              "if (jsonData.data && jsonData.data.ticket_id) {",
+              "    pm.environment.set('ticket_id', jsonData.data.ticket_id);",
+              "    console.log('✅ Saved ticket_id:', jsonData.data.ticket_id);",
+              "}",
+              "if (jsonData.data && jsonData.data.workflow_id) {",
+              "    pm.environment.set('workflow_id', jsonData.data.workflow_id);",
+              "    console.log('✅ Saved workflow_id:', jsonData.data.workflow_id);",
+              "}",
+              "",
+              "console.log('✅ Index Request completed:', jsonData);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests"
+          ]
+        },
+        "description": "Creates a new revival request and starts the Temporal workflow.\n\n**Database Operations:**\n- INSERT into revival_requests\n- UPDATE revival_requests (workflow_id, run_id)\n- INSERT into workflow_state\n\n**Workflow Actions:**\n- Starts InstallmentRevivalWorkflow\n- Waits for signal: data-entry-complete\n\n**Test Policy:** 0000000000001 (John Doe, LAPSED, 0 revivals)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Revival Request",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Clear any previous ticket_id before indexing",
+              "pm.environment.unset('ticket_id');",
+              "pm.environment.unset('workflow_id');",
+              "console.log('Starting fresh revival request...');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Validate response",
+              "pm.test('Status code is 200 or 201', function () {",
+              "    pm.expect([200, 201]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Response has success status', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('success');",
+              "});",
+              "",
+              "pm.test('Response contains ticket_id', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('ticket_id');",
+              "});",
+              "",
+              "pm.test('Workflow started successfully', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('workflow_id');",
+              "});",
+              "",
+              "// Store ticket_id and workflow_id for subsequent requests",
+              "const jsonData = pm.response.json();",
+              "if (jsonData.data && jsonData.data.ticket_id) {",
+              "    pm.environment.set('ticket_id', jsonData.data.ticket_id);",
+              "    console.log('✅ Saved ticket_id:', jsonData.data.ticket_id);",
+              "}",
+              "if (jsonData.data && jsonData.data.workflow_id) {",
+              "    pm.environment.set('workflow_id', jsonData.data.workflow_id);",
+              "    console.log('✅ Saved workflow_id:', jsonData.data.workflow_id);",
+              "}",
+              "",
+              "console.log('✅ Index Request completed:', jsonData);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests"
+          ]
+        },
+        "description": "Creates a new revival request and starts the Temporal workflow.\n\n**Database Operations:**\n- INSERT into revival_requests\n- UPDATE revival_requests (workflow_id, run_id)\n- INSERT into workflow_state\n\n**Workflow Actions:**\n- Starts InstallmentRevivalWorkflow\n- Waits for signal: data-entry-complete\n\n**Test Policy:** 0000000000001 (John Doe, LAPSED, 0 revivals)"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Data Entry",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Wait 2 seconds for workflow to be ready",
+              "setTimeout(function(){}, 2000);",
+              "",
+              "// Verify ticket_id is set",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set. Run \"1. Index Revival Request\" first!');",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has success status', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('success');",
+              "});",
+              "",
+              "pm.test('Status changed to DATA_ENTRY_COMPLETE', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('DATA_ENTRY_COMPLETE');",
+              "});",
+              "",
+              "console.log('✅ Data Entry completed');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"ticket_id\": \"{{ticket_id}}\",\n    \"policy_number\": \"0000000000001\",\n    \"customer_id\": \"CUST0000000001\",\n    \"customer_name\": \"John Doe\",\n    \"address\": \"123 Main Street, New Delhi, 110001\",\n    \"contact_number\": \"9876543210\",\n    \"email\": \"john.doe@example.com\",\n    \"product\": \"TERM001 - Term Life Insurance\",\n    \"sum_assured\": 1000000.00,\n    \"premium_amount\": 50000.00,\n    \"lapse_date\": \"2024-01-01T00:00:00Z\",\n    \"lapse_months\": 6,\n    \"office\": \"HEAD_OFFICE\",\n    \"billing_method\": \"ANNUAL\",\n    \"revival_eligibility\": {\n        \"eligible\": true,\n        \"revival_count\": 0,\n        \"max_revivals_allowed\": 2,\n        \"max_installments\": 12\n    },\n    \"revival_details\": {\n        \"installments\": 6,\n        \"revival_amount\": 912571.28,\n        \"interest\": -337428.71,\n        \"installment_amount\": 155663.75,\n        \"first_installment_due_date\": \"2025-03-01T00:00:00Z\",\n        \"total_amount_due\": 912571.28,\n        \"tax_breakdown\": {\n            \"cgst\": 82131.41,\n            \"sgst\": 82131.41,\n            \"total_tax\": 164262.83\n        }\n    },\n    \"documents_submitted\": [\n        {\n            \"document_type\": \"REVIVAL_APPLICATION\",\n            \"document_id\": \"DOC001\"\n        }\n    ],\n    \"missing_documents\": [\n      {\n        \"document_name\": \"ID_PROOF\",\n        \"remarks\": \"Customer needs to submit Aadhaar card\"\n      },\n      {\n        \"document_name\": \"ADDRESS_PROOF\",\n        \"remarks\": \"Utility bill required\"\n      }\n    ],\n    \"data_entered_by\": \"DATA_ENTRY_USER\",\n    \"data_entry_timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/data-entry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "data-entry"
+          ]
+        },
+        "description": "Submits data entry for the revival request.\n\n**Database Operations:**\n- UPDATE revival_requests (data entry fields)\n- INSERT status_change_history\n\n**Workflow Actions:**\n- Sends signal: data-entry-complete\n- Workflow advances to QC stage\n- Waits for signal: quality-check-complete"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Quality Check (Pass)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Wait 2 seconds",
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('QC passed successfully', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.qc_passed).to.be.true;",
+              "});",
+              "",
+              "pm.test('Status changed to QC_COMPLETE', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('QC_COMPLETE');",
+              "});",
+              "",
+              "console.log('✅ Quality Check passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"qc_passed\": true,\n  \"qc_comments\": \"All documents verified. Data entry is accurate. Approved for next stage.\",\n  \"qc_performed_by\": \"QC_USER\",\n  \"qc_timestamp\": \"{{$isoTimestamp}}\",\n  \"validation_errors\": []\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/quality-check",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "quality-check"
+          ]
+        },
+        "description": "Performs quality check on submitted data.\n\n**Database Operations:**\n- UPDATE revival_requests (QC fields)\n- INSERT status_change_history\n\n**Workflow Actions:**\n- Sends signal: quality-check-complete\n- If passed: Advances to APPROVAL_PENDING\n- If failed: Reverts to DATA_ENTRY_PENDING\n- Waits for signal: approval-decision"
+      },
+      "response": []
+    },
+    {
+      "name": "3b. Quality Check (Fail) - Optional",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('QC failed as expected', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.qc_passed).to.be.false;",
+              "});",
+              "",
+              "console.log('⚠️  Quality Check failed - will revert to data entry');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"qc_passed\": false,\n  \"qc_comments\": \"Data entry errors found. Please correct and resubmit.\",\n  \"qc_performed_by\": \"QC_USER\",\n  \"qc_timestamp\": \"{{$isoTimestamp}}\",\n  \"missing_documents\": [\n      {\n        \"document_name\": \"ID_PROOF\",\n        \"remarks\": \"Customer needs to submit Aadhaar card\"\n      },\n      {\n        \"document_name\": \"ADDRESS_PROOF\",\n        \"remarks\": \"Utility bill required\"\n      }\n    ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/quality-check",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "quality-check"
+          ]
+        },
+        "description": "**OPTIONAL: Use this to test QC failure scenario**\n\nThis will cause workflow to revert to DATA_ENTRY_PENDING.\nYou'll need to run Data Entry again after this.\n\n⚠️ Skip this request for normal happy path testing."
+      },
+      "response": []
+    },
+    {
+      "name": "Approval Redirect",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Approval successful', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('APPROVED');",
+              "});",
+              "",
+              "pm.test('SLA timer started (60 days)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('sla_end_date');",
+              "    pm.expect(jsonData.data.sla_remaining_days).to.be.at.least(59);",
+              "});",
+              "",
+              "console.log('✅ Approval completed with 60-day SLA');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"approve\": true,\n  \"approval_comments\": \"All documents verified. Revival approved.\",\n  \"approved_by\": \"MANAGER_USER\",\n  \"approval_timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/approve",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "approve"
+          ]
+        },
+        "description": "Approves the revival request and starts SLA timer.\n\n**Database Operations:**\n- UPDATE revival_requests (approval fields)\n- UPDATE workflow_state (SLA dates)\n\n**Workflow Actions:**\n- Sends signal: approval-decision\n- Starts 60-day SLA timer\n- Workflow advances to APPROVED\n- Waits for: first-collection-complete OR SLA timeout"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Approval Decision",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Approval successful', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('APPROVED');",
+              "});",
+              "",
+              "pm.test('SLA timer started (60 days)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('sla_end_date');",
+              "    pm.expect(jsonData.data.sla_remaining_days).to.be.at.least(59);",
+              "});",
+              "",
+              "console.log('✅ Approval completed with 60-day SLA');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"approve\": true,\n  \"approval_comments\": \"All documents verified. Revival approved.\",\n  \"approved_by\": \"MANAGER_USER\",\n  \"approval_timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/approve",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "approve"
+          ]
+        },
+        "description": "Approves the revival request and starts SLA timer.\n\n**Database Operations:**\n- UPDATE revival_requests (approval fields)\n- UPDATE workflow_state (SLA dates)\n\n**Workflow Actions:**\n- Sends signal: approval-decision\n- Starts 60-day SLA timer\n- Workflow advances to APPROVED\n- Waits for: first-collection-complete OR SLA timeout"
+      },
+      "response": []
+    },
+    {
+      "name": "5. First Collection (Dual Payment)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('First collection processed', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('ACTIVE');",
+              "});",
+              "",
+              "pm.test('Receipt generated', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('receipt_number');",
+              "});",
+              "",
+              "pm.test('Dual payment recorded (Premium + Installment)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.premium_amount).to.eql(50000.00);",
+              "    pm.expect(jsonData.data.installment_amount).to.eql(50000.00);",
+              "    pm.expect(jsonData.data.total_amount).to.eql(100000.00);",
+              "});",
+              "",
+              "console.log('✅ First Collection completed - Policy is now ACTIVE');",
+              "console.log('📋 Receipt:', pm.response.json().data.receipt_number);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"policy_number\": \"0000000000001\",\n  \"collection_date\": \"{{$isoTimestamp}}\",\n  \"payment_mode\": \"CASH\",\n  \"premium_amount\": 50000.00,\n  \"installment_amount\": 50000.00,\n  \"total_amount\": 100000.00,\n  \"cheque_details\": null\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/first-collection",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "first-collection"
+          ]
+        },
+        "description": "Processes first collection with dual payment (Premium + First Installment).\n\n**Database Operations:**\n- UPDATE revival_requests (status = ACTIVE, first_collection_done)\n- UPDATE workflow_state\n- INSERT payment_transactions (PREMIUM)\n- INSERT payment_transactions (INSTALLMENT)\n- INSERT collection_batch_tracking\n\n**Workflow Actions:**\n- Sends signal: first-collection-complete\n- Workflow advances to ACTIVE\n- Starts InstallmentMonitorWorkflow (child workflow)\n- Monitors subsequent 11 installments for 6-12 months"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Subsequent Installment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Installment processed', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "console.log('✅ Subsequent Installment processed');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"policy_number\": \"0000000000001\",\n  \"installment_number\": 2,\n  \"due_date\": \"2025-02-01T00:00:00Z\",\n  \"installment_amount\": 50000.00,\n  \"payment_mode\": \"CASH\",\n  \"status\": \"PAID\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/installments",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "installments"
+          ]
+        },
+        "description": "Processes subsequent installment payment (2nd to 12th).\n\n**Required Fields:**\n- ticket_id: Revival request ticket\n- policy_number: 13-char policy number\n- installment_number: 2-12 (1st was in first-collection)\n- due_date: Installment due date\n- installment_amount: Amount to pay\n- status: PENDING, PAID, or DEFAULTED\n\n**Workflow Actions:**\n- Updates installments_paid count\n- If all installments paid, marks as COMPLETED"
+      },
+      "response": []
+    },
+    {
+      "name": "Extra: Get Policy Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Policy details retrieved', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('policy_number');",
+              "    pm.expect(jsonData.data.policy_number).to.eql('0000000000001');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/revival/policies/0000000000001",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "policies",
+            "0000000000001"
+          ]
+        },
+        "description": "**OPTIONAL:** Get policy details to verify test data.\n\nUse this to check:\n- Policy exists\n- Eligibility status\n- Revival count\n- Premium amount"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Installments",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Policy details retrieved', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('policy_number');",
+              "    pm.expect(jsonData.data.policy_number).to.eql('0000000000001');",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/installments?policy_number=0000000000001&number_of_installments=3&office_id=Off1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "installments"
+          ],
+          "query": [
+            {
+              "key": "policy_number",
+              "value": "0000000000001"
+            },
+            {
+              "key": "number_of_installments",
+              "value": "3"
+            },
+            {
+              "key": "office_id",
+              "value": "Off1"
+            }
+          ]
+        },
+        "description": "**OPTIONAL:** Get policy details to verify test data.\n\nUse this to check:\n- Policy exists\n- Eligibility status\n- Revival count\n- Premium amount"
+      },
+      "response": []
+    },
+    {
+      "name": "Extra: Get Revival History",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Policy details retrieved', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('policy_number');",
+              "    pm.expect(jsonData.data.policy_number).to.eql('0000000000001');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/revival/policies/0000000000001",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "policies",
+            "0000000000001"
+          ]
+        },
+        "description": "**OPTIONAL:** Get policy details to verify test data.\n\nUse this to check:\n- Policy exists\n- Eligibility status\n- Revival count\n- Premium amount"
+      },
+      "response": []
+    },
+    {
+      "name": "Extra: Check Policy Eligibility",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Policy is eligible', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.eligible).to.be.true;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/revival/policies/0000000000001/eligibility",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "policies",
+            "0000000000001",
+            "eligibility"
+          ]
+        },
+        "description": "**OPTIONAL:** Check if policy is eligible for revival.\n\nEligibility criteria:\n- policy_status = 'LAPSED'\n- revival_count < 2 (max revivals allowed)"
+      },
+      "response": []
+    },
+    {
+      "name": "Quotation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "content",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"installments\": 1,\n  \"policy_number\": \"0000000000001\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/policies/0000000000001/quote",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "policies",
+            "0000000000001",
+            "quote"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Withdraw Request",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Approval successful', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('APPROVED');",
+              "});",
+              "",
+              "pm.test('SLA timer started (60 days)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('sla_end_date');",
+              "    pm.expect(jsonData.data.sla_remaining_days).to.be.at.least(59);",
+              "});",
+              "",
+              "console.log('✅ Approval completed with 60-day SLA');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"approve\": true,\n  \"approval_comments\": \"All documents verified. Revival approved.\",\n  \"approved_by\": \"MANAGER_USER\",\n  \"approval_timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/withdraw",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "withdraw"
+          ]
+        },
+        "description": "Approves the revival request and starts SLA timer.\n\n**Database Operations:**\n- UPDATE revival_requests (approval fields)\n- UPDATE workflow_state (SLA dates)\n\n**Workflow Actions:**\n- Sends signal: approval-decision\n- Starts 60-day SLA timer\n- Workflow advances to APPROVED\n- Waits for: first-collection-complete OR SLA timeout"
+      },
+      "response": []
+    },
+    {
+      "name": "Receive Documents",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Approval successful', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('APPROVED');",
+              "});",
+              "",
+              "pm.test('SLA timer started (60 days)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('sla_end_date');",
+              "    pm.expect(jsonData.data.sla_remaining_days).to.be.at.least(59);",
+              "});",
+              "",
+              "console.log('✅ Approval completed with 60-day SLA');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"approve\": true,\n  \"approval_comments\": \"All documents verified. Revival approved.\",\n  \"approved_by\": \"MANAGER_USER\",\n  \"approval_timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/approve",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "approve"
+          ]
+        },
+        "description": "Approves the revival request and starts SLA timer.\n\n**Database Operations:**\n- UPDATE revival_requests (approval fields)\n- UPDATE workflow_state (SLA dates)\n\n**Workflow Actions:**\n- Sends signal: approval-decision\n- Starts 60-day SLA timer\n- Workflow advances to APPROVED\n- Waits for: first-collection-complete OR SLA timeout"
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Acceptance Letter",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Approval successful', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('APPROVED');",
+              "});",
+              "",
+              "pm.test('SLA timer started (60 days)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('sla_end_date');",
+              "    pm.expect(jsonData.data.sla_remaining_days).to.be.at.least(59);",
+              "});",
+              "",
+              "console.log('✅ Approval completed with 60-day SLA');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"approve\": true,\n  \"approval_comments\": \"All documents verified. Revival approved.\",\n  \"approved_by\": \"MANAGER_USER\",\n  \"approval_timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/approve",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "approve"
+          ]
+        },
+        "description": "Approves the revival request and starts SLA timer.\n\n**Database Operations:**\n- UPDATE revival_requests (approval fields)\n- UPDATE workflow_state (SLA dates)\n\n**Workflow Actions:**\n- Sends signal: approval-decision\n- Starts 60-day SLA timer\n- Workflow advances to APPROVED\n- Waits for: first-collection-complete OR SLA timeout"
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Revival Memo",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "setTimeout(function(){}, 2000);",
+              "",
+              "const ticketId = pm.environment.get('ticket_id');",
+              "if (!ticketId) {",
+              "    console.error('❌ ticket_id not set');",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Approval successful', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('APPROVED');",
+              "});",
+              "",
+              "pm.test('SLA timer started (60 days)', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('sla_end_date');",
+              "    pm.expect(jsonData.data.sla_remaining_days).to.be.at.least(59);",
+              "});",
+              "",
+              "console.log('✅ Approval completed with 60-day SLA');"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/revival/requests/{{ticket_id}}/revival-memo",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "revival",
+            "requests",
+            "{{ticket_id}}",
+            "revival-memo"
+          ]
+        },
+        "description": "Approves the revival request and starts SLA timer.\n\n**Database Operations:**\n- UPDATE revival_requests (approval fields)\n- UPDATE workflow_state (SLA dates)\n\n**Workflow Actions:**\n- Sends signal: approval-decision\n- Starts 60-day SLA timer\n- Workflow advances to APPROVED\n- Waits for: first-collection-complete OR SLA timeout"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          "// Global pre-request script",
+          "console.log('='.repeat(50));",
+          "console.log('Request:', pm.info.requestName);",
+          "console.log('Ticket ID:', pm.environment.get('ticket_id') || 'Not set');",
+          "console.log('='.repeat(50));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is acceptable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "ticket_id",
+      "value": ""
+    },
+    {
+      "key": "workflow_id",
+      "value": ""
+    }
+  ]
+}

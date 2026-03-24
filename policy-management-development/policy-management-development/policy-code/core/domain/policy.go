@@ -11,7 +11,7 @@ const (
 	StatusFreeLookActive          = "FREE_LOOK_ACTIVE"
 	StatusActive                  = "ACTIVE"
 	StatusVoidLapse               = "VOID_LAPSE"
-	StatusInactiveLapse           = "INACTIVE_LAPSE" 
+	StatusInactiveLapse           = "INACTIVE_LAPSE"
 	StatusActiveLapse             = "ACTIVE_LAPSE"
 	StatusPaidUp                  = "PAID_UP"
 	StatusReducedPaidUp           = "REDUCED_PAID_UP"

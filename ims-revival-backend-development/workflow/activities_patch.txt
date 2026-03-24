@@ -1,0 +1,32 @@
+		// Increment installmentsPaid in revival request
+		err = a.revivalRepo.IncrementInstallmentsPaid(ctx, requestID)
+		if err != nil {
+			return fmt.Errorf("failed to increment installments paid: %w", err)
+		}
+
+		// Check if all installments paid, set status to COMPLETED
+		revivalReq, err := a.revivalRepo.GetRevivalRequestByID(ctx, requestID)
+		if err != nil {
+			return fmt.Errorf("failed to get revival request: %w", err)
+		}
+
+		if revivalReq.InstallmentsPaid >= revivalReq.NumberOfInstallments {
+			// All installments paid - mark as COMPLETED
+			err = a.revivalRepo.UpdateRevivalRequestForCompletion(ctx, requestID)
+			if err != nil {
+				return fmt.Errorf("failed to complete revival request: %w", err)
+			}
+
+			// Update policy status to IF (In Force)
+			err = a.policyRepo.UpdatePolicyStatus(ctx, revivalReq.PolicyNumber, "IF")
+			if err != nil {
+				return fmt.Errorf("failed to update policy status: %w", err)
+			}
+
+			// Increment revival count
+			now := time.Now()
+			err = a.policyRepo.IncrementRevivalCount(ctx, revivalReq.PolicyNumber, &now)
+			if err != nil {
+				return fmt.Errorf("failed to increment revival count: %w", err)
+			}
+		}

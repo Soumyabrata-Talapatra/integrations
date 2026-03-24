@@ -1,0 +1,243 @@
+//go:build ignore
+// +build ignore
+
+// NOTE: This test file is disabled because the probation handler is commented out.
+// Remove the build tags above when the handler is re-enabled.
+
+package tests
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"plirevival/handler"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetMakerProbationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probation-makers?emp-id=10015845&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerProbationsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probation-makers?post-id=30007775&status=active", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerProbations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probation-makers", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerProbations_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probation-makers?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerProbations_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probation-makers?emp-id=123456789", nil) // EmpID out of valid range
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetProbationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probations?emp-id=10015845&skip=1&limit=5", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetProbationsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probations?post-id=30007775&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetProbations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probations", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetProbations_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probations?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetProbations_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/probations?emp-id=123456789", nil) // EmpID out of valid range
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateProbationDetailsHandler_Success(t *testing.T) {
+	input := handler.ProbationCreateRequest{
+		EmployeeID:                  10015845,
+		ProbationStartDate:          time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
+		ProbationEndDate:            time.Date(2023, time.June, 30, 0, 0, 0, 0, time.UTC),
+		ExtensionStatus:             false,
+		ProbationExtensionStartDate: time.Time{},
+		ProbationExtensionEndDate:   time.Time{},
+		Reasons:                     "Initial probation period",
+		ApproverPostID:              "30007775",
+		CreatedBy:                   "10015845",
+		FwdAuthRemarks:              "Some Remarks",
+	}
+
+	body, _ := json.Marshal(input)
+	req := httptest.NewRequest("POST", "/v1/probation-makers", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateProbationDetailsHandler_BindingError(t *testing.T) {
+	rawBody := `invalid json`
+
+	body, _ := json.Marshal(rawBody)
+	req := httptest.NewRequest("POST", "/v1/probation-makers", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateProbationDetailsHandler_ValidationError(t *testing.T) {
+	input := handler.ProbationCreateRequest{
+		// Missing mandatory fields like EmployeeID and ProbationStartDate
+		ProbationEndDate: time.Date(2023, time.June, 30, 0, 0, 0, 0, time.UTC),
+		ExtensionStatus:  false,
+		FwdAuthRemarks:   "Probation period extended",
+	}
+
+	body, _ := json.Marshal(input)
+	req := httptest.NewRequest("POST", "/v1/probation-makers", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateProbationDetailsHandler_DatabaseError(t *testing.T) {
+	input := handler.ProbationCreateRequest{
+		EmployeeID:                  10015845,
+		ProbationStartDate:          time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
+		ProbationEndDate:            time.Date(2023, time.June, 30, 0, 0, 0, 0, time.UTC),
+		ExtensionStatus:             true,
+		ProbationExtensionStartDate: time.Time{},
+		ProbationExtensionEndDate:   time.Time{},
+		Reasons:                     "Initial probation period",
+		ApproverPostID:              "30007775",
+		CreatedBy:                   "10015845",
+		FwdAuthRemarks:              "Some Remrks",
+	}
+
+	body, _ := json.Marshal(input)
+	req := httptest.NewRequest("POST", "/v1/probation-maker", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+func TestApproveProbationsHandler_Success(t *testing.T) {
+	input := `{
+  "probation_ids": [30],
+  "approved_by": "10166245",
+  "approve_status": "Approved",
+  "approver_remarks": "Probation period successfully completed."
+}`
+	req := httptest.NewRequest("POST", "/v1/probation-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveProbationsHandler_JsonBindingError(t *testing.T) {
+	input := `{
+    "probation_ids": ["33"],
+  "approved_by": "10166245",
+  "approve_status": "Approved",
+  "approver_remarks": "Probation period successfully completed."
+}`
+	req := httptest.NewRequest("POST", "/v1/probation-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveProbationsHandler_ValidationError(t *testing.T) {
+	input := `{
+    "probation_id": [33],
+  "approved_by": "10166245",
+  "approve_status": "Approved",
+  "approver_remarks": "Probation period successfully completed."
+}`
+	req := httptest.NewRequest("POST", "/v1/probation-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveProbationsHandler_DBError(t *testing.T) {
+	input := `{
+  "probation_ids": [33],
+  "approved_by": "10166245",
+  "approve_status": "Approved",
+  "approver_remarks": "Probation period successfully completed."
+}`
+	req := httptest.NewRequest("POST", "/v1/probation-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveProbationsHandler_SuccessRejected(t *testing.T) {
+	input := `{
+  "probation_ids": [1002],
+  "approved_by": "10166245",
+  "approve_status": "Rejected",
+  "approver_remarks": "Probation period successfully not completed."
+}`
+	req := httptest.NewRequest("POST", "/v1/probation-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}

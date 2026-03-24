@@ -1,0 +1,564 @@
+package handler
+
+import (
+	"fmt"
+	"time"
+
+	"plirevival/core/domain"
+	"plirevival/core/port"
+	"plirevival/repo/postgres"
+	"plirevival/workflow"
+
+	serverHandler "gitlab.cept.gov.in/it-2.0-common/n-api-server/handler"
+	serverRoute "gitlab.cept.gov.in/it-2.0-common/n-api-server/route"
+)
+
+type RevivalHandler struct {
+	*serverHandler.Base
+	revivalRepo *repo.RevivalRepository
+	policyRepo  *repo.PolicyRepository
+	paymentRepo *repo.PaymentRepository
+	activities  *workflow.Activities
+}
+
+func NewRevivalHandler(revivalRepo *repo.RevivalRepository, policyRepo *repo.PolicyRepository, paymentRepo *repo.PaymentRepository, activities *workflow.Activities) *RevivalHandler {
+	base := serverHandler.New("Revival").SetPrefix("/v1").AddPrefix("/revival")
+	return &RevivalHandler{Base: base, revivalRepo: revivalRepo, policyRepo: policyRepo, paymentRepo: paymentRepo, activities: activities}
+}
+
+func (h *RevivalHandler) Routes() []serverRoute.Route {
+	return []serverRoute.Route{
+		// Policy and eligibility endpoints
+		serverRoute.GET("/policies/:policy_number", h.GetPolicy).Name("Get Policy"),
+		serverRoute.GET("/policies/:policy_number/eligibility", h.GetPolicyEligibility).Name("Get Policy Eligibility"),
+		serverRoute.GET("/:policy_number", h.GetRevivalHistory).Name("Get Revival History"),
+
+		// Indexing and data entry endpoints
+		serverRoute.POST("/requests/index", h.IndexRevivalRequest).Name("Index Revival Request"),
+		serverRoute.POST("/requests/:ticket_id/data-entry", h.SubmitDataEntry).Name("Submit Data Entry"),
+		serverRoute.POST("/requests/:ticket_id/quality-check", h.SubmitQualityCheck).Name("Submit Quality Check"),
+
+		// Approval and rejection endpoints
+		serverRoute.POST("/requests/:ticket_id/approve", h.ApproveRequest).Name("Approve Request"),
+		serverRoute.POST("/requests/:ticket_id/reject", h.RejectRequest).Name("Reject Request"),
+
+		// Withdrawal endpoint
+		serverRoute.POST("/requests/:ticket_id/withdraw", h.WithdrawRequest).Name("Withdraw Request"),
+
+		// Collection endpoints
+		serverRoute.POST("/requests/:ticket_id/first-collection", h.FirstCollection).Name("First Collection"),
+		serverRoute.POST("/requests/:ticket_id/installments", h.CreateInstallment).Name("Create Installment"),
+
+		// Quotation endpoint
+		serverRoute.POST("/policies/:policy_number/quote", h.Quotation).Name("Quotation"),
+
+		// Document endpoints
+		serverRoute.POST("/requests/:ticket_id/documents", h.ReceiveDocuments).Name("Receive Documents"),
+		serverRoute.POST("/requests/:ticket_id/acceptance-letter", h.GenerateAcceptanceLetter).Name("Generate Acceptance Letter"),
+		serverRoute.POST("/requests/:ticket_id/revival-memo", h.GenerateRevivalMemo).Name("Generate Revival Memo"),
+	}
+}
+
+// GetPolicy retrieves policy details
+func (h *RevivalHandler) GetPolicy(sctx *serverRoute.Context, req port.PolicyNumberUri) (*port.PolicyEligibilityResponse, error) {
+	// TODO: Implement policy retrieval
+	return &port.PolicyEligibilityResponse{
+		StatusCodeAndMessage: port.FetchSuccess,
+		Data: port.PolicyEligibilityData{
+			PolicyNumber:       req.PolicyNumber,
+			Eligible:           true,
+			RevivalCount:       0,
+			MaxRevivalsAllowed: 2,
+			MaxInstallments:    12,
+		},
+	}, nil
+}
+
+// GetPolicyEligibility checks policy eligibility for revival
+func (h *RevivalHandler) GetPolicyEligibility(sctx *serverRoute.Context, req port.PolicyNumberUri) (*port.PolicyEligibilityResponse, error) {
+	// TODO: Implement eligibility check
+	return &port.PolicyEligibilityResponse{
+		StatusCodeAndMessage: port.FetchSuccess,
+		Data: port.PolicyEligibilityData{
+			PolicyNumber:       req.PolicyNumber,
+			Eligible:           true,
+			RevivalCount:       0,
+			MaxRevivalsAllowed: 2,
+			MaxInstallments:    12,
+		},
+	}, nil
+}
+
+// GetRevivalHistory retrieves revival history for policy
+func (h *RevivalHandler) GetRevivalHistory(sctx *serverRoute.Context, req port.PolicyNumberUri) (*port.RevivalHistoryResponse, error) {
+	// TODO: Implement revival history
+	return &port.RevivalHistoryResponse{
+		StatusCodeAndMessage: port.FetchSuccess,
+		Data: port.RevivalHistoryData{
+			PolicyNumber:           req.PolicyNumber,
+			RevivalCount:           0,
+			CompletedRevivalsCount: 0,
+			RevivalHistory:         []port.RevivalHistoryEntry{},
+		},
+	}, nil
+}
+
+// IndexRevivalRequest creates a new revival request
+func (h *RevivalHandler) IndexRevivalRequest(sctx *serverRoute.Context, req port.IndexRevivalRequest) (*port.IndexRequestResponse, error) {
+	// Set request date time if not provided
+	requestDateTime := req.RequestDateTime
+	if requestDateTime.IsZero() {
+		requestDateTime = time.Now()
+	}
+
+	// Validate policy using activity
+	err := h.activities.ValidatePolicyActivity(sctx.Ctx, "", req.PolicyNumber)
+	if err != nil {
+		return &port.IndexRequestResponse{
+			StatusCodeAndMessage: port.PolicyNotEligible,
+			Data: port.IndexRequestData{
+				Message: err.Error(),
+			},
+		}, nil
+	}
+
+	// Generate ticket ID
+	ticketID, err := h.revivalRepo.GenerateTicketID(sctx.Ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate ticket ID: %w", err)
+	}
+
+	// Create revival request
+	revivalReq := domain.RevivalRequest{
+		TicketID:      ticketID,
+		PolicyNumber:  req.PolicyNumber,
+		RequestType:   "INSTALLMENT_REVIVAL",
+		CurrentStatus: "INDEXED",
+		IndexedDate:   &requestDateTime,
+		IndexedBy:     &req.IndexedBy,
+		RequestOwner:  &req.RequestOwner,
+	}
+
+	createdRevival, err := h.revivalRepo.CreateRevivalRequest(sctx.Ctx, revivalReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create revival request: %w", err)
+	}
+
+	return &port.IndexRequestResponse{
+		StatusCodeAndMessage: port.CreateSuccess,
+		Data: port.IndexRequestData{
+			TicketID:        createdRevival.TicketID,
+			Status:          createdRevival.CurrentStatus,
+			RequestDateTime: *createdRevival.IndexedDate,
+			Message:         "Revival request indexed successfully",
+		},
+	}, nil
+}
+
+// SubmitDataEntry submits data entry for indexed request
+func (h *RevivalHandler) SubmitDataEntry(sctx *serverRoute.Context, req port.DataEntryRequest) (*port.DataEntryResponse, error) {
+	// Check if revival request exists
+	revivalReq, err := h.revivalRepo.GetRevivalRequestByTicketID(sctx.Ctx, req.TicketID)
+	if err != nil {
+		return nil, fmt.Errorf("revival request not found: %w", err)
+	}
+
+	// Check if request is in INDEXED status
+	if revivalReq.CurrentStatus != "INDEXED" {
+		return &port.DataEntryResponse{
+			StatusCodeAndMessage: port.InvalidTicketStatus,
+		}, nil
+	}
+
+	// Set data entry timestamp if not provided
+	dataEntryTimestamp := req.DataEntryTimestamp
+	if dataEntryTimestamp.IsZero() {
+		dataEntryTimestamp = time.Now()
+	}
+
+	// Update revival request with data entry details
+	err = h.revivalRepo.UpdateRevivalRequestForDataEntry(
+		sctx.Ctx,
+		req.TicketID,
+		req.DataEnteredBy,
+		req.RevivalDetails.Installments,
+		req.RevivalDetails.RevivalAmount,
+		req.RevivalDetails.InstallmentAmount,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update revival request for data entry: %w", err)
+	}
+
+	return &port.DataEntryResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.DataEntryData{
+			TicketID:           req.TicketID,
+			Status:             "DATA_ENTRY_PENDING",
+			Message:            "Data entry submitted successfully",
+			DataEntryTimestamp: dataEntryTimestamp,
+		},
+	}, nil
+}
+
+// SubmitQualityCheck submits quality check for data entry
+func (h *RevivalHandler) SubmitQualityCheck(sctx *serverRoute.Context, req port.QualityCheckRequest) (*port.QualityCheckResponse, error) {
+	// Check if revival request exists
+	revivalReq, err := h.revivalRepo.GetRevivalRequestByTicketID(sctx.Ctx, req.TicketID)
+	if err != nil {
+		return nil, fmt.Errorf("revival request not found: %w", err)
+	}
+
+	// Check if request is in DATA_ENTRY_PENDING status
+	if revivalReq.CurrentStatus != "DATA_ENTRY_PENDING" {
+		return &port.QualityCheckResponse{
+			StatusCodeAndMessage: port.TicketNotReadyForQC,
+		}, nil
+	}
+
+	// Set QC timestamp if not provided
+	qcTimestamp := req.QCTimestamp
+	if qcTimestamp.IsZero() {
+		qcTimestamp = time.Now()
+	}
+
+	// Update revival request for QC
+	err = h.revivalRepo.UpdateRevivalRequestForQC(sctx.Ctx, req.TicketID, req.QCPerformedBy, req.QCPassed)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update revival request for QC: %w", err)
+	}
+
+	nextStatus := "APPROVAL_PENDING"
+	if !req.QCPassed {
+		nextStatus = "DATA_ENTRY_PENDING"
+	}
+
+	return &port.QualityCheckResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.QualityCheckData{
+			TicketID:         req.TicketID,
+			Status:           nextStatus,
+			Message:          "Quality check submitted successfully",
+			QCTimestamp:      qcTimestamp,
+			ValidationErrors: req.ValidationErrors,
+		},
+	}, nil
+}
+
+// ApproveRequest approves revival request
+func (h *RevivalHandler) ApproveRequest(sctx *serverRoute.Context, req port.ApprovalRequest) (*port.ApprovalResponse, error) {
+	// Check if revival request exists
+	revivalReq, err := h.revivalRepo.GetRevivalRequestByTicketID(sctx.Ctx, req.TicketID)
+	if err != nil {
+		return nil, fmt.Errorf("revival request not found: %w", err)
+	}
+
+	// Check if request is in APPROVAL_PENDING status
+	if revivalReq.CurrentStatus != "APPROVAL_PENDING" {
+		return &port.ApprovalResponse{
+			StatusCodeAndMessage: port.InvalidApprovalStatus,
+		}, nil
+	}
+
+	// Set approval timestamp if not provided
+	approvalTimestamp := req.ApprovalTimestamp
+	if approvalTimestamp.IsZero() {
+		approvalTimestamp = time.Now()
+	}
+
+	// Calculate SLA dates - 60 days from approval date
+	slaStartDate := approvalTimestamp
+	slaEndDate := approvalTimestamp.AddDate(0, 0, 60) // 60-day SLA (IR_11)
+
+	// Update revival request for approval
+	if req.Approve {
+		err = h.revivalRepo.UpdateRevivalRequestForApproval(
+			sctx.Ctx,
+			req.TicketID,
+			req.ApprovedBy,
+			slaStartDate,
+			slaEndDate,
+		)
+	} else {
+		// Handle rejection
+		// This is a rejection case, handled separately but here for completeness
+		return &port.ApprovalResponse{
+			StatusCodeAndMessage: port.InvalidApprovalStatus,
+		}, nil
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to approve revival request: %w", err)
+	}
+
+	// Calculate remaining SLA days
+	slaRemainingDays := 60
+	if !slaEndDate.IsZero() {
+		slaRemainingDays = int(slaEndDate.Sub(time.Now()).Hours() / 24)
+		if slaRemainingDays < 0 {
+			slaRemainingDays = 0
+		}
+	}
+
+	return &port.ApprovalResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.ApprovalData{
+			TicketID:          req.TicketID,
+			Status:            "APPROVED",
+			Message:           "Revival request approved successfully",
+			ApprovalTimestamp: approvalTimestamp,
+			SLAEndDate:        slaEndDate,
+			SLARemainingDays:  slaRemainingDays,
+		},
+	}, nil
+}
+
+// RejectRequest rejects revival request
+func (h *RevivalHandler) RejectRequest(sctx *serverRoute.Context, req port.RejectionRequest) (*port.RejectionResponse, error) {
+	// TODO: Implement rejection
+	return &port.RejectionResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.RejectionData{
+			TicketID:           req.TicketID,
+			Status:             "REJECTED",
+			Message:            "Revival request rejected",
+			RejectionTimestamp: time.Now(),
+			RejectionReason:    req.RejectionReason,
+		},
+	}, nil
+}
+
+// WithdrawRequest withdraws revival request
+func (h *RevivalHandler) WithdrawRequest(sctx *serverRoute.Context, req port.WithdrawalRequest) (*port.WithdrawalResponse, error) {
+	// TODO: Implement withdrawal
+	return &port.WithdrawalResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.WithdrawalData{
+			TicketID:            req.TicketID,
+			PolicyNumber:        req.PolicyNumber,
+			Status:              "WITHDRAWN",
+			WithdrawalDate:      time.Now(),
+			WithdrawalReason:    req.WithdrawalReason,
+			SuspenseAdjustments: []port.SuspenseAdjustment{},
+			Message:             "Revival request withdrawn successfully",
+		},
+	}, nil
+}
+
+// FirstCollection processes first installment collection (dual collection IR_36)
+func (h *RevivalHandler) FirstCollection(sctx *serverRoute.Context, req port.FirstCollectionRequest) (*port.FirstCollectionResponse, error) {
+	// Set collection date if not provided
+	collectionDate := req.CollectionDate
+	if collectionDate.IsZero() {
+		collectionDate = time.Now()
+	}
+
+	// Validate dual collection using activity
+	input := workflow.FirstCollectionInput{
+		PolicyNumber:      req.PolicyNumber,
+		PremiumAmount:     req.PremiumAmount,
+		InstallmentAmount: req.InstallmentAmount,
+		PaymentMode:       req.PaymentMode,
+		TotalAmount:       req.TotalAmount,
+		ChequeNumber:      nil,
+		BankName:          nil,
+		ChequeDate:        nil,
+		ChequeAmount:      nil,
+	}
+
+	if req.ChequeDetails != nil {
+		input.ChequeNumber = &req.ChequeDetails.ChequeNumber
+		input.BankName = &req.ChequeDetails.BankName
+		input.ChequeDate = &req.ChequeDetails.ChequeDate
+		input.ChequeAmount = &req.ChequeDetails.Amount
+	}
+
+	// Get revival request to get request ID
+	revivalReq, err := h.revivalRepo.GetRevivalRequestByTicketID(sctx.Ctx, req.TicketID)
+	if err != nil {
+		return nil, fmt.Errorf("revival request not found: %w", err)
+	}
+
+	input.RequestID = revivalReq.RequestID
+
+	// Validate dual collection
+	err = h.activities.ValidateDualCollectionActivity(sctx.Ctx, input)
+	if err != nil {
+		return &port.FirstCollectionResponse{
+			StatusCodeAndMessage: port.MissingRequiredFields,
+		}, nil
+	}
+
+	// Process dual payment
+	err = h.activities.ProcessDualPaymentActivity(sctx.Ctx, input, "PAID")
+	if err != nil {
+		return nil, fmt.Errorf("failed to process dual payment: %w", err)
+	}
+
+	// Handle cheque record if needed
+	if req.PaymentMode == "CHEQUE" {
+		_, err = h.activities.CreateChequeRecordActivity(sctx.Ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cheque record: %w", err)
+		}
+	}
+
+	// Generate receipt number
+	receiptNumber := "RCPT" + collectionDate.Format("20060102150405")
+
+	// Calculate next due date (IR_11: due dates on 1st of each month)
+	nextMonth := time.Now().AddDate(0, 1, 0)
+	nextDueDate := time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, time.Now().Nanosecond(), time.Now().Location())
+
+	return &port.FirstCollectionResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.FirstCollectionData{
+			ReceiptNumber:     receiptNumber,
+			TicketID:          req.TicketID,
+			PolicyNumber:      req.PolicyNumber,
+			PremiumAmount:     req.PremiumAmount,
+			InstallmentAmount: req.InstallmentAmount,
+			TotalAmount:       req.TotalAmount,
+			ReceiptDate:       collectionDate,
+			PaymentMode:       req.PaymentMode,
+			Status:            "ACTIVE",
+			DueDate:           &nextDueDate,
+		},
+	}, nil
+}
+
+// CreateInstallment creates subsequent installment
+func (h *RevivalHandler) CreateInstallment(sctx *serverRoute.Context, req port.CreateInstallmentRequest) (*port.InstallmentResponse, error) {
+	// Check if revival request exists
+	revivalReq, err := h.revivalRepo.GetRevivalRequestByTicketID(sctx.Ctx, req.TicketID)
+	if err != nil {
+		return nil, fmt.Errorf("revival request not found: %w", err)
+	}
+
+	// Check if request is in ACTIVE status
+	if revivalReq.CurrentStatus != "ACTIVE" {
+		return &port.InstallmentResponse{
+			StatusCodeAndMessage: port.InvalidTicketStatus,
+		}, nil
+	}
+
+	// Validate installment number (must be >= 2, first was collected already)
+	if req.InstallmentNumber < 2 || req.InstallmentNumber > 12 {
+		return &port.InstallmentResponse{
+			StatusCodeAndMessage: port.InvalidApprovalStatus,
+		}, nil
+	}
+
+	// Validate due date (IR_11: due dates on 1st of each month)
+	if req.DueDate.Day() != 1 {
+		return &port.InstallmentResponse{
+			StatusCodeAndMessage: port.InvalidApprovalStatus,
+		}, nil
+	}
+
+	// Generate installment payment ID
+	installmentID := fmt.Sprintf("INST%s", time.Now().Format("20060102150405"))
+
+	// Note: In production, this would create installment payment using payment repository
+	// For now, we're returning success without DB write since we don't have a single installment insert method
+
+	// Calculate default date - IR_9: zero grace period, so default = due date + 7 days
+	defaultDate := req.DueDate.AddDate(0, 0, 7)
+
+	// IR_9: Zero grace period for installments
+	gracePeriodDays := 0
+
+	return &port.InstallmentResponse{
+		StatusCodeAndMessage: port.CreateSuccess,
+		Data: port.InstallmentData{
+			InstallmentID:     installmentID,
+			TicketID:          req.TicketID,
+			PolicyNumber:      req.PolicyNumber,
+			InstallmentNumber: req.InstallmentNumber,
+			DueDate:           req.DueDate,
+			InstallmentAmount: req.InstallmentAmount,
+			Status:            req.Status,
+			GracePeriodDays:   gracePeriodDays,
+			DefaultDate:       defaultDate,
+		},
+	}, nil
+}
+
+// Quotation calculates revival quotation
+func (h *RevivalHandler) Quotation(sctx *serverRoute.Context, req port.QuotationRequest) (*port.QuotationResponse, error) {
+	// TODO: Implement quotation calculation
+	installmentAmount := 1000.0 // Example calculation
+	interest := 80.0
+	cgst := installmentAmount * 0.09
+	sgst := installmentAmount * 0.09
+	totalTax := cgst + sgst
+	quoteValidUntil := time.Now().AddDate(0, 0, 30)
+
+	return &port.QuotationResponse{
+		StatusCodeAndMessage: port.FetchSuccess,
+		Data: port.QuotationData{
+			PolicyNumber:       req.PolicyNumber,
+			Installments:       req.Installments,
+			RevivalBaseAmount:  10000.0,
+			Interest:           interest,
+			TotalRevivalAmount: 10080.0,
+			InstallmentAmount:  installmentAmount,
+			TaxBreakdown: port.TaxBreakdown{
+				CGST:     cgst,
+				SGST:     sgst,
+				TotalTax: totalTax,
+			},
+			TotalDuePerInstallment: installmentAmount + totalTax,
+			QuoteValidUntil:        quoteValidUntil,
+		},
+	}, nil
+}
+
+// ReceiveDocuments receives documents for revival request
+func (h *RevivalHandler) ReceiveDocuments(sctx *serverRoute.Context, req port.ReceiveDocumentsRequest) (*port.DataEntryResponse, error) {
+	// TODO: Implement document reception
+	status := "PENDING"
+	message := "Documents received successfully"
+	if req.AllDocumentsReceived {
+		status = "DOCUMENTS_COMPLETE"
+		message = "All documents received successfully"
+	}
+
+	return &port.DataEntryResponse{
+		StatusCodeAndMessage: port.UpdateSuccess,
+		Data: port.DataEntryData{
+			TicketID: req.TicketID,
+			Status:   status,
+			Message:  message,
+		},
+	}, nil
+}
+
+// GenerateAcceptanceLetter generates acceptance letter
+func (h *RevivalHandler) GenerateAcceptanceLetter(sctx *serverRoute.Context, req port.RevivalAcceptanceLetterRequest) (*port.DataEntryResponse, error) {
+	// TODO: Implement acceptance letter generation
+	letterID := "LETTER" + time.Now().Format("20060102150405")
+
+	return &port.DataEntryResponse{
+		StatusCodeAndMessage: port.CreateSuccess,
+		Data: port.DataEntryData{
+			TicketID: req.TicketID,
+			Status:   "LETTER_GENERATED",
+			Message:  "Acceptance letter generated: " + letterID,
+		},
+	}, nil
+}
+
+// GenerateRevivalMemo generates revival memo
+func (h *RevivalHandler) GenerateRevivalMemo(sctx *serverRoute.Context, req port.RevivalMemoRequest) (*port.DataEntryResponse, error) {
+	// TODO: Implement revival memo generation
+	memoID := "MEMO" + time.Now().Format("20060102150405")
+
+	return &port.DataEntryResponse{
+		StatusCodeAndMessage: port.CreateSuccess,
+		Data: port.DataEntryData{
+			TicketID: req.TicketID,
+			Status:   "MEMO_GENERATED",
+			Message:  "Revival memo generated: " + memoID,
+		},
+	}, nil
+}

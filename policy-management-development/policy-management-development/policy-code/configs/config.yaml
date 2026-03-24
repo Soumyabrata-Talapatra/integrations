@@ -22,20 +22,12 @@ trace:
 # Database (PostgreSQL — policy_mgmt schema)
 # ---------------------------------------------------------------------------
 db:
-  # username: "postgres"
-  # password: "admin"
-  # host: "localhost"
-  # port: "5432"
-  # database: "ims_pli"
-  # schema: "policy_mgmt"
-
   username: "plicommon_admin_user" 
   password: "PlIcommonadm@0203" 
   host: 172.28.13.177 
   port: "5432" 
   database: "plicommondb" 
   schema: "policy_mgmt"
-
 
   # Connection pool — tuned for 3M active policies
   maxconns: 20

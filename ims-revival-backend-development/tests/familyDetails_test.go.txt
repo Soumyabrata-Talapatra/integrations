@@ -1,0 +1,635 @@
+package tests
+
+import (
+	"bytes"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+// CreateFamilyDetails test cases
+func TestCreateFamilyDetails_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "family": [
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Dhruva",
+            "relation": "Son",
+            "date_of_birth": "2010-06-15T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "High School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Male",
+            "pwd": false,
+            "pwd_percentage": 0.0,
+            "relation_id": 4,
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Danvika",
+            "relation": "Daughter",
+            "date_of_birth": "2012-08-20T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "Primary School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Female",
+            "pwd": true,
+            "pwd_percentage": 20.5,
+            "relation_id": 5,
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/family-details-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateFamilyDetails_FileMissingError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "family": [
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Dhruva",
+            "relation": "Son",
+            "date_of_birth": "2010-06-15T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "High School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Male",
+            "pwd": false,
+            "pwd_percentage": 0.0,
+            "relation_id": 4,
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Danvika",
+            "relation": "Daughter",
+            "date_of_birth": "2012-08-20T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "Primary School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Female",
+            "pwd": true,
+            "pwd_percentage": 20.5,
+            "relation_id": 5,
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/family-details-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateFamilyDetails_LargeFile(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "family": [
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Dhruva",
+            "relation": "Son",
+            "date_of_birth": "2010-06-15T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "High School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Male",
+            "pwd": false,
+            "pwd_percentage": 0.0,
+            "relation_id": 4,
+            "file_name":"example-large-file.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Danvika",
+            "relation": "Daughter",
+            "date_of_birth": "2012-08-20T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "Primary School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Female",
+            "pwd": true,
+            "pwd_percentage": 20.5,
+            "relation_id": 5,
+            "file_name":"example-large-file.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/family-details-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateFamilyDetails_InvalidFileTypeError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "family": [
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Dhruva",
+            "relation": "Son",
+            "date_of_birth": "2010-06-15T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "High School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Male",
+            "pwd": false,
+            "pwd_percentage": 0.0,
+            "relation_id": 4,
+            "file_name":"example-doc.docx"
+        },
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Danvika",
+            "relation": "Daughter",
+            "date_of_birth": "2012-08-20T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "Primary School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Female",
+            "pwd": true,
+            "pwd_percentage": 20.5,
+            "relation_id": 5,
+            "file_name":"example-doc.docx"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/family-details-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateFamilyDetails_InvalidFileNameError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "family": [
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Dhruva",
+            "relation": "Son",
+            "date_of_birth": "2010-06-15T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "High School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Male",
+            "pwd": false,
+            "pwd_percentage": 0.0,
+            "relation_id": 4,
+            "file_name":"family1.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "dependent_name": "Danvika",
+            "relation": "Daughter",
+            "date_of_birth": "2012-08-20T00:00:00Z",
+            "marital_status": "UnMarried",
+            "highest_education_qualification": "Primary School",
+            "employment_status": "Student",
+            "dependent_status": "Active",
+            "approver_post_id": "30007775",
+            "created_by": "10035071",
+            "user_remarks": "No remarks",
+            "gender": "Female",
+            "pwd": true,
+            "pwd_percentage": 20.5,
+            "relation_id": 5,
+            "file_name":"family2.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/family-details-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetFamilyMakerDetailsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?emp-id=10015845&skip=1&limit=5", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetFamilyMakerDetailsByDDOID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?ddo-office-id=21260551&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetFamilyMakerDetailsByAppPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?post-id=30007775&skip=0&limit=10", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetFamilyMakerDetails_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetFamilyMakerDetails_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestGetFamilyMakerDetails_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?ddo-office-id=212605519", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetFamilyDetailsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details?emp-id=10015845&skip=1&limit=5", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetFamilyDetailsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details?emp-id=1001584", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetFamilyDetailsByEmpIDWithDateRange_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details?emp-id=10015845&start-date=2020-06-01&end-date=2024-09-30", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetFamilyDetailsByEmpIDWithDateRange_InvalidStartDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?emp-id=10015845&start-date=202-10-24&end-date=2024-10-25", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestGetFamilyDetailsByEmpIDWithDateRange_InvalidEndDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details-makers?emp-id=10015845&start-date=2024-10-24&end-date=224-10-25", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetDependentChildrenByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details?emp-id=10015845&end-date=2024-09-30&skip=0&limit=10", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetFamilyDetailsByAppPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details?post-id=30007775&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetFamilyDetails_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetFamilyDetails_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/family-details?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestApproveFamilyDetails_Success(t *testing.T) {
+	input := `{
+   "dependent_id": [
+528,
+529
+],
+"approved_by": "30007706",
+"approve_status": "Approved",
+"approve_auth_remarks": "All details verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/family-details-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveFamilyDetails_JsonBindingError(t *testing.T) {
+	input := `{
+    "dependent_id": [
+"264",
+"265"
+],
+"approved_by": "30007706",
+"approve_status": "Approved",
+"approve_auth_remarks": "All details verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/family-details-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveFamilyDetails_ValidationError(t *testing.T) {
+	input := `{
+    "dependent_ids": [
+264,
+265
+],
+"approved_by": "30007706",
+"approve_status": "Approved",
+"approve_auth_remarks": "All details verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/family-details-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveFamilyDetails_NoAffectedRows(t *testing.T) {
+	input := `{
+   "dependent_id": [
+264,
+265
+],
+"approved_by": "30007706",
+"approve_status": "Approved",
+"approve_auth_remarks": "All details verified and approved."
+}`
+	req := httptest.NewRequest("POST", "/v1/family-details-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveFamilyDetails_SuccessRejected(t *testing.T) {
+	input := `{
+   "dependent_id": [
+303,
+304
+],
+"approved_by": "30007775",
+"approve_status": "Rejected",
+"approve_auth_remarks": "All details verified and Rejected."
+}`
+	req := httptest.NewRequest("POST", "/v1/family-details-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestUpdateFamilySuccess_Withdraw(t *testing.T) {
+	input := `{
+"action_type": "Withdraw",
+"action_by": 10015845,
+"remarks": "Forwarded for further process"
+}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/584", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateFamilySuccess_Forward(t *testing.T) {
+	input := `{
+  	"action_type": "Forward",
+	"action_by": 10166245,
+	"remarks": "Forwarded for further process"
+}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/266", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestUpdateFamilySuccess_InvalidActionType(t *testing.T) {
+	input := `{
+  	"action_type": "Approve",
+	"action_by": 10166245,
+	"remarks": "Forwarded for further process"
+}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/266", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateFamilySuccess_ValidationError(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"remarks": "Forwarded for further process"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/266", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateFamilySuccess_JSONBindingError(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": "34568742",
+	"remarks": "Forwarded for further process"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/584", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateFamilySuccess_UriBindingError(t *testing.T) {
+	input := `{
+	 "action_type": "Withdraw",
+	"action_by": 34568742,
+	"remarks": "Forwarded for further process"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/abc", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateFamilySuccess_NoAffectedRows(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": 34568742,
+	"remarks": "Forwarded for further process"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/266", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+func TestUpdateFamilySuccess_DBError(t *testing.T) {
+	input := `{
+"action_type": "Withdraw",
+"action_by": 10015845,
+"remarks": "Wrong details, This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/family-details-makers/584", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}

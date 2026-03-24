@@ -1,0 +1,581 @@
+-- DROP SCHEMA collection;
+
+CREATE SCHEMA collection AUTHORIZATION postgres;
+
+COMMENT ON SCHEMA collection IS 'Payment processing, installments, cheques, receipts';
+
+-- DROP TYPE collection."cheque_status";
+
+
+
+CREATE OR REPLACE FUNCTION collection.generate_receipt_number()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    IF NEW.receipt_number IS NULL THEN
+        NEW.receipt_number := 'RCP' || LPAD(nextval('collection.receipt_number_seq')::TEXT, 10, '0');
+    END IF;
+    RETURN NEW;
+END;
+$function$
+;
+
+-- DROP FUNCTION collection.validate_suspense_reversal();
+
+CREATE OR REPLACE FUNCTION collection.validate_suspense_reversal()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_is_first_collection BOOLEAN;
+    v_collection_batch_id UUID;
+BEGIN
+    -- Check if this suspense is from first collection
+    SELECT DISTINCT pt.collection_batch_id INTO v_collection_batch_id
+    FROM collection.payment_transactions pt
+    WHERE pt.payment_id = ANY(NEW.source_payment_ids)
+    AND pt.collection_batch_id IS NOT NULL;
+    
+    v_is_first_collection := (v_collection_batch_id IS NOT NULL);
+    
+    -- IR_28: Block reversal of first collection suspense
+    IF NEW.is_reversed = true AND v_is_first_collection THEN
+        RAISE EXCEPTION 'IR_28 Violation: Suspense reversal not allowed for first collection'
+            USING ERRCODE = '23514';
+    END IF;
+    
+    RETURN NEW;
+END;
+$function$;
+
+
+CREATE TYPE collection."cheque_status" AS ENUM (
+	'AWAITING_CLEARANCE',
+	'CLEARED',
+	'DISHONORED',
+	'CANCELLED');
+
+-- DROP TYPE collection."payment_mode";
+
+CREATE TYPE collection."payment_mode" AS ENUM (
+	'CASH',
+	'CHEQUE',
+	'DD',
+	'ONLINE',
+	'UPI',
+	'NEFT',
+	'RTGS',
+	'CARD');
+
+-- DROP TYPE collection."payment_status";
+
+CREATE TYPE collection."payment_status" AS ENUM (
+	'PENDING',
+	'COMPLETED',
+	'FAILED',
+	'CANCELLED');
+
+-- DROP TYPE collection."payment_type";
+
+CREATE TYPE collection."payment_type" AS ENUM (
+	'PREMIUM',
+	'INSTALLMENT',
+	'LOAN_REPAYMENT',
+	'OTHER');
+
+-- DROP TYPE collection."suspense_type";
+
+CREATE TYPE collection."suspense_type" AS ENUM (
+	'IR',
+	'CHEQUE_DISHONOR',
+	'DEFAULT_RELAPSE');
+
+-- DROP SEQUENCE collection.receipt_number_seq;
+
+CREATE SEQUENCE collection.receipt_number_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1000000000
+	CACHE 1
+	NO CYCLE;-- collection.suspense_reconciliation_log definition
+
+-- Drop table
+
+-- DROP TABLE collection.suspense_reconciliation_log;
+
+CREATE TABLE collection.suspense_reconciliation_log (
+	reconciliation_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	reconciliation_date date NOT NULL,
+	pg_combined_suspense_total numeric(15, 2) NOT NULL,
+	pg_revival_suspense_total numeric(15, 2) NOT NULL,
+	tb_combined_suspense_total numeric(15, 2) NOT NULL,
+	tb_revival_suspense_total numeric(15, 2) NOT NULL,
+	combined_suspense_matched bool NOT NULL,
+	revival_suspense_matched bool NOT NULL,
+	combined_suspense_difference numeric(15, 2) DEFAULT 0 NULL,
+	revival_suspense_difference numeric(15, 2) DEFAULT 0 NULL,
+	reconciliation_status varchar(20) NOT NULL,
+	discrepancy_notes text NULL,
+	resolved bool DEFAULT false NULL,
+	resolved_at timestamp NULL,
+	resolved_by varchar(100) NULL,
+	reconciled_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	reconciled_by varchar(100) NULL,
+	CONSTRAINT chk_recon_status CHECK (((reconciliation_status)::text = ANY ((ARRAY['BALANCED'::character varying, 'MISMATCH'::character varying])::text[]))),
+	CONSTRAINT suspense_reconciliation_log_pkey PRIMARY KEY (reconciliation_id)
+);
+CREATE INDEX idx_recon_date ON collection.suspense_reconciliation_log USING btree (reconciliation_date DESC);
+CREATE INDEX idx_recon_status ON collection.suspense_reconciliation_log USING btree (reconciliation_status);
+CREATE INDEX idx_recon_unresolved ON collection.suspense_reconciliation_log USING btree (resolved) WHERE (((reconciliation_status)::text = 'MISMATCH'::text) AND (resolved = false));
+COMMENT ON TABLE collection.suspense_reconciliation_log IS 'Daily PostgreSQL vs TigerBeetle suspense reconciliation';
+
+
+-- collection.advance_payments definition
+
+-- Drop table
+
+-- DROP TABLE collection.advance_payments;
+
+CREATE TABLE collection.advance_payments (
+	advance_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	payment_id uuid NOT NULL,
+	total_amount_paid numeric(15, 2) NOT NULL,
+	installment_amount numeric(15, 2) NOT NULL,
+	installments_covered int4 NOT NULL,
+	from_installment_number int4 NOT NULL,
+	to_installment_number int4 NOT NULL,
+	excess_amount numeric(15, 2) DEFAULT 0 NULL,
+	excess_to_suspense bool DEFAULT false NULL,
+	suspense_id uuid NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT advance_payments_pkey PRIMARY KEY (advance_id),
+	CONSTRAINT chk_adv_amounts_positive CHECK (((total_amount_paid > (0)::numeric) AND (installment_amount > (0)::numeric))),
+	CONSTRAINT chk_adv_excess CHECK ((excess_amount >= (0)::numeric)),
+	CONSTRAINT chk_adv_installments CHECK ((installments_covered > 0)),
+	CONSTRAINT chk_adv_range CHECK ((to_installment_number >= from_installment_number))
+);
+CREATE INDEX idx_advance_payment ON collection.advance_payments USING btree (payment_id);
+CREATE INDEX idx_advance_policy ON collection.advance_payments USING btree (policy_number);
+CREATE INDEX idx_advance_request ON collection.advance_payments USING btree (request_id);
+COMMENT ON TABLE collection.advance_payments IS 'Advance installment payment tracking (IR_12)';
+
+
+-- collection.cheque_clearing_status definition
+
+-- Drop table
+
+-- DROP TABLE collection.cheque_clearing_status;
+
+CREATE TABLE collection.cheque_clearing_status (
+	cheque_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	payment_id uuid NOT NULL,
+	request_id uuid NULL,
+	policy_number varchar(13) NOT NULL,
+	cheque_number varchar(50) NOT NULL,
+	cheque_date date NOT NULL,
+	bank_name varchar(200) NOT NULL,
+	bank_branch varchar(200) NULL,
+	ifsc_code varchar(11) NULL,
+	amount numeric(15, 2) NOT NULL,
+	clearance_status collection."cheque_status" DEFAULT 'AWAITING_CLEARANCE'::collection.cheque_status NOT NULL,
+	clearance_date date NULL,
+	dishonor_date date NULL,
+	dishonor_reason text NULL,
+	bank_reference varchar(100) NULL,
+	next_due_date date NULL, -- Used for timeout monitoring in ChequeMonitorWorkflow
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT cheque_clearing_status_pkey PRIMARY KEY (cheque_id),
+	CONSTRAINT chk_chq_amount_positive CHECK ((amount > (0)::numeric)),
+	CONSTRAINT chk_chq_clearance CHECK ((((clearance_status = 'CLEARED'::collection.cheque_status) AND (clearance_date IS NOT NULL)) OR ((clearance_status = 'DISHONORED'::collection.cheque_status) AND (dishonor_date IS NOT NULL) AND (dishonor_reason IS NOT NULL)) OR (clearance_status = ANY (ARRAY['AWAITING_CLEARANCE'::collection.cheque_status, 'CANCELLED'::collection.cheque_status]))))
+);
+CREATE INDEX idx_chq_awaiting ON collection.cheque_clearing_status USING btree (next_due_date) WHERE (clearance_status = 'AWAITING_CLEARANCE'::collection.cheque_status);
+CREATE INDEX idx_chq_payment ON collection.cheque_clearing_status USING btree (payment_id);
+CREATE INDEX idx_chq_policy ON collection.cheque_clearing_status USING btree (policy_number);
+CREATE INDEX idx_chq_request ON collection.cheque_clearing_status USING btree (request_id);
+CREATE INDEX idx_chq_status ON collection.cheque_clearing_status USING btree (clearance_status);
+COMMENT ON TABLE collection.cheque_clearing_status IS 'Cheque payment tracking with clearance monitoring (IR_7)';
+
+-- Column comments
+
+COMMENT ON COLUMN collection.cheque_clearing_status.next_due_date IS 'Used for timeout monitoring in ChequeMonitorWorkflow';
+
+-- Table Triggers
+
+create trigger trg_cheque_clearing_updated_at before
+update
+    on
+    collection.cheque_clearing_status for each row execute function common.update_updated_at_column();
+
+
+-- collection.collection_batch_tracking definition
+
+-- Drop table
+
+-- DROP TABLE collection.collection_batch_tracking;
+
+CREATE TABLE collection.collection_batch_tracking (
+	batch_id uuid NOT NULL,
+	request_id uuid NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	premium_payment_id uuid NULL,
+	installment_payment_id uuid NULL,
+	collection_complete bool DEFAULT false NULL,
+	collection_date date NOT NULL,
+	combined_receipt_id uuid NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	completed_at timestamp NULL,
+	CONSTRAINT chk_batch_complete CHECK (((collection_complete = false) OR ((collection_complete = true) AND (premium_payment_id IS NOT NULL) AND (installment_payment_id IS NOT NULL)))),
+	CONSTRAINT collection_batch_tracking_pkey PRIMARY KEY (batch_id)
+);
+CREATE INDEX idx_batch_complete ON collection.collection_batch_tracking USING btree (collection_complete);
+CREATE INDEX idx_batch_policy ON collection.collection_batch_tracking USING btree (policy_number);
+CREATE INDEX idx_batch_request ON collection.collection_batch_tracking USING btree (request_id);
+COMMENT ON TABLE collection.collection_batch_tracking IS 'IR_34: Tracks first collection completion (both premium + installment)';
+
+
+-- collection.payment_receipts definition
+
+-- Drop table
+
+-- DROP TABLE collection.payment_receipts;
+
+CREATE TABLE collection.payment_receipts (
+	receipt_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	receipt_number varchar(20) NOT NULL,
+	request_id uuid NULL,
+	policy_number varchar(13) NOT NULL,
+	is_combined_receipt bool DEFAULT false NULL, -- True for first collection (premium + installment in one receipt)
+	payment_ids _uuid NOT NULL,
+	total_amount numeric(15, 2) NOT NULL,
+	receipt_date date NOT NULL,
+	"payment_mode" collection."payment_mode" NOT NULL,
+	is_cancelled bool DEFAULT false NULL,
+	cancelled_at timestamp NULL,
+	cancelled_by varchar(100) NULL,
+	cancellation_reason text NULL,
+	document_path text NULL,
+	generated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	generated_by varchar(100) NULL,
+	CONSTRAINT chk_rcpt_amount_positive CHECK ((total_amount > (0)::numeric)),
+	CONSTRAINT chk_rcpt_number_format CHECK (((receipt_number)::text ~ '^RCP\d{10}$'::text)),
+	CONSTRAINT chk_rcpt_payment_ids CHECK ((array_length(payment_ids, 1) > 0)),
+	CONSTRAINT payment_receipts_pkey PRIMARY KEY (receipt_id),
+	CONSTRAINT payment_receipts_receipt_number_key UNIQUE (receipt_number)
+);
+CREATE INDEX idx_receipts_cancelled ON collection.payment_receipts USING btree (is_cancelled);
+CREATE INDEX idx_receipts_date ON collection.payment_receipts USING btree (receipt_date DESC);
+CREATE INDEX idx_receipts_policy ON collection.payment_receipts USING btree (policy_number);
+CREATE INDEX idx_receipts_request ON collection.payment_receipts USING btree (request_id);
+COMMENT ON TABLE collection.payment_receipts IS 'Payment receipt generation and cancellation tracking';
+
+-- Column comments
+
+COMMENT ON COLUMN collection.payment_receipts.is_combined_receipt IS 'True for first collection (premium + installment in one receipt)';
+
+-- Table Triggers
+
+create trigger trg_generate_receipt_number before
+insert
+    on
+    collection.payment_receipts for each row execute function collection.generate_receipt_number();
+
+
+-- collection.payment_transactions definition
+
+-- Drop table
+
+-- DROP TABLE collection.payment_transactions;
+
+CREATE TABLE collection.payment_transactions (
+	payment_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NULL,
+	policy_number varchar(13) NOT NULL,
+	"payment_type" collection."payment_type" NOT NULL,
+	installment_number int4 NULL,
+	amount numeric(15, 2) NOT NULL,
+	tax_amount numeric(15, 2) DEFAULT 0 NULL,
+	total_amount numeric(15, 2) NOT NULL,
+	"payment_mode" collection."payment_mode" NOT NULL,
+	"payment_status" collection."payment_status" DEFAULT 'PENDING'::collection.payment_status NOT NULL,
+	collection_date date NOT NULL,
+	payment_date date NULL,
+	collection_batch_id uuid NULL, -- Links premium and first installment collected together
+	linked_payment_id uuid NULL, -- Bidirectional link between premium and installment
+	cheque_id uuid NULL,
+	tigerbeetle_transfer_id bytea NULL,
+	receipt_id uuid NULL,
+	collected_by varchar(100) NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT chk_pmt_amount_positive CHECK (((amount >= (0)::numeric) AND (tax_amount >= (0)::numeric))),
+	CONSTRAINT chk_pmt_cheque_mode CHECK ((((payment_mode = ANY (ARRAY['CHEQUE'::collection.payment_mode, 'DD'::collection.payment_mode])) AND (cheque_id IS NOT NULL)) OR ((payment_mode <> ALL (ARRAY['CHEQUE'::collection.payment_mode, 'DD'::collection.payment_mode])) AND (cheque_id IS NULL)))),
+	CONSTRAINT chk_pmt_installment_num CHECK ((((payment_type = 'INSTALLMENT'::collection.payment_type) AND ((installment_number >= 1) AND (installment_number <= 12))) OR ((payment_type <> 'INSTALLMENT'::collection.payment_type) AND (installment_number IS NULL)))),
+	CONSTRAINT chk_pmt_total CHECK ((total_amount = (amount + tax_amount))),
+	CONSTRAINT payment_transactions_pkey PRIMARY KEY (payment_id)
+);
+CREATE INDEX idx_pmt_batch ON collection.payment_transactions USING btree (collection_batch_id);
+CREATE INDEX idx_pmt_cheque ON collection.payment_transactions USING btree (cheque_id);
+CREATE INDEX idx_pmt_collection_date ON collection.payment_transactions USING btree (collection_date DESC);
+CREATE INDEX idx_pmt_linked ON collection.payment_transactions USING btree (linked_payment_id);
+CREATE INDEX idx_pmt_policy ON collection.payment_transactions USING btree (policy_number);
+CREATE INDEX idx_pmt_policy_date ON collection.payment_transactions USING btree (policy_number, collection_date DESC);
+CREATE INDEX idx_pmt_request ON collection.payment_transactions USING btree (request_id);
+CREATE INDEX idx_pmt_tigerbeetle ON collection.payment_transactions USING btree (tigerbeetle_transfer_id);
+CREATE INDEX idx_pmt_type_status ON collection.payment_transactions USING btree (payment_type, payment_status);
+COMMENT ON TABLE collection.payment_transactions IS 'All payment records with dual collection linking (IR_36)';
+
+-- Column comments
+
+COMMENT ON COLUMN collection.payment_transactions.collection_batch_id IS 'Links premium and first installment collected together';
+COMMENT ON COLUMN collection.payment_transactions.linked_payment_id IS 'Bidirectional link between premium and installment';
+
+-- Table Triggers
+
+create trigger trg_payment_transactions_updated_at before
+update
+    on
+    collection.payment_transactions for each row execute function common.update_updated_at_column();
+
+
+-- collection.receipt_cancellation_history definition
+
+-- Drop table
+
+-- DROP TABLE collection.receipt_cancellation_history;
+
+CREATE TABLE collection.receipt_cancellation_history (
+	cancellation_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	receipt_id uuid NOT NULL,
+	cancelled_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	cancelled_by varchar(100) NOT NULL,
+	authorized_by varchar(100) NOT NULL,
+	cancellation_reason text NOT NULL,
+	suspense_created bool DEFAULT false NULL,
+	policy_status_reverted bool DEFAULT false NULL,
+	"comments" text NULL,
+	CONSTRAINT receipt_cancellation_history_pkey PRIMARY KEY (cancellation_id)
+);
+CREATE INDEX idx_rcpt_cancel_date ON collection.receipt_cancellation_history USING btree (cancelled_at DESC);
+CREATE INDEX idx_rcpt_cancel_receipt ON collection.receipt_cancellation_history USING btree (receipt_id);
+COMMENT ON TABLE collection.receipt_cancellation_history IS 'Receipt cancellation audit trail';
+
+
+-- collection.suspense_accounts definition
+
+-- Drop table
+
+-- DROP TABLE collection.suspense_accounts;
+
+CREATE TABLE collection.suspense_accounts (
+	suspense_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	request_id uuid NULL,
+	"suspense_type" collection."suspense_type" NOT NULL, -- IR=partial advance, CHEQUE_DISHONOR=failed cheque, DEFAULT_RELAPSE=policy default
+	amount numeric(15, 2) NOT NULL,
+	reason text NOT NULL,
+	source_payment_ids _uuid NULL,
+	tigerbeetle_transfer_id bytea NULL,
+	suspense_account_type varchar(20) NOT NULL,
+	is_reversed bool DEFAULT false NULL,
+	reversal_date timestamp NULL,
+	reversal_authorized_by varchar(100) NULL,
+	reversal_reason text NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	created_by varchar(100) NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT chk_susp_account_type CHECK (((suspense_account_type)::text = ANY ((ARRAY['COMBINED_SUSPENSE'::character varying, 'REVIVAL_SUSPENSE'::character varying])::text[]))),
+	CONSTRAINT chk_susp_amount_positive CHECK ((amount > (0)::numeric)),
+	CONSTRAINT chk_susp_reversal CHECK (((is_reversed = false) OR ((is_reversed = true) AND (reversal_date IS NOT NULL) AND (reversal_authorized_by IS NOT NULL)))),
+	CONSTRAINT suspense_accounts_pkey PRIMARY KEY (suspense_id)
+);
+CREATE INDEX idx_susp_created_at ON collection.suspense_accounts USING btree (created_at DESC);
+CREATE INDEX idx_susp_policy ON collection.suspense_accounts USING btree (policy_number);
+CREATE INDEX idx_susp_request ON collection.suspense_accounts USING btree (request_id);
+CREATE INDEX idx_susp_reversed ON collection.suspense_accounts USING btree (is_reversed);
+CREATE INDEX idx_susp_type ON collection.suspense_accounts USING btree (suspense_type);
+COMMENT ON TABLE collection.suspense_accounts IS 'Suspense ledger (IR_28: first collection reversal blocked)';
+
+-- Column comments
+
+COMMENT ON COLUMN collection.suspense_accounts."suspense_type" IS 'IR=partial advance, CHEQUE_DISHONOR=failed cheque, DEFAULT_RELAPSE=policy default';
+
+-- Table Triggers
+
+create trigger trg_validate_suspense_reversal before
+update
+    on
+    collection.suspense_accounts for each row
+    when (((new.is_reversed = true)
+        and (old.is_reversed = false))) execute function collection.validate_suspense_reversal();
+
+
+-- collection.suspense_reversal_audit definition
+
+-- Drop table
+
+-- DROP TABLE collection.suspense_reversal_audit;
+
+CREATE TABLE collection.suspense_reversal_audit (
+	reversal_audit_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	suspense_id uuid NOT NULL,
+	reversed_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	authorized_by varchar(100) NOT NULL,
+	reversal_reason text NOT NULL,
+	amount_reversed numeric(15, 2) NOT NULL,
+	is_first_collection bool NOT NULL,
+	reversal_allowed bool NOT NULL,
+	rejection_reason text NULL,
+	authorization_comments text NULL,
+	CONSTRAINT suspense_reversal_audit_pkey PRIMARY KEY (reversal_audit_id)
+);
+CREATE INDEX idx_susp_rev_audit_date ON collection.suspense_reversal_audit USING btree (reversed_at DESC);
+CREATE INDEX idx_susp_rev_audit_first_coll ON collection.suspense_reversal_audit USING btree (is_first_collection);
+CREATE INDEX idx_susp_rev_audit_suspense ON collection.suspense_reversal_audit USING btree (suspense_id);
+COMMENT ON TABLE collection.suspense_reversal_audit IS 'IR_28: Suspense reversal audit (first collection blocked)';
+
+
+-- collection.advance_payments foreign keys
+
+ALTER TABLE collection.advance_payments ADD CONSTRAINT advance_payments_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES collection.payment_transactions(payment_id);
+ALTER TABLE collection.advance_payments ADD CONSTRAINT advance_payments_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE collection.advance_payments ADD CONSTRAINT advance_payments_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- collection.cheque_clearing_status foreign keys
+
+ALTER TABLE collection.cheque_clearing_status ADD CONSTRAINT cheque_clearing_status_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES collection.payment_transactions(payment_id);
+ALTER TABLE collection.cheque_clearing_status ADD CONSTRAINT cheque_clearing_status_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE collection.cheque_clearing_status ADD CONSTRAINT cheque_clearing_status_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- collection.collection_batch_tracking foreign keys
+
+ALTER TABLE collection.collection_batch_tracking ADD CONSTRAINT collection_batch_tracking_installment_payment_id_fkey FOREIGN KEY (installment_payment_id) REFERENCES collection.payment_transactions(payment_id);
+ALTER TABLE collection.collection_batch_tracking ADD CONSTRAINT collection_batch_tracking_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE collection.collection_batch_tracking ADD CONSTRAINT collection_batch_tracking_premium_payment_id_fkey FOREIGN KEY (premium_payment_id) REFERENCES collection.payment_transactions(payment_id);
+ALTER TABLE collection.collection_batch_tracking ADD CONSTRAINT collection_batch_tracking_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- collection.payment_receipts foreign keys
+
+ALTER TABLE collection.payment_receipts ADD CONSTRAINT payment_receipts_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE collection.payment_receipts ADD CONSTRAINT payment_receipts_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- collection.payment_transactions foreign keys
+
+ALTER TABLE collection.payment_transactions ADD CONSTRAINT payment_transactions_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE collection.payment_transactions ADD CONSTRAINT payment_transactions_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- collection.receipt_cancellation_history foreign keys
+
+ALTER TABLE collection.receipt_cancellation_history ADD CONSTRAINT receipt_cancellation_history_receipt_id_fkey FOREIGN KEY (receipt_id) REFERENCES collection.payment_receipts(receipt_id);
+
+
+-- collection.suspense_accounts foreign keys
+
+ALTER TABLE collection.suspense_accounts ADD CONSTRAINT suspense_accounts_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE collection.suspense_accounts ADD CONSTRAINT suspense_accounts_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- collection.suspense_reversal_audit foreign keys
+
+ALTER TABLE collection.suspense_reversal_audit ADD CONSTRAINT suspense_reversal_audit_suspense_id_fkey FOREIGN KEY (suspense_id) REFERENCES collection.suspense_accounts(suspense_id);
+
+
+-- collection.collection_status_summary source
+
+CREATE OR REPLACE VIEW collection.collection_status_summary
+AS SELECT cbt.request_id,
+    cbt.policy_number,
+    cbt.collection_complete,
+    cbt.collection_date,
+    pt_premium.payment_id AS premium_payment_id,
+    pt_premium.payment_status AS premium_status,
+    pt_installment.payment_id AS installment_payment_id,
+    pt_installment.payment_status AS installment_status,
+    cbt.combined_receipt_id
+   FROM collection.collection_batch_tracking cbt
+     LEFT JOIN collection.payment_transactions pt_premium ON cbt.premium_payment_id = pt_premium.payment_id
+     LEFT JOIN collection.payment_transactions pt_installment ON cbt.installment_payment_id = pt_installment.payment_id;
+
+COMMENT ON VIEW collection.collection_status_summary IS 'First collection status tracking (IR_34)';
+
+
+-- collection.pending_cheque_clearances source
+
+CREATE OR REPLACE VIEW collection.pending_cheque_clearances
+AS SELECT cheque_id,
+    request_id,
+    policy_number,
+    cheque_number,
+    bank_name,
+    amount,
+    created_at,
+    next_due_date,
+        CASE
+            WHEN CURRENT_DATE >= next_due_date THEN true
+            ELSE false
+        END AS is_timeout,
+    next_due_date - CURRENT_DATE AS days_until_due
+   FROM collection.cheque_clearing_status ccs
+  WHERE clearance_status = 'AWAITING_CLEARANCE'::collection.cheque_status;
+
+COMMENT ON VIEW collection.pending_cheque_clearances IS 'Cheques awaiting clearance with timeout tracking';
+
+
+-- collection.suspense_balances_by_policy source
+
+CREATE OR REPLACE VIEW collection.suspense_balances_by_policy
+AS SELECT policy_number,
+    sum(
+        CASE
+            WHEN suspense_type = 'IR'::collection.suspense_type AND NOT is_reversed THEN amount
+            ELSE 0::numeric
+        END) AS ir_suspense_balance,
+    sum(
+        CASE
+            WHEN suspense_type = 'CHEQUE_DISHONOR'::collection.suspense_type AND NOT is_reversed THEN amount
+            ELSE 0::numeric
+        END) AS dishonor_suspense_balance,
+    sum(
+        CASE
+            WHEN suspense_type = 'DEFAULT_RELAPSE'::collection.suspense_type AND NOT is_reversed THEN amount
+            ELSE 0::numeric
+        END) AS default_suspense_balance,
+    sum(
+        CASE
+            WHEN NOT is_reversed THEN amount
+            ELSE 0::numeric
+        END) AS total_suspense_balance,
+    count(
+        CASE
+            WHEN NOT is_reversed THEN 1
+            ELSE NULL::integer
+        END) AS active_suspense_entries
+   FROM collection.suspense_accounts sa
+  GROUP BY policy_number;
+
+COMMENT ON VIEW collection.suspense_balances_by_policy IS 'Suspense account balances by policy and type';
+
+
+
+-- DROP FUNCTION collection.generate_receipt_number();
+
+
+ALTER TYPE collection.suspense_type
+ADD VALUE IF NOT EXISTS 'REVIVAL_PREMIUM';
+
+
+ALTER TYPE collection.suspense_type
+ADD VALUE IF NOT EXISTS 'REVIVAL_INSTALLMENT';
+
+ALTER TABLE common.policies
+ADD COLUMN IF NOT EXISTS billing_method VARCHAR(50),
+ADD COLUMN IF NOT EXISTS office VARCHAR(50);

@@ -93,14 +93,14 @@ server:
     path: "/healthzz"   
   bodylimit: 2097152
   readbuffersize: 16384
-  addr: ":8081"
+  addr: ":8080"
   readtimeout: 10s
   writetimeout: 60s
   timeout: 40 ## Over all timeout for the request  
   cors:       
     alloworigins:
       - "http://localhost:3000"
-      - "http://localhost:8081"        
+      - "http://localhost:8080"        
     allowheaders:
       - "Authorization"
       - "Content-Type"
@@ -116,15 +116,12 @@ log:
   format: "json"
   output: "stdout"
 client: 
-  baseurl: "http://localhost:8081"
+  baseurl: "http://localhost:8080"
   smsurl:  "https://apiservices.cept.gov.in"
 
 swagger:
   generation:
     mode: "build"
-
-pm:
- task_queue: policy-management-tq
 # server:
 #   host: 0.0.0.0
 #   port: ${SERVER_PORT:-8080}
