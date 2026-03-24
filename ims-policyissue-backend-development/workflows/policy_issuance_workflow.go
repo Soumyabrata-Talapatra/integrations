@@ -18,6 +18,7 @@ const (
 	SignalMedicalResult    = "medical-result"
 	SignalCPCResubmit      = "cpc-resubmit"
 	SignalSubmitForQC      = "submit-for-qc"
+	// TODO: Add SignalDeathNotification for BR-POL-026 (Death During Proposal Processing)
 )
 
 type SubmitForQCSignal struct {
@@ -116,6 +117,12 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 	// Suppress unused variable warnings - these will be used when activities are implemented
 	_ = shortActivityOpts
 	_ = externalCallOpts
+
+	// TODO: Add death notification signal handling for BR-POL-026 (Death During Proposal Processing)
+	// If death occurs during proposal processing, need to:
+	// 1. Update status to CANCELLED_DEATH
+	// 2. Trigger full premium refund via claims microservice
+	// 3. Trigger commission reversal if commission was paid
 
 	// Step 1: Validate Proposal
 	currentStatus = "VALIDATING"
@@ -320,6 +327,9 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 			result.Status = "QC_REJECTED"
 			logger.Info("Proposal rejected by QC")
 
+			// TODO: If premium was paid, trigger refund via claims microservice
+			// TODO: Send rejection notification to customer
+
 			return result, nil
 		}
 
@@ -368,6 +378,10 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 			_ = workflow.ExecuteActivity(shortActivityOpts, "UpdateProposalStatusActivity", medRejectInput).Get(ctx, nil)
 
 			result.Status = "MEDICAL_REJECTED"
+			
+			// TODO: If premium was paid, trigger refund via claims microservice (minus medical fee)
+			// TODO: Send medical rejection notification to customer
+
 			return result, fmt.Errorf("medical examination rejected: %s", medicalSignal.RejectionReason)
 		}
 
@@ -426,6 +440,10 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 		_ = workflow.ExecuteActivity(shortActivityOpts, "UpdateProposalStatusActivity", approverRejectInput).Get(ctx, nil)
 
 		result.Status = "REJECTED"
+		
+		// TODO: If premium was paid, trigger refund via claims microservice
+		// TODO: Send approver rejection notification to customer
+
 		return result, fmt.Errorf("proposal rejected by approver")
 	}
 
