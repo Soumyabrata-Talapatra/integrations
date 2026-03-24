@@ -436,6 +436,25 @@ func (h *PolicyRequestHandler) submitRequest(
 		return nil, newHTTPErr(http.StatusBadRequest,
 			"X-Idempotency-Key header required for financial requests", nil)
 	}
+
+	// Validate source_channel is not empty and is a valid value
+	if sourceChannel == "" {
+		return nil, newHTTPErr(http.StatusBadRequest,
+			"source_channel is required", nil)
+	}
+	// Check if sourceChannel is one of the valid enum values
+	validChannels := map[string]bool{
+		"CUSTOMER_PORTAL": true,
+		"CPC":             true,
+		"MOBILE_APP":      true,
+		"AGENT_PORTAL":    true,
+		"BATCH":           true,
+		"SYSTEM":          true,
+	}
+	if !validChannels[sourceChannel] {
+		return nil, newHTTPErr(http.StatusBadRequest,
+			fmt.Sprintf("source_channel must be one of: CUSTOMER_PORTAL, CPC, MOBILE_APP, AGENT_PORTAL, BATCH, SYSTEM, got: %s", sourceChannel), nil)
+	}
 	
 	if idempotencyKey != "" {
 		existing, err := h.srRepo.CheckIdempotencyKey(ctx, idempotencyKey)

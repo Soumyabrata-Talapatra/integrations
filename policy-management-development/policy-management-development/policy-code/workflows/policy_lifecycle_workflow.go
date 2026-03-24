@@ -77,6 +77,8 @@ func getFLCPeriod(flcDays int) time.Duration {
 		flcDays = 15 // safe default [§10.1.6]
 	}
 	return time.Duration(flcDays) * 24 * time.Hour
+	//return time.Minute
+
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -558,6 +560,7 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 		sel.AddReceive(policyCreatedCh, func(c workflow.ReceiveChannel, _ bool) {
 			var sig PolicyCreatedSignal
 			c.Receive(ctx, &sig)
+			state.CurrentStatus = "FREE_LOOK_ACTIVE"
 			handlePolicyCreated(ctx, &state, sig)
 		})
 
@@ -1088,7 +1091,6 @@ func handleFinancialRequest(ctx workflow.Context, state *PolicyLifecycleState, s
 				RequestType:      sig.RequestType,
 				LockedAt:         lockedAt,
 				TimeoutAt:        timeout,
-				
 			}).Get(ctx, nil)
 	}
 

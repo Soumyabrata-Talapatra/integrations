@@ -109,7 +109,7 @@ type SubmitDeathClaimRequest struct {
 	GenericRequestPayload
 	Payload struct {
 		CustomerID           int64  `json:"customer_id"           validate:"required,min=1"` // BIGINT from customer service
-		DateOfDeath          string `json:"date_of_death"         validate:"required"`        // RFC3339 date
+		DateOfDeath          string `json:"date_of_death"         validate:"required"`       // RFC3339 date
 		CauseOfDeath         string `json:"cause_of_death"        validate:"omitempty,oneof=NATURAL ACCIDENTAL SUICIDE UNKNOWN"`
 		ReportedBy           string `json:"reported_by"           validate:"required,oneof=NOMINEE LEGAL_HEIR ASSIGNEE POST_OFFICE"`
 		ClaimantID           int64  `json:"claimant_id"           validate:"omitempty,min=1"` // BIGINT from claims service
@@ -196,10 +196,10 @@ type SubmitNominationChangeRequest struct {
 
 // NomineeDetail represents a single nominee entry.
 type NomineeDetail struct {
-	Name             string  `json:"name"              validate:"required"`
-	Relationship     string  `json:"relationship"      validate:"required"`
-	SharePercentage  float64 `json:"share_percentage"  validate:"required,gt=0,lte=100"`
-	DateOfBirth      string  `json:"date_of_birth"     validate:"omitempty"` // RFC3339 date
+	Name            string  `json:"name"              validate:"required"`
+	Relationship    string  `json:"relationship"      validate:"required"`
+	SharePercentage float64 `json:"share_percentage"  validate:"required,gt=0,lte=100"`
+	DateOfBirth     string  `json:"date_of_birth"     validate:"omitempty"` // RFC3339 date
 }
 
 // SubmitBillingMethodChangeRequest — POST /policies/{pn}/requests/billing-method-change
@@ -377,8 +377,31 @@ func (r SubmitCommutationRequest) Validate() error { return nil }
 // Validate is a stub — govalid will generate struct-tag validation in Phase 6.
 func (r SubmitConversionRequest) Validate() error { return nil }
 
-// Validate is a stub — govalid will generate struct-tag validation in Phase 6.
-func (r SubmitFreelookRequest) Validate() error { return nil }
+// Validate ensures required fields are present and valid
+func (r SubmitFreelookRequest) Validate() error {
+	// Validate source_channel is required and has a valid value
+	if r.SourceChannel == "" {
+		return fmt.Errorf("source_channel is required")
+	}
+	validChannels := map[string]bool{
+		"CUSTOMER_PORTAL": true,
+		"CPC":             true,
+		"MOBILE_APP":      true,
+		"AGENT_PORTAL":    true,
+		"BATCH":           true,
+		"SYSTEM":          true,
+	}
+	if !validChannels[r.SourceChannel] {
+		return fmt.Errorf("source_channel must be one of: CUSTOMER_PORTAL, CPC, MOBILE_APP, AGENT_PORTAL, BATCH, SYSTEM, got: %s", r.SourceChannel)
+	}
+
+	// Validate payload reason is required
+	if r.Payload.Reason == "" {
+		return fmt.Errorf("payload.reason is required")
+	}
+
+	return nil
+}
 
 // Validate is a stub — govalid will generate struct-tag validation in Phase 6.
 func (r SubmitPaidUpRequest) Validate() error { return nil }
