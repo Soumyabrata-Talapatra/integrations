@@ -1,0 +1,220 @@
+package tests
+
+import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateEmpPropertyDetails_Success(t *testing.T) {
+	input := `{
+		"properties": [
+			{
+				"employee_id": 10015845,
+				"employee_name": "Anand Kumar",
+				"group_name": "Group A",
+				"property_type": "Residential",
+				"property_details": "3 BHK flat",
+				"location_details": "Hyderabad, India",
+				"house_construction_or_purchase_cost": 5000000,
+				"house_construction_or_purchase_year": 2020,
+				"present_value": 6000000,
+				"holder_name": "Anand Kumar",
+				"holder_relationship": "Self",
+				"acquisition_method": "Purchased",
+				"acquisition_year": 2020,
+				"annual_income_from_property": 50000,
+				"statement_year": 2024,
+				"statement_as_on": "2024-01-01T00:00:00Z",
+				"approver_post_id": "30007706",
+				"created_by": "10021629",
+				"remarks": "Property details for test",
+				"employee_designation": "Postal Assistant",
+				"basic_pay": 50000,
+				"office_of_working": "Hyderabad Office",
+				"date_of_join_in_department": "2020-01-01T00:00:00Z"
+			}
+		]
+	}`
+	req := httptest.NewRequest("POST", "/v1/properties", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateEmpPropertyDetails_BindingError(t *testing.T) {
+	// Simulate missing required fields or invalid data types
+	input := `{
+		"properties": [
+			{
+				"employee_id": "invalid-id",  // invalid type
+				"employee_name": "Anand Kumar"
+			}
+		]
+	}`
+	req := httptest.NewRequest("POST", "/v1/properties", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// func TestCreateEmpPropertyDetails_ValidationError(t *testing.T) {
+// 	input := `{
+// 		"properties": [
+// 			{
+// 				"employee_id": 10015845,
+// 				"employee_name": "Anand Kumar",
+// 				"group_name": "Group A",
+// 				"property_type": "Residential",
+// 				"property_details": "3 BHK flat",
+// 				"location_details": "Hyderabad, India",
+// 				"house_construction_or_purchase_cost": "5000000",
+// 				"house_construction_or_purchase_year": 2020,
+// 				"present_value": -6000000,
+// 				"holder_name": "Anand Kumar",
+// 				"holder_relationship": "Self",
+// 				"acquisition_method": "Purchased",
+// 				"acquisition_year": 2020,
+// 				"annual_income_from_property": 50000,
+// 				"statement_year": 2024,
+// 				"statement_as_on": "2024-01-01T00:00:00Z",
+// 				"created_by": "10021629",
+// 				"remarks": "Property details for test",
+// 				"employee_designation": "Postal Assistant",
+// 				"basic_pay": 50000,
+// 				"office_of_working": "Hyderabad Office",
+// 				"date_of_join_in_department": "2020-01-01T00:00:00Z"
+// 			}
+// 		]
+// 	}`
+// 	req := httptest.NewRequest("POST", "/v1/properties", bytes.NewBuffer([]byte(input)))
+// 	req.Header.Set(contentType, applicationJson)
+// 	rec := httptest.NewRecorder()
+// 	Engine.ServeHTTP(rec, req)
+// 	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+// }
+
+func TestCreateEmpPropertyDetails_DBError(t *testing.T) {
+	// Simulate a database error (for example, an error from the repository layer)
+	input := `{
+		"properties": [
+			{
+				"employee_id": 100158457,
+				"employee_name": "Anand Kumar",
+				"group_name": "Group A",
+				"property_type": "Residential",
+				"property_details": "3 BHK flat",
+				"location_details": "Hyderabad, India",
+				"house_construction_or_purchase_cost": 5000000,
+				"house_construction_or_purchase_year": 2020,
+				"present_value": 6000000,
+				"holder_name": "Anand Kumar",
+				"holder_relationship": "Self",
+				"acquisition_method": "Purchased",
+				"acquisition_year": 2020,
+				"annual_income_from_property": 50000,
+				"statement_year": 2024,
+				"statement_as_on": "2024-01-01T00:00:00Z",
+				"approver_post_id": "30007706",
+				"created_by": "10021629",
+				"remarks": "Property details for test",
+				"employee_designation": "Postal Assistant",
+				"basic_pay": 50000,
+				"office_of_working": "Hyderabad Office",
+				"date_of_join_in_department": "2020-01-01T00:00:00Z"
+			}
+		]
+	}`
+	req := httptest.NewRequest("POST", "/v1/properties", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusConflict, rec.Code)
+}
+
+func TestGetPropertiesByEmployee_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/properties/emp?emp-id=10015845&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetPropertiesByEmployee_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/properties/emp?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestGetPropertiesByEmployee_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/properties/emp?emp-id=1001584", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetPropertiesByApprover_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/properties/post?post-id=30007775&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// func TestGetPropertiesByApprover_QueryBindingError(t *testing.T) {
+// 	req := httptest.NewRequest("GET", "/v1/properties/post", nil)
+// 	rec := httptest.NewRecorder()
+// 	Engine.ServeHTTP(rec, req)
+// 	assert.Equal(t, http.StatusBadRequest, rec.Code)
+// }
+
+func TestGetPropertiesByApprover_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/properties/post?", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetSubmittedEmps_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/property-statuses?division-id=21260000&stmt-year=2023&submit-status=true", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetSubmittedEmps_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/property-statuses?division-id=abc&stmt-year=2023&submit-status=true", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestGetSubmittedEmps_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/property-statuses?division-id=2126000&stmt-year=2023&submit-status=true", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetNonSubmittedEmps_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/property-statuses?division-id=21260000&stmt-year=2023&submit-status=false", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetNonSubmittedEmps_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/property-statuses?division-id=abc&stmt-year=2023&submit-status=false", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestGetNonSubmittedEmps_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/property-statuses?division-id=2126000&stmt-year=202&submit-status=false", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}

@@ -49,22 +49,21 @@ func NewPolicyActivities(db *dblib.DB, cfg *config.Config, tc client.Client) *Po
 
 // InitializePolicyParams is the input to InitializePolicyActivity. [A10.1.6]
 type InitializePolicyParams struct {
-	RequestID       string    `json:"request_id"`      // UUID from Policy Issue for dedup
-	PolicyIssueID   string    `json:"policy_issue_id"` // UUID from Policy Issue (audit only)
-	PolicyNumber    string    `json:"policy_number"`
-	WorkflowID      string    `json:"workflow_id"` // plw-{policy_number}
-	CustomerID      int64     `json:"customer_id"`
-	ProductCode     string    `json:"product_code"`
-	ProductType     string    `json:"product_type"`
-	SumAssured      float64   `json:"sum_assured"`
-	CurrentPremium  float64   `json:"current_premium"`
-	PremiumMode     string    `json:"premium_mode"`
-	BillingMethod   string    `json:"billing_method"`
-	IssueDate       time.Time `json:"issue_date"`
-	MaturityDate    time.Time `json:"maturity_date"`
-	PaidToDate      time.Time `json:"paid_to_date"`
-	PolicyholderDOB time.Time `json:"policyholder_dob"`
-	AgentID         *int64    `json:"agent_id,omitempty"` // Nullable BIGINT [Review-Fix-5]
+	RequestID      string    `json:"request_id"`      // UUID from Policy Issue for dedup
+	PolicyIssueID  string    `json:"policy_issue_id"` // UUID from Policy Issue (audit only)
+	PolicyNumber   string    `json:"policy_number"`
+	WorkflowID     string    `json:"workflow_id"` // plw-{policy_number}
+	CustomerID     int64     `json:"customer_id"`
+	ProductCode    string    `json:"product_code"`
+	ProductType    string    `json:"product_type"`
+	SumAssured     float64   `json:"sum_assured"`
+	CurrentPremium float64   `json:"current_premium"`
+	PremiumMode    string    `json:"premium_mode"`
+	BillingMethod  string    `json:"billing_method"`
+	IssueDate      time.Time `json:"issue_date"`
+	MaturityDate   time.Time `json:"maturity_date"`
+	PaidToDate     time.Time `json:"paid_to_date"`
+	AgentID        *int64    `json:"agent_id,omitempty"` // Nullable BIGINT [Review-Fix-5]
 }
 
 // StateTransitionParams is the input to RecordStateTransitionActivity.
@@ -230,15 +229,15 @@ func (a *PolicyActivities) InitializePolicyActivity(ctx context.Context, p Initi
 			"policy_number", "workflow_id", "customer_id", "product_code", "product_type",
 			"current_status", "previous_status",
 			"sum_assured", "current_premium", "premium_mode", "billing_method",
-			"issue_date", "policy_inception_date", "maturity_date", "paid_to_date",
-			"policyholder_dob", "agent_id", "version", "created_at", "updated_at",
+			"issue_date", "maturity_date", "paid_to_date",
+			"agent_id", "version", "created_at", "updated_at",
 		).
 		Values(
 			p.PolicyNumber, p.WorkflowID, p.CustomerID, p.ProductCode, p.ProductType,
-			domain.StatusFreeLookActive, nil,
+			domain.StatusFreeLookActive, "",
 			p.SumAssured, p.CurrentPremium, p.PremiumMode, p.BillingMethod,
-			p.IssueDate, p.IssueDate, p.MaturityDate, p.PaidToDate,
-			p.PolicyholderDOB, p.AgentID, 1, now, now,
+			p.IssueDate, p.MaturityDate, p.PaidToDate,
+			p.AgentID, 1, now, now,
 		).
 		Suffix("ON CONFLICT (policy_number) DO NOTHING RETURNING policy_id")
 
@@ -273,7 +272,7 @@ func (a *PolicyActivities) InitializePolicyActivity(ctx context.Context, p Initi
 			"effective_date", "created_at",
 		).
 		Values(
-			policyID, nil, domain.StatusFreeLookActive,
+			policyID, "", domain.StatusFreeLookActive,
 			"Policy issued and activated", "policy-issue", p.RequestID,
 			now, now,
 		).
@@ -402,10 +401,10 @@ func (a *PolicyActivities) PublishEventActivity(ctx context.Context, e PolicyEve
 	q := dblib.Psql.Insert(actPolicyEventTable).
 		Columns("policy_id", "event_type", "event_payload", "published_at").
 		Values(e.PolicyID, e.EventType, payload, publishedAt).
-		Suffix("RETURNING event_id")
+		Suffix("RETURNING id")
 
 	type idRow struct {
-		ID int64 `db:"event_id"`
+		ID int64 `db:"id"`
 	}
 	if _, err := dblib.InsertReturning(ctx, a.db, q, pgx.RowToStructByNameLax[idRow]); err != nil {
 		return fmt.Errorf("PublishEventActivity policy=%d type=%s: %w", e.PolicyID, e.EventType, err)
@@ -575,6 +574,35 @@ func (a *PolicyActivities) UpdateServiceRequestActivity(ctx context.Context, u S
 		return fmt.Errorf("UpdateServiceRequestActivity srID=%d: %w", u.ServiceRequestID, err)
 	}
 	return nil
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FetchRequestPayloadActivity — SELECT request_payload for child workflow dispatch
+// ─────────────────────────────────────────────────────────────────────────────
+
+// FetchRequestPayloadActivity retrieves the request_payload JSONB from service_request
+// by service_request_id. Used before dispatching child workflows so downstream services
+// receive the original request payload. [Constraint 1, A10.1B]
+func (a *PolicyActivities) FetchRequestPayloadActivity(ctx context.Context, serviceRequestID int64, submittedAt *time.Time) (json.RawMessage, error) {
+	ctx, cancel := context.WithTimeout(ctx, a.cfg.GetDuration("db.QueryTimeoutLow"))
+	defer cancel()
+
+	qb := dblib.Psql.Select("request_payload").
+		From(actServiceReqTable).
+		Where(sq.Eq{"request_id": serviceRequestID})
+	// Include partition key when available to avoid cross-partition seq-scans. [D4, §8.3]
+	if submittedAt != nil {
+		qb = qb.Where(sq.Eq{"submitted_at": *submittedAt})
+	}
+
+	type payloadRow struct {
+		RequestPayload json.RawMessage `db:"request_payload"`
+	}
+	row, err := dblib.SelectOne(ctx, a.db, qb, pgx.RowToStructByNameLax[payloadRow])
+	if err != nil {
+		return nil, fmt.Errorf("FetchRequestPayloadActivity srID=%d: %w", serviceRequestID, err)
+	}
+	return row.RequestPayload, nil
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

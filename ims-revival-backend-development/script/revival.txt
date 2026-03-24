@@ -1,0 +1,590 @@
+-- DROP SCHEMA revival;
+
+CREATE SCHEMA revival AUTHORIZATION postgres;
+
+
+CREATE OR REPLACE FUNCTION revival.generate_ticket_id()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    IF NEW.ticket_id IS NULL THEN
+        NEW.ticket_id := 'PSREYV' || LPAD(nextval('revival.ticket_id_seq')::TEXT, 9, '0');
+    END IF;
+    RETURN NEW;
+END;
+$function$
+;
+
+-- DROP FUNCTION revival.log_status_change();
+
+CREATE OR REPLACE FUNCTION revival.log_status_change()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    IF (TG_OP = 'INSERT') OR (OLD.current_status IS DISTINCT FROM NEW.current_status) THEN
+        INSERT INTO revival.status_change_history (
+            request_id,
+            from_status,
+            to_status,
+            changed_by
+        ) VALUES (
+            NEW.request_id,
+            OLD.current_status,
+            NEW.current_status,
+            NEW.updated_at -- Using system time for simplicity
+        );
+    END IF;
+    RETURN NEW;
+END;
+$function$
+;
+
+COMMENT ON SCHEMA revival IS 'Revival request lifecycle, workflow orchestration, approvals';
+
+-- DROP TYPE revival."request_status";
+
+CREATE TYPE revival."request_status" AS ENUM (
+	'INDEXED',
+	'DATA_ENTRY_PENDING',
+	'DATA_ENTRY_COMPLETE',
+	'QC_PENDING',
+	'QC_COMPLETE',
+	'APPROVAL_PENDING',
+	'APPROVED',
+	'REJECTED',
+	'AWAITING_PAYMENT',
+	'ACTIVE',
+	'COMPLETED',
+	'DEFAULTED',
+	'TERMINATED',
+	'WITHDRAWN',
+	'RETURNED_TO_INDEXER');
+
+-- DROP TYPE revival."workflow_status";
+
+CREATE TYPE revival."workflow_status" AS ENUM (
+	'RUNNING',
+	'COMPLETED',
+	'FAILED',
+	'TERMINATED',
+	'CANCELLED');
+
+-- DROP SEQUENCE revival.ticket_id_seq;
+
+CREATE SEQUENCE revival.ticket_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1000000
+	CACHE 1
+	NO CYCLE;-- revival.indexer_inbox definition
+
+-- Drop table
+
+-- DROP TABLE revival.indexer_inbox;
+
+CREATE TABLE revival.indexer_inbox (
+	inbox_id uuid NOT NULL,
+	request_id varchar NOT NULL,
+	ticket_id varchar NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	return_reason text NOT NULL,
+	returned_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	returned_from_stage varchar(30) NOT NULL,
+	acknowledged bool DEFAULT false NULL,
+	CONSTRAINT indexer_inbox_pkey PRIMARY KEY (inbox_id)
+);
+
+
+-- revival.generated_letters definition
+
+-- Drop table
+
+-- DROP TABLE revival.generated_letters;
+
+CREATE TABLE revival.generated_letters (
+	letter_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	letter_type varchar(30) NOT NULL,
+	document_path text NULL,
+	document_hash varchar(64) NULL,
+	generated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	generated_by varchar(100) NULL,
+	CONSTRAINT chk_letter_type CHECK (((letter_type)::text = ANY ((ARRAY['ACCEPTANCE'::character varying, 'REJECTION'::character varying, 'REVIVAL_MEMO'::character varying, 'TERMINATION'::character varying])::text[]))),
+	CONSTRAINT generated_letters_pkey PRIMARY KEY (letter_id)
+);
+CREATE INDEX idx_letters_generated_at ON revival.generated_letters USING btree (generated_at DESC);
+CREATE INDEX idx_letters_policy ON revival.generated_letters USING btree (policy_number);
+CREATE INDEX idx_letters_request ON revival.generated_letters USING btree (request_id);
+CREATE INDEX idx_letters_type ON revival.generated_letters USING btree (letter_type);
+COMMENT ON TABLE revival.generated_letters IS 'Generated letter tracking (acceptance, rejection, memo)';
+
+
+-- revival.installment_schedules definition
+
+-- Drop table
+
+-- DROP TABLE revival.installment_schedules;
+
+CREATE TABLE revival.installment_schedules (
+	schedule_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	installment_number int4 NOT NULL,
+	installment_amount numeric(15, 2) NOT NULL,
+	tax_amount numeric(15, 2) NOT NULL,
+	total_amount numeric(15, 2) NOT NULL,
+	due_date date NOT NULL,
+	payment_date date NULL,
+	is_paid bool DEFAULT false NULL,
+	payment_id uuid NULL,
+	grace_period_days int4 DEFAULT 0 NULL, -- IR_9: Always 0 for installments
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT chk_payment_date CHECK (((payment_date IS NULL) OR (payment_date >= due_date) OR (installment_number = 1))),
+	CONSTRAINT chk_sched_amounts_positive CHECK (((installment_amount >= (0)::numeric) AND (tax_amount >= (0)::numeric))),
+	CONSTRAINT chk_sched_installment_num CHECK (((installment_number >= 1) AND (installment_number <= 12))),
+	CONSTRAINT chk_sched_total CHECK ((total_amount = (installment_amount + tax_amount))),
+	CONSTRAINT installment_schedules_grace_period_days_check CHECK ((grace_period_days = 0)),
+	CONSTRAINT installment_schedules_pkey PRIMARY KEY (schedule_id),
+	CONSTRAINT uq_request_installment UNIQUE (request_id, installment_number)
+);
+CREATE INDEX idx_sched_due_date ON revival.installment_schedules USING btree (due_date) WHERE (is_paid = false);
+CREATE INDEX idx_sched_monitoring ON revival.installment_schedules USING btree (policy_number, due_date, is_paid) WHERE (is_paid = false);
+CREATE INDEX idx_sched_payment ON revival.installment_schedules USING btree (payment_id);
+CREATE INDEX idx_sched_policy ON revival.installment_schedules USING btree (policy_number);
+CREATE INDEX idx_sched_request ON revival.installment_schedules USING btree (request_id);
+COMMENT ON TABLE revival.installment_schedules IS 'Installment due dates and tracking (IR_11: 1st of month)';
+
+-- Column comments
+
+COMMENT ON COLUMN revival.installment_schedules.grace_period_days IS 'IR_9: Always 0 for installments';
+
+-- Table Triggers
+
+create trigger trg_installment_schedules_updated_at before
+update
+    on
+    revival.installment_schedules for each row execute function common.update_updated_at_column();
+
+
+-- revival.request_stage_history definition
+
+-- Drop table
+
+-- DROP TABLE revival.request_stage_history;
+
+CREATE TABLE revival.request_stage_history (
+	stage_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NOT NULL,
+	stage_name varchar(30) NOT NULL,
+	stage_action varchar(30) NOT NULL,
+	missing_documents _text NULL,
+	"comments" text NULL,
+	action_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	action_by varchar(100) NOT NULL,
+	CONSTRAINT chk_stage_action CHECK (((stage_action)::text = ANY ((ARRAY['SUBMITTED'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'REDIRECTED'::character varying, 'MISSING_DOCS'::character varying, 'COMPLETED'::character varying])::text[]))),
+	CONSTRAINT chk_stage_name CHECK (((stage_name)::text = ANY ((ARRAY['DATA_ENTRY'::character varying, 'QUALITY_CHECK'::character varying, 'APPROVAL'::character varying])::text[]))),
+	CONSTRAINT request_stage_history_pkey PRIMARY KEY (stage_id)
+);
+CREATE INDEX idx_stage_hist_action_at ON revival.request_stage_history USING btree (action_at DESC);
+CREATE INDEX idx_stage_hist_request ON revival.request_stage_history USING btree (request_id);
+CREATE INDEX idx_stage_hist_stage ON revival.request_stage_history USING btree (stage_name);
+COMMENT ON TABLE revival.request_stage_history IS 'Data Entry, QC, and Approval workflow tracking';
+
+
+-- revival.revival_calculations definition
+
+-- Drop table
+
+-- DROP TABLE revival.revival_calculations;
+
+CREATE TABLE revival.revival_calculations (
+	calculation_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	date_of_revival date NOT NULL,
+	number_of_installments int4 NOT NULL,
+	unpaid_premium_months int4 NOT NULL,
+	interest_rate numeric(5, 4) NOT NULL, -- Interest rate used in IR_5 formula
+	monthly_premium numeric(15, 2) NOT NULL,
+	premium_amount numeric(15, 2) NOT NULL,
+	tax_on_premium numeric(15, 2) NOT NULL,
+	total_renewal_amount numeric(15, 2) NOT NULL,
+	installment_amount numeric(15, 2) NOT NULL,
+	tax_on_unpaid_premium numeric(15, 2) NOT NULL,
+	total_installment_amount numeric(15, 2) NOT NULL,
+	grand_total_first_collection numeric(15, 2) NOT NULL,
+	valid_until date NOT NULL,
+	calculated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	calculated_by varchar(100) NULL,
+	CONSTRAINT chk_calc_amounts_positive CHECK (((premium_amount >= (0)::numeric) AND (installment_amount >= (0)::numeric) AND (tax_on_premium >= (0)::numeric) AND (tax_on_unpaid_premium >= (0)::numeric))),
+	CONSTRAINT chk_calc_installments CHECK (((number_of_installments >= 2) AND (number_of_installments <= 12))),
+	CONSTRAINT chk_grand_total CHECK ((grand_total_first_collection = (total_renewal_amount + total_installment_amount))),
+	CONSTRAINT chk_installment_total CHECK ((total_installment_amount = (installment_amount + tax_on_unpaid_premium))),
+	CONSTRAINT chk_renewal_total CHECK ((total_renewal_amount = (premium_amount + tax_on_premium))),
+	CONSTRAINT revival_calculations_pkey PRIMARY KEY (calculation_id)
+);
+CREATE INDEX idx_calc_policy ON revival.revival_calculations USING btree (policy_number);
+CREATE INDEX idx_calc_request ON revival.revival_calculations USING btree (request_id);
+CREATE INDEX idx_calc_validity ON revival.revival_calculations USING btree (valid_until);
+COMMENT ON TABLE revival.revival_calculations IS 'Quotation calculations with dual collection breakdown (IR_36)';
+
+-- Column comments
+
+COMMENT ON COLUMN revival.revival_calculations.interest_rate IS 'Interest rate used in IR_5 formula';
+
+
+-- revival.revival_request_workflow_state definition
+
+-- Drop table
+
+-- DROP TABLE revival.revival_request_workflow_state;
+
+CREATE TABLE revival.revival_request_workflow_state (
+	request_id uuid NOT NULL,
+	workflow_id varchar(255) NOT NULL,
+	run_id varchar(255) NOT NULL,
+	current_status revival."request_status" NOT NULL,
+	"workflow_status" revival."workflow_status" DEFAULT 'RUNNING'::revival.workflow_status NOT NULL,
+	sla_start_date timestamp NULL,
+	sla_end_date timestamp NULL,
+	sla_expired bool DEFAULT false NULL,
+	first_collection_done bool DEFAULT false NULL,
+	total_installments int4 NULL,
+	installments_paid int4 DEFAULT 0 NULL,
+	started_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	completed_at timestamp NULL,
+	last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT revival_request_workflow_state_pkey PRIMARY KEY (request_id),
+	CONSTRAINT uq_workflow_run UNIQUE (workflow_id, run_id)
+);
+CREATE INDEX idx_workflow_sla ON revival.revival_request_workflow_state USING btree (sla_end_date) WHERE ((workflow_status = 'RUNNING'::revival.workflow_status) AND (sla_expired = false));
+CREATE INDEX idx_workflow_state_status ON revival.revival_request_workflow_state USING btree (workflow_status);
+COMMENT ON TABLE revival.revival_request_workflow_state IS 'Temporal workflow state tracking for InstallmentRevivalWorkflow';
+
+
+-- revival.revival_requests definition
+
+-- Drop table
+
+-- DROP TABLE revival.revival_requests;
+
+CREATE TABLE revival.revival_requests (
+	request_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	ticket_id varchar(20) NOT NULL,
+	policy_number varchar(13) NOT NULL,
+	request_type varchar(30) DEFAULT 'installment_revival'::character varying NULL,
+	revival_type VARCHAR(30) NULL,
+	current_status revival."request_status" DEFAULT 'INDEXED'::revival.request_status NOT NULL,
+	indexed_date timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	data_entry_date timestamp NULL,
+	qc_complete_date timestamp NULL,
+	approval_date timestamp NULL,
+	first_collection_date timestamp NULL,
+	completion_date timestamp NULL,
+	terminated_date timestamp NULL,
+	withdrawal_date timestamp NULL,
+	sla_start_date timestamp NULL, -- 60-day SLA starts from approval_date
+	sla_end_date timestamp NULL,
+	indexed_by varchar(100) NOT NULL,
+	data_entry_by varchar(100) NULL,
+	qc_by varchar(100) NULL,
+	qc_comments text NULL,
+	approved_by varchar(100) NULL,
+	approval_comments text NULL,
+	number_of_installments int4 NULL,
+	revival_amount numeric(15, 2) NULL,
+	installment_amount numeric(15, 2) NULL,
+	total_tax_on_unpaid numeric(15, 2) NULL,
+	first_collection_done bool DEFAULT false NULL,
+	installments_paid int4 DEFAULT 0 NULL,
+	termination_reason text NULL,
+	rejection_reason text NULL,
+	withdrawal_reason text NULL,
+	blocking_new_collections bool DEFAULT false NULL, -- IR_34: Blocks subsequent collections until first complete
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	workflow_id varchar(255) NULL,
+	run_id varchar(255) NULL,
+	billing_method varchar(50) NULL, -- Payment billing method/frequency (MONTHLY, QUARTERLY, SEMI_ANNUAL, ANNUAL)
+	termination_date timestamp NULL,
+	missing_documents_list jsonb DEFAULT '[]'::jsonb NULL, -- Array of missing documents: [{"document_name": "...", "document_request_date": "...", "status": "...", "received_date": "..."}]
+	documents jsonb DEFAULT '[]'::jsonb NULL, -- Array of submitted documents: [{"document_type": "...", "document_id": "..."}]
+	interest numeric(15, 2) NULL,
+	sgst numeric(15, 2) NULL,
+	cgst numeric(15, 2) NULL,
+	rebate numeric(15, 2) NULL,
+	office_id varchar(50) NULL,
+	user_id varchar(100) NULL,
+	neft_details jsonb NULL,
+	medical_examiner_code varchar DEFAULT NULL,
+	medical_examiner_name varchar DEFAULT NULL,
+	CONSTRAINT chk_amounts_positive CHECK (((revival_amount >= (0)::numeric) AND (installment_amount >= (0)::numeric))),
+	CONSTRAINT chk_billing_method CHECK (((billing_method IS NULL) OR ((billing_method)::text = ANY ((ARRAY['MONTHLY'::character varying, 'QUARTERLY'::character varying, 'SEMI_ANNUAL'::character varying, 'ANNUAL'::character varying])::text[])))),
+	CONSTRAINT chk_installments CHECK ((number_of_installments >= 0)),
+	CONSTRAINT chk_installments_paid CHECK ((installments_paid <= number_of_installments)),
+	CONSTRAINT chk_sla_dates CHECK (((sla_end_date > sla_start_date) OR ((sla_start_date IS NULL) AND (sla_end_date IS NULL)))),
+	CONSTRAINT revival_requests_pkey PRIMARY KEY (request_id),
+	CONSTRAINT revival_requests_ticket_id_key UNIQUE (ticket_id)
+);
+CREATE INDEX idx_revival_blocking ON revival.revival_requests USING btree (policy_number, blocking_new_collections) WHERE (blocking_new_collections = true);
+CREATE INDEX idx_revival_documents ON revival.revival_requests USING gin (documents);
+CREATE INDEX idx_revival_indexed_date ON revival.revival_requests USING btree (indexed_date DESC);
+CREATE INDEX idx_revival_missing_docs ON revival.revival_requests USING gin (missing_documents_list);
+CREATE INDEX idx_revival_policy ON revival.revival_requests USING btree (policy_number);
+CREATE INDEX idx_revival_requests_billing_method ON revival.revival_requests USING btree (billing_method) WHERE (billing_method IS NOT NULL);
+CREATE INDEX idx_revival_requests_workflow ON revival.revival_requests USING btree (workflow_id, run_id);
+CREATE INDEX idx_revival_sla ON revival.revival_requests USING btree (sla_end_date) WHERE (current_status = 'AWAITING_PAYMENT'::revival.request_status);
+CREATE INDEX idx_revival_status ON revival.revival_requests USING btree (current_status);
+CREATE INDEX idx_revival_status_sla ON revival.revival_requests USING btree (current_status, sla_end_date) WHERE (current_status = ANY (ARRAY['AWAITING_PAYMENT'::revival.request_status, 'ACTIVE'::revival.request_status]));
+CREATE INDEX IF NOT EXISTS idx_revival_workflow_id ON revival.revival_requests(workflow_id);
+COMMENT ON TABLE revival.revival_requests IS 'Main revival request tracking - complete lifecycle';
+
+-- Column comments
+
+COMMENT ON COLUMN revival.revival_requests.sla_start_date IS '60-day SLA starts from approval_date';
+COMMENT ON COLUMN revival.revival_requests.blocking_new_collections IS 'IR_34: Blocks subsequent collections until first complete';
+COMMENT ON COLUMN revival.revival_requests.billing_method IS 'Payment billing method/frequency (MONTHLY, QUARTERLY, SEMI_ANNUAL, ANNUAL)';
+COMMENT ON COLUMN revival.revival_requests.missing_documents_list IS 'Array of missing documents: [{"document_name": "...", "document_request_date": "...", "status": "...", "received_date": "..."}]';
+COMMENT ON COLUMN revival.revival_requests.documents IS 'Array of submitted documents: [{"document_type": "...", "document_id": "..."}]';
+COMMENT ON COLUMN revival.revival_requests.medical_examiner_code IS 'Code of the medical examiner conducting the examination';
+COMMENT ON COLUMN revival.revival_requests.medical_examiner_name IS 'Name of the medical examiner conducting the examination';
+
+-- Table Triggers
+
+create trigger trg_revival_requests_updated_at before
+update
+    on
+    revival.revival_requests for each row execute function common.update_updated_at_column();
+create trigger trg_generate_ticket_id before
+insert
+    on
+    revival.revival_requests for each row execute function revival.generate_ticket_id();
+create trigger trg_log_status_change after
+insert
+    or
+update
+    on
+    revival.revival_requests for each row execute function revival.log_status_change();
+
+
+-- revival.status_change_history definition
+
+-- Drop table
+
+-- DROP TABLE revival.status_change_history;
+
+CREATE TABLE revival.status_change_history (
+	history_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NOT NULL,
+	from_status revival."request_status" NULL,
+	to_status revival."request_status" NOT NULL,
+	change_reason text NULL,
+	changed_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	changed_by varchar(100) NULL,
+	CONSTRAINT chk_status_different CHECK (((from_status IS NULL) OR (from_status <> to_status))),
+	CONSTRAINT status_change_history_pkey PRIMARY KEY (history_id)
+);
+CREATE INDEX idx_status_hist_changed_at ON revival.status_change_history USING btree (changed_at DESC);
+CREATE INDEX idx_status_hist_request ON revival.status_change_history USING btree (request_id);
+COMMENT ON TABLE revival.status_change_history IS 'Immutable status transition history';
+
+
+-- revival.workflow_executions definition
+
+-- Drop table
+
+-- DROP TABLE revival.workflow_executions;
+
+CREATE TABLE revival.workflow_executions (
+	execution_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NULL,
+	workflow_type varchar(50) NOT NULL,
+	workflow_id varchar(255) NOT NULL,
+	run_id varchar(255) NULL,
+	parent_workflow_id varchar(255) NULL,
+	status revival."workflow_status" DEFAULT 'RUNNING'::revival.workflow_status NOT NULL,
+	started_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	completed_at timestamp NULL,
+	error_message text NULL,
+	created_by varchar(100) NULL,
+	CONSTRAINT chk_workflow_type CHECK (((workflow_type)::text = ANY ((ARRAY['MAIN'::character varying, 'FIRST_COLLECTION'::character varying, 'CHEQUE_MONITOR'::character varying, 'INSTALLMENT_MONITOR'::character varying])::text[]))),
+	CONSTRAINT workflow_executions_pkey PRIMARY KEY (execution_id)
+);
+CREATE INDEX idx_exec_request ON revival.workflow_executions USING btree (request_id);
+CREATE INDEX idx_exec_started ON revival.workflow_executions USING btree (started_at DESC);
+CREATE INDEX idx_exec_type_status ON revival.workflow_executions USING btree (workflow_type, status);
+CREATE INDEX idx_exec_workflow ON revival.workflow_executions USING btree (workflow_id);
+COMMENT ON TABLE revival.workflow_executions IS 'All Temporal workflow executions including child workflows';
+BEGIN;
+
+  -- 1. Create revival_terminations table
+  CREATE TABLE IF NOT EXISTS revival.revival_terminations (
+      termination_id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      request_id           UUID NOT NULL,
+      ticket_id            VARCHAR(50) NOT NULL,
+      policy_number        VARCHAR(20) NOT NULL,
+      termination_reason   TEXT NOT NULL,
+      termination_type     VARCHAR(20) NOT NULL CHECK (termination_type IN ('DEFAULT', 'MANUAL', 'SLA_EXPIRED')),
+      installment_number   INTEGER,
+      suspense_created     BOOLEAN NOT NULL DEFAULT false,
+      suspense_amount      NUMERIC(15,2) DEFAULT 0.00,
+      terminated_at        TIMESTAMP NOT NULL,
+      terminated_by        VARCHAR(100),
+      created_at           TIMESTAMP NOT NULL DEFAULT NOW(),
+
+      CONSTRAINT fk_termination_request
+          FOREIGN KEY (request_id)
+          REFERENCES revival.revival_requests(request_id)
+          ON DELETE CASCADE,
+
+      CONSTRAINT chk_suspense_amount_positive
+          CHECK (suspense_amount >= 0),
+      CONSTRAINT chk_installment_number_positive
+          CHECK (installment_number IS NULL OR installment_number > 0)
+  );
+
+  -- 2. Create indexes
+  CREATE INDEX IF NOT EXISTS idx_terminations_request_id ON revival.revival_terminations(request_id);
+  CREATE INDEX IF NOT EXISTS idx_terminations_ticket_id ON revival.revival_terminations(ticket_id);
+  CREATE INDEX IF NOT EXISTS idx_terminations_policy ON revival.revival_terminations(policy_number);
+  CREATE INDEX IF NOT EXISTS idx_terminations_type ON revival.revival_terminations(termination_type);
+  CREATE INDEX IF NOT EXISTS idx_terminations_created_at ON revival.revival_terminations(created_at DESC);
+
+  -- 3. Add termination_date to revival_requests if missing
+  ALTER TABLE revival.revival_requests
+  ADD COLUMN IF NOT EXISTS termination_date TIMESTAMP;
+
+  -- 4. Add comments
+  COMMENT ON TABLE revival.revival_terminations IS 'Stores termination records when revival workflow terminates';
+  COMMENT ON COLUMN revival.revival_terminations.termination_type IS 'DEFAULT: installment timeout, MANUAL: user-initiated, SLA_EXPIRED: 60-day breach';
+  COMMENT ON COLUMN revival.revival_terminations.suspense_amount IS 'Total amount in suspense (premium + paid installments)';
+
+COMMIT;
+
+-- revival.workflow_signals_log definition
+
+-- Drop table
+
+-- DROP TABLE revival.workflow_signals_log;
+
+CREATE TABLE revival.workflow_signals_log (
+	signal_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	request_id uuid NULL,
+	workflow_id varchar(255) NOT NULL,
+	signal_name varchar(100) NOT NULL,
+	signal_payload jsonb NULL,
+	sent_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	sent_by varchar(100) NULL,
+	CONSTRAINT chk_signal_name CHECK (((signal_name)::text = ANY ((ARRAY['data-entry-complete'::character varying, 'quality-check-complete'::character varying, 'approval-decision'::character varying, 'documents-received'::character varying, 'first-collection-complete'::character varying, 'payment-received'::character varying, 'cheque-cleared'::character varying, 'cheque-dishonored'::character varying, 'cheque-not-cleared-by-due'::character varying, 'installment-payment-received'::character varying, 'installment-defaulted'::character varying, 'all-installments-paid'::character varying, 'request-withdrawn'::character varying])::text[]))),
+	CONSTRAINT workflow_signals_log_pkey PRIMARY KEY (signal_id)
+);
+CREATE INDEX idx_signals_name ON revival.workflow_signals_log USING btree (signal_name);
+CREATE INDEX idx_signals_request ON revival.workflow_signals_log USING btree (request_id);
+CREATE INDEX idx_signals_sent_at ON revival.workflow_signals_log USING btree (sent_at DESC);
+CREATE INDEX idx_signals_workflow ON revival.workflow_signals_log USING btree (workflow_id);
+COMMENT ON TABLE revival.workflow_signals_log IS 'Temporal signal audit trail';
+
+
+-- revival.generated_letters foreign keys
+
+ALTER TABLE revival.generated_letters ADD CONSTRAINT generated_letters_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE revival.generated_letters ADD CONSTRAINT generated_letters_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.installment_schedules foreign keys
+
+ALTER TABLE revival.installment_schedules ADD CONSTRAINT installment_schedules_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE revival.installment_schedules ADD CONSTRAINT installment_schedules_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.request_stage_history foreign keys
+
+ALTER TABLE revival.request_stage_history ADD CONSTRAINT request_stage_history_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.revival_calculations foreign keys
+
+ALTER TABLE revival.revival_calculations ADD CONSTRAINT revival_calculations_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+ALTER TABLE revival.revival_calculations ADD CONSTRAINT revival_calculations_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.revival_request_workflow_state foreign keys
+
+ALTER TABLE revival.revival_request_workflow_state ADD CONSTRAINT revival_request_workflow_state_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.revival_requests foreign keys
+
+ALTER TABLE revival.revival_requests ADD CONSTRAINT revival_requests_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number);
+
+
+-- revival.status_change_history foreign keys
+
+ALTER TABLE revival.status_change_history ADD CONSTRAINT status_change_history_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.workflow_executions foreign keys
+
+ALTER TABLE revival.workflow_executions ADD CONSTRAINT workflow_executions_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.workflow_signals_log foreign keys
+
+ALTER TABLE revival.workflow_signals_log ADD CONSTRAINT workflow_signals_log_request_id_fkey FOREIGN KEY (request_id) REFERENCES revival.revival_requests(request_id);
+
+
+-- revival.active_requests_summary source
+
+CREATE OR REPLACE VIEW revival.active_requests_summary
+AS SELECT rr.request_id,
+    rr.ticket_id,
+    rr.policy_number,
+    p.customer_name,
+    rr.current_status,
+    rr.indexed_date,
+    rr.approval_date,
+    rr.sla_end_date,
+        CASE
+            WHEN rr.sla_end_date IS NOT NULL THEN GREATEST(0::numeric, EXTRACT(day FROM rr.sla_end_date::timestamp with time zone - CURRENT_TIMESTAMP))
+            ELSE NULL::numeric
+        END AS days_until_sla_expiry,
+    rr.number_of_installments,
+    rr.installments_paid,
+    rr.revival_amount,
+    rr.installment_amount
+   FROM revival.revival_requests rr
+     JOIN common.policies p ON rr.policy_number::text = p.policy_number::text
+  WHERE rr.current_status <> ALL (ARRAY['COMPLETED'::revival.request_status, 'REJECTED'::revival.request_status, 'TERMINATED'::revival.request_status, 'WITHDRAWN'::revival.request_status]);
+
+COMMENT ON VIEW revival.active_requests_summary IS 'Active revival requests with SLA tracking';
+
+ALTER TABLE revival.revival_requests 
+ADD COLUMN IF NOT EXISTS request_owner VARCHAR;
+
+-- DROP FUNCTION revival.generate_ticket_id();
+ALTER TABLE revival.revival_requests
+ADD COLUMN previous_suspense_amount numeric(15,2) DEFAULT 0.00;
+
+
+ALTER TABLE revival.revival_requests
+ADD COLUMN suspense_adjusted boolean DEFAULT false;
+
+ALTER TABLE revival.revival_requests
+ADD COLUMN adjusted_revival_amount numeric(15,2) DEFAULT 0.00;
+
+
+
+
+ALTER TABLE collection.suspense_accounts
+ADD COLUMN IF NOT EXISTS reason TEXT,
+ADD COLUMN IF NOT EXISTS source_payment_ids TEXT,
+ADD COLUMN IF NOT EXISTS tigerbeetle_transfer_id VARCHAR,
+ADD COLUMN IF NOT EXISTS suspense_account_type VARCHAR(20) DEFAULT 'REVIVAL_SUSPENSE';
+
+ALTER TABLE revival.revival_requests
+ADD COLUMN completed_date timestamp without time zone;

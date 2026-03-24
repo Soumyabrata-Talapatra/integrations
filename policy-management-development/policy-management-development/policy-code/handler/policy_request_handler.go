@@ -48,9 +48,9 @@ import (
 const (
 	signalSurrenderRequest       = "surrender-request"
 	signalLoanRequest            = "loan-request"
-	signalLoanRepaymentRequest   = "loan-repayment"      // §9.1 canonical name [signals.go]
+	signalLoanRepaymentRequest   = "loan-repayment" // §9.1 canonical name [signals.go]
 	signalRevivalRequest         = "revival-request"
-	signalDeathClaimRequest      = "death-notification"  // §9.1 canonical name [signals.go, BR-PM-112]
+	signalDeathClaimRequest      = "death-notification" // §9.1 canonical name [signals.go, BR-PM-112]
 	signalMaturityClaimRequest   = "maturity-claim-request"
 	signalSurvivalBenefitRequest = "survival-benefit-request"
 	signalCommutationRequest     = "commutation-request"
@@ -78,7 +78,7 @@ type policyRequestSignal struct {
 // adminVoidSignalPayload is the payload for the admin-void signal. [BR-PM-073]
 // JSON tags MUST match workflows.AdminVoidSignal exactly.
 type adminVoidSignalPayload struct {
-	RequestID    string `json:"request_id"`    // dedup key for PLW ProcessedSignalIDs
+	RequestID    string `json:"request_id"` // dedup key for PLW ProcessedSignalIDs
 	Reason       string `json:"reason"`
 	AuthorizedBy int64  `json:"authorized_by"` // was "voided_by" — mismatch fixed
 }
@@ -431,31 +431,11 @@ func (h *PolicyRequestHandler) submitRequest(
 	// Step 2: Idempotency check — return original 202 if duplicate key found.
 	// Financial requests require idempotency key to prevent duplicate processing.
 
-	
 	if isFinancial && idempotencyKey == "" {
 		return nil, newHTTPErr(http.StatusBadRequest,
 			"X-Idempotency-Key header required for financial requests", nil)
 	}
 
-	// Validate source_channel is not empty and is a valid value
-	if sourceChannel == "" {
-		return nil, newHTTPErr(http.StatusBadRequest,
-			"source_channel is required", nil)
-	}
-	// Check if sourceChannel is one of the valid enum values
-	validChannels := map[string]bool{
-		"CUSTOMER_PORTAL": true,
-		"CPC":             true,
-		"MOBILE_APP":      true,
-		"AGENT_PORTAL":    true,
-		"BATCH":           true,
-		"SYSTEM":          true,
-	}
-	if !validChannels[sourceChannel] {
-		return nil, newHTTPErr(http.StatusBadRequest,
-			fmt.Sprintf("source_channel must be one of: CUSTOMER_PORTAL, CPC, MOBILE_APP, AGENT_PORTAL, BATCH, SYSTEM, got: %s", sourceChannel), nil)
-	}
-	
 	if idempotencyKey != "" {
 		existing, err := h.srRepo.CheckIdempotencyKey(ctx, idempotencyKey)
 		if err != nil {
@@ -625,6 +605,7 @@ func (h *PolicyRequestHandler) SubmitLoanRepayment(sctx *serverRoute.Context, re
 // [FR-PM-001] [BR-PM-013] [BR-PM-030]
 func (h *PolicyRequestHandler) SubmitRevivalRequest(sctx *serverRoute.Context, req revivalReq) (*resp.RequestAcceptedResponse, error) {
 	payload, _ := json.Marshal(req.SubmitRevivalRequest.Payload)
+	fmt.Println("hereerrerererererer")
 	return h.submitRequest(
 		sctx.Ctx,
 		req.PolicyNumber,

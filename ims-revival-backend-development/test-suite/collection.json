@@ -1,0 +1,4082 @@
+{
+	"info": {
+		"_postman_id": "ec901d30-7735-4b76-a755-4066faeb2175",
+		"name": "Optimization",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30426670"
+	},
+	"item": [
+		{
+			"name": "Communications",
+			"item": [
+				{
+					"name": "Communication makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/communication-makers?emp-id=10015845&status=Approved",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communication-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Communication makers by approver id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 1009008,\r\n    \"communication_addr1\": \"123 Main Street\",\r\n    \"communication_addr2\": \"Apt 4B\",\r\n    \"communication_addr3\": \"Hyderabad\",\r\n    \"communication_pin\": 500001,\r\n    \"india_post_email_id\": \"jallu@indiapost.com\",\r\n    \"personal_email_id\": \"jallu@gmail.com\",\r\n    \"mobile_no\": 7867355829,\r\n    \"aadhaar_ref_number\": \"759629462468\",\r\n    \"pan_number\": \"EFHGU4312F\",\r\n    \"approver_post_id\": \"10127497\",\r\n    \"created_by\": \"10166245\",\r\n    \"user_remarks\": \"Initial communication details.\",\r\n    \"forward_post_id\": \"12373415\",\r\n    \"employee_name\": \"Dhruv\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/communications?post-id=30007775",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"communications"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Communications by emp id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 1009008,\r\n    \"communication_addr1\": \"123 Main Street\",\r\n    \"communication_addr2\": \"Apt 4B\",\r\n    \"communication_addr3\": \"Hyderabad\",\r\n    \"communication_pin\": 500001,\r\n    \"india_post_email_id\": \"jallu@indiapost.com\",\r\n    \"personal_email_id\": \"jallu@gmail.com\",\r\n    \"mobile_no\": 7867355829,\r\n    \"aadhaar_ref_number\": \"759629462468\",\r\n    \"pan_number\": \"EFHGU4312F\",\r\n    \"approver_post_id\": \"10127497\",\r\n    \"created_by\": \"10166245\",\r\n    \"user_remarks\": \"Initial communication details.\",\r\n    \"forward_post_id\": \"12373415\",\r\n    \"employee_name\": \"Dhruv\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/communications?emp-id=10015845",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communications"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Communication makers by admin office id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/communication-makers?admin-office-id=21260551&status=Approved",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communication-makers"
+							],
+							"query": [
+								{
+									"key": "admin-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Communication makers by approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/communication-makers?post-id=30007775&status=Approved",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communication-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forward pending communications",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"action_type\": \"Withdraw\",\r\n  \"action_by\": 10015845,\r\n  \"remarks\": \"Wrong details\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/communication-makers/10430",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"communication-makers",
+								"10430"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Withdraw/cancellation of pending communicatiions",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"action_type\": \"Withdraw\",\r\n  \"action_by\": 10021629,\r\n  \"remarks\": \"Wrong details\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/communication-makers/10430",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communication-makers",
+								"10430"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk approval of communications",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_ids\": [\r\n       10015845\r\n    ],\r\n    \"approved_by\": \"30117424\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approve_auth_remarks\": \"Verified\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/communication-makers/approve-bulk",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communication-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Leave communications by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/leave-communications?emp-id=10015845",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"leave-communications"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of Communications",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n    \"employee_id\": 10015845,\n    \"communication_addr1\": \"1234 Main St\",\n    \"communication_addr2\": \"Apt 101\",\n    \"communication_addr3\": \"Near Central Park\",\n    \"communication_pin\": 110001,\n    \"india_post_email_id\": \"employee@indiapost.gov.in\",\n    \"personal_email_id\": \"employee.personal@gmail.com\",\n    \"mobile_no\": \"9876543210\",\n    \"aadhaar_ref_number\": \"1234-5678-9012\",\n    \"pan_number\": \"ABCDE1234F\",\n    \"approver_post_id\": \"30007775\",\n    \"created_by\": \"10015845\",\n    \"user_remarks\": \"Some remarks\"\n}",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "postman-cloud:///1ef1cd26-40f5-4110-b789-8f0f87855f4d"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/communication-makers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"communication-makers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bank Details",
+			"item": [
+				{
+					"name": "Bank details by approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-details?post-id=30007775",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-details"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank details by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-details?emp-id=10063582",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-details"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10063582"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank maker details by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers?emp-id=10035071&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10035071"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank maker details by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers?emp-id=10035071&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10035071"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank maker details by approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers?post-id=30007775&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank maker details by approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers?post-id=30007775&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank maker details by ddo id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers?ddo-office-id=21260551&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							],
+							"query": [
+								{
+									"key": "ddo-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bank maker details by ddo id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers?ddo-office-id=21260551&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							],
+							"query": [
+								{
+									"key": "ddo-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approval of bank details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"bank_details_ids\": [\r\n        2405,\r\n        2406\r\n    ],\r\n    \"approved_by\": \"30007775\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approve_auth_remarks\": \"Approved based on the provided documentation.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers/approve-bulk",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of bank details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"banks\": [\r\n        {\r\n            \"employee_id\": 10035071,\r\n            \"employee_name\": \"SHRILAKSHMI\",\r\n            \"bank_name\": \"SBI\",\r\n            \"branch_code\": \"500007\",\r\n            \"bank_acc_no\": \"1223456800\",\r\n            \"ifsc_code\": \"SBIN002315\",\r\n            \"branch_addr1\": \"123-1 Abids\",\r\n            \"branch_addr2\": \"Hyderabad\",\r\n            \"branch_pin\": 500001,\r\n            \"approver_post_id\": \"30007706\",\r\n            \"bank_type\": \"Home\",\r\n            \"draw_type\": \"Main Bank\",\r\n            \"created_by\": \"10035071\",\r\n            \"user_remarks\": \"sample remarks\",\r\n            \"bank_type_id\": 1,\r\n            \"draw_type_id\": 6\r\n        },\r\n        {\r\n            \"employee_id\": 10035071,\r\n            \"employee_name\": \"SHRILAKSHMI\",\r\n            \"bank_name\": \"POSB\",\r\n            \"branch_code\": \"500007\",\r\n            \"bank_acc_no\": \"3313456789\",\r\n            \"ifsc_code\": \"IPOS0000DOP\",\r\n            \"branch_addr1\": \"123-1 Abids\",\r\n            \"branch_addr2\": \"Hyderabad\",\r\n            \"branch_pin\": 500001,\r\n            \"approver_post_id\": \"30007706\",\r\n            \"bank_type\": \"POSB\",\r\n            \"draw_type\": \"Main bank details for Off-Cycle\",\r\n            \"created_by\": \"10035071\",\r\n            \"user_remarks\": \"sample remarks\",\r\n            \"bank_type_id\": 2,\r\n            \"draw_type_id\": 5\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forward bank details",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action_type\": \"Forward\",\r\n    \"action_by\": 10166245,\r\n    \"remarks\": \"Forwarded for further process\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers/2447",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers",
+								"2447"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Withdraw bank details",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action_type\": \"Withdraw\",\r\n    \"action_by\": 10166245,\r\n    \"remarks\": \"Typo Error.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/bank-detail-makers/2444",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"bank-detail-makers",
+								"2444"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Demographics",
+			"item": [
+				{
+					"name": "List Genders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/genders",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"genders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Marital statuses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/demographics/marital-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"demographics",
+								"marital-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Recruitments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/recruitments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"recruitments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List PWD Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/pwd-categories",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"pwd-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Emp Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/emp-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"emp-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Relation Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/relation-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"relation-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Nomination Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/nomination-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"nomination-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Emp Groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/emp-groups",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"emp-groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Designations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/designations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"designations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List NOC-types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/noc-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"noc-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Arrangement Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/arrangement-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"arrangement-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Blood Groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/blood-groups",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"blood-groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Hierarchy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/hierarchy",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"hierarchy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all Demographics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Bank types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/bank-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"bank-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Communities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/demographics/communities",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"demographics",
+								"communities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Exit Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/demographics/exit-types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"demographics",
+								"exit-types"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Emp Master",
+			"item": [
+				{
+					"name": "Creation of employee",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_first_name\": \"Anand\",\r\n    \"employee_middle_name\": \"Kumar\",\r\n    \"employee_last_name\": \"Dhathra\",\r\n    \"employee_father_name\": \"Yerriswamy\",\r\n    \"employee_date_of_birth\": \"1987-01-02T00:00:00Z\",\r\n    \"gender\": \"Male\",\r\n    \"employee_community\": \"UR\",\r\n    \"selected_community\": \"UR\",\r\n    \"marital_status\": \"Married\",\r\n    \"employee_height\": 169,\r\n    \"blood_group\": \"O +ve\",\r\n    \"pwd\": false,\r\n    \"employee_nationality\": \"Indian\",\r\n    \"ex_service_man_flag\": false,\r\n    \"personal_identification_mark1\": \"a black scar on forehead\",\r\n    \"personal_identification_mark2\": \"\",\r\n    \"permanent_addr1\": \"address1\",\r\n    \"permanent_addr2\": \"address2\",\r\n    \"permanent_addr3\": \"address3\",\r\n    \"permanent_addr4\": \"address4\",\r\n    \"permanent_pin\": 500001,\r\n    \"home_town\": \"Hyderabad\",\r\n    \"date_of_join_in_department\": \"2024-09-01T00:00:00Z\",\r\n    \"employee_type\": \"DOP\",\r\n    \"recruitment_mode\": \"DR\",\r\n    \"date_of_join_in_present_cadre\": \"2024-09-01T00:00:00Z\",\r\n    \"office_id\": 21260701,\r\n    \"group_post\": \"Group C\",\r\n    \"post_id\": 70431281,\r\n    \"designation_id\": 154,\r\n    \"employee_designation\": \"Postal Assistant(PA)\",\r\n    \"cadre_id\": 154,\r\n    \"cadre\": \"Postal Assistant(PA)\",\r\n    \"tax_regime\": \"New\",\r\n    \"nps_id\": null,\r\n    \"driver_licence_number\": \"\",\r\n    \"date_of_substantive_entry\": \"2024-09-01T00:00:00Z\",\r\n    \"date_of_retirement\": \"2047-01-31T00:00:00Z\",\r\n    \"remarks\": \"created for test purpose\",\r\n    \"deputation_status\": false,\r\n    \"facility_mapped\": \"21260701\",\r\n    \"division_office_id\": 21260000,\r\n    \"region_office_id\": 21900003,\r\n    \"circle_office_id\": 21000000,\r\n    \"employment_status\": \"Pending\",\r\n    \"created_by\": \"10021629\",\r\n    \"approver_post_id\": 30007706,\r\n    \"reporting_office_id\": 21260551,\r\n    \"reporting_authority_post_id\": 30007706\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/emp-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"emp-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve the initiated exit status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"emp_status_id\": 8,\r\n    \"emp_status_type\": \"Resignation\",\r\n    \"date_of_exit\": \"2024-10-22T00:00:00Z\",\r\n    \"updated_by\": \"10015845\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-details/74000251/approve-exit",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-details",
+								"74000251",
+								"approve-exit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Office wise RMS emp details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-details?office-id=21630208&cadre-id=154&query-type=rms_employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-details"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21630208"
+								},
+								{
+									"key": "cadre-id",
+									"value": "154"
+								},
+								{
+									"key": "query-type",
+									"value": "rms_employees"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Office & Cadre wise emp details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-details?office-id=21630208&cadre-id=154&query-type=employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-details"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21630208"
+								},
+								{
+									"key": "cadre-id",
+									"value": "154"
+								},
+								{
+									"key": "query-type",
+									"value": "employees"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Office & Cadre wise substitute details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-details?office-id=21630208&cadre-id=154&query-type=substitute_employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-details"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21630208"
+								},
+								{
+									"key": "cadre-id",
+									"value": "154"
+								},
+								{
+									"key": "query-type",
+									"value": "substitute_employees"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Office Wise Driver Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/driver-details?office-id=21010000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"driver-details"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21010000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update the emp substitute status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-details/update-substitute-status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-details",
+								"update-substitute-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Initiate exit status for emp",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"updated_by\": \"10015845\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/emp-details/74000251/initiate-exit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"emp-details",
+								"74000251",
+								"initiate-exit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emp basic details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"arrangement_type_id\": 1,\r\n    \"employee_id\": 74000147,\r\n    \"old_employee_type_id\": 1,\r\n    \"old_employee_group_id\": 2,\r\n    \"old_post_id\": 300,\r\n    \"old_cadre_id\": 1,\r\n    \"old_designation_id\": 50,\r\n    \"old_office_id\": 21260000,\r\n    \"old_subdivision_office_id\": 9001031,\r\n    \"old_division_office_id\": 9000012,\r\n    \"new_employee_type_id\": 1,\r\n    \"new_employee_group_id\": 2,\r\n    \"new_post_id\": 350,\r\n    \"new_cadre_id\": 1,\r\n    \"new_designation_id\": 55,\r\n    \"new_office_id\": 21262166,\r\n    \"new_subdivision_id\": 9001013,\r\n    \"new_division_id\": 9001091,\r\n    \"arrangement_from_date\": \"2024-08-01T00:00:00Z\",\r\n    \"arrangement_to_date\": \"2023-08-31T00:00:00Z\",\r\n    \"remarks\": \"Temporary transfer due to department restructuring\",\r\n    \"created_by\": \"admin\",\r\n    \"approve_authority_id\": 5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-basic-details/10169932",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-basic-details",
+								"10169932"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emp full details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-full-details/10169932",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-full-details",
+								"10169932"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update emp leave status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-details/update-leave-status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-details",
+								"update-leave-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Office wise emp details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-master-details?office-id=21611002",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-master-details"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21611002"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approver post wise pending emp details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-master-details?post-id=30007706",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-master-details"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007706"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of exist emp details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 74000740,\r\n    \"employee_first_name\": \"Anand\",\r\n    \"employee_middle_name\": \"Kumar\",\r\n    \"employee_last_name\": \"Dhathra\",\r\n    \"employee_father_name\": \"Yerriswamy\",\r\n    \"employee_date_of_birth\": \"1987-01-02T00:00:00Z\",\r\n    \"gender\": \"Male\",\r\n    \"employee_community\": \"UR\",\r\n    \"selected_community\": \"UR\",\r\n    \"marital_status\": \"Married\",\r\n    \"employee_height\": 169,\r\n    \"blood_group\": \"O +ve\",\r\n    \"pwd\": false,\r\n    \"employee_nationality\": \"Indian\",\r\n    \"ex_service_man_flag\": false,\r\n    \"personal_identification_mark1\": \"a black scar on forehead\",\r\n    \"personal_identification_mark2\": \"\",\r\n    \"permanent_addr1\": \"address1\",\r\n    \"permanent_addr2\": \"address2\",\r\n    \"permanent_addr3\": \"address3\",\r\n    \"permanent_addr4\": \"address4\",\r\n    \"permanent_pin\": 500001,\r\n    \"home_town\": \"Hyderabad\",\r\n    \"date_of_join_in_department\": \"2024-09-01T00:00:00Z\",\r\n    \"employee_type\": \"DOP\",\r\n    \"recruitment_mode\": \"DR\",\r\n    \"date_of_join_in_present_cadre\": \"2024-09-01T00:00:00Z\",\r\n    \"office_id\": 21260701,\r\n    \"group_id\": 4,\r\n    \"group_post\": \"Group C\",\r\n    \"post_id\": 74032181,\r\n    \"designation_id\": 154,\r\n    \"employee_designation\": \"Postal Assistant(PA)\",\r\n    \"cadre_id\": 154,\r\n    \"cadre\": \"Postal Assistant(PA)\",\r\n    \"tax_regime\": \"New\",\r\n    \"nps_id\": null,\r\n    \"driver_licence_number\": \"\",\r\n    \"date_of_substantive_entry\": \"2024-09-01T00:00:00Z\",\r\n    \"date_of_retirement\": \"2047-01-31T00:00:00Z\",\r\n    \"remarks\": \"created for test purpose\",\r\n    \"deputation_status\": false,\r\n    \"facility_mapped\": \"21260701\",\r\n    \"division_office_id\": 21260000,\r\n    \"region_office_id\": 21900003,\r\n    \"circle_office_id\": 21000000,\r\n    \"employment_status\": \"Pending\",\r\n    \"emp_status_id\": 5,\r\n    \"created_by\": \"10021629\",\r\n    \"approver_post_id\": 30007706,\r\n    \"reporting_office_id\": 21260551,\r\n    \"reporting_authority_post_id\": 30007706\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/exist-emp-details",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"exist-emp-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Division Wise Employees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/division-employees?division-id=21250000&cadre-id=154",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"division-employees"
+							],
+							"query": [
+								{
+									"key": "division-id",
+									"value": "21250000"
+								},
+								{
+									"key": "cadre-id",
+									"value": "154"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Working emp count in an office",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/working-employees?office-id=21260000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"working-employees"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21260000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Div wise deputed emp list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/deputed-employees?division-id=21260000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"deputed-employees"
+							],
+							"query": [
+								{
+									"key": "division-id",
+									"value": "21260000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deputed emp details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/deputed-emp-details/10100046",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"deputed-emp-details",
+								"10100046"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Insertion of modified emp detials into emp maker table",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 10015845,\r\n    \"employee_first_name\": \"yash\",\r\n    \"employee_middle_name\": \"yash\",\r\n    \"employee_last_name\": \"yash\",\r\n    \"employee_father_name\": \"yash\",\r\n    \"employee_date_of_birth\": \"1998-12-10T05:30:00Z\",\r\n    \"community_id\": 1,\r\n    \"employee_community\": \"UR\",\r\n    \"selected_community\": \"UR\",\r\n    \"gender\": \"Male\",\r\n    \"gender_id\": 1,\r\n    \"marital_status\": \"Married\",\r\n    \"marital_id\": 1,\r\n    \"permanent_addr1\": \"Add\",\r\n    \"permanent_addr2\": \"add\",\r\n    \"permanent_addr3\": \"ada\",\r\n    \"permanent_addr4\": \"add\",\r\n    \"permanent_pin\": 123321,\r\n    \"employee_nationality\": \"Indian\",\r\n    \"personal_identification_mark1\": \"mark\",\r\n    \"personal_identification_mark2\": \"mark\",\r\n    \"employee_height\": 123,\r\n    \"recruitment_mode\": \"DR\",\r\n    \"recruitment_type_id\": 1,\r\n    \"pwd\": false,\r\n    \"ex_service_man_flag\": false,\r\n    \"employee_type\": \"DOP\",\r\n    // \"employee_type_id\": 1,\r\n    \"date_of_join_in_department\": \"2022-12-10T05:30:00Z\",\r\n    \"cadre\": \"Postal Assistant(PA)\",\r\n    \"cadre_id\": 154,\r\n    \"designation_id\": 154,\r\n    \"date_of_join_in_present_cadre\": \"2023-12-10T05:30:00Z\",\r\n    \"group_post\": \"Group C\",\r\n    // \"group_id\": 4,\r\n    \"office_id\": 21260000,\r\n    // \"office_type\": \"PDN\",\r\n    \"post_id\": 30002975,\r\n    \"employee_designation\": \"Multi Tasking Staff\",\r\n    // \"office_of_working\": \"Mysuru Division\",\r\n    // \"facility_mapped\": \"facility mapped\",\r\n    \"division_office_id\": 21260000,\r\n    \"circle_office_id\": 21000000,\r\n    \"employment_status\": \"Pending\",\r\n    // \"emp_status_id\": 5,\r\n    \"home_town\": \"ind\",\r\n    \"nps_id\": 123321,\r\n    \"gpf_id\": \"gpfid123\",\r\n    \"subscription_amount\": 123456,\r\n    \"driver_licence_number\": \"licence123\",\r\n    \"date_of_substantive_entry\": \"2023-12-10T05:30:00Z\",\r\n    \"date_of_retirement\": \"2058-12-31T05:30:00+05:30\",\r\n    \"remarks\": \"hii\",\r\n    \"pwd_sub_cat\": \"\",\r\n    \"created_by\": \"10041759\",\r\n    \"approver_post_id\": 30007706,\r\n    \"reporting_office_id\": 21260551,\r\n    \"reporting_authority_post_id\": 30007706,\r\n    \"region_office_id\": 21900003,\r\n    \"deputation_status\": false,\r\n    \"blood_group\": \"AB Positive\",\r\n    \"tax_regime\": \"Old\",\r\n    \"updated_by\": \"10041759\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/emp-makers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"emp-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of deputed emp details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"employee_id\": 10015845,\r\n  \"parent_division\": \"Division XYZ\",\r\n  \"parent_division_id\": 456,\r\n  \"parent_office_id\": 789,\r\n  \"parent_office_wkg\": \"Office ABC\",\r\n  \"parent_post_id\": 101,\r\n  \"parent_cadre_id\": 202,\r\n  \"deputation_start_date\": \"2024-06-20T00:00:00Z\",\r\n  \"deputation_end_date\": \"2025-06-20T00:00:00Z\",\r\n  \"remarks\": \"This is a sample remark\",\r\n  \"created_by\": \"10015845\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/deputed-emp-details",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"deputed-emp-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approving newly added details in em master",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 74000255,\r\n    \"approver_id\": \"30007706\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approver_remarks\": \"The emp details have been reviewed and approved.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-makers/141/add-approve",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-makers",
+								"141",
+								"add-approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approving modified emp master details",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 74000248,\r\n    \"approver_id\": \"30007706\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approver_remarks\": \"The emp details have been reviewed and approved.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-makers/135/modify-approve",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-makers",
+								"135",
+								"modify-approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emp makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-makers?emp-id=10015845",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pending emp makers by approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-post-makers?post-id=30007706",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-post-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007706"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emp pending deputations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-pending-deputations/74000143",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-pending-deputations",
+								"74000143"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Name revised emp details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/name-revised-employees?emp-id=74000191&start-date=2024-06-04&end-date=2024-07-26",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"name-revised-employees"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "74000191"
+								},
+								{
+									"key": "start-date",
+									"value": "2024-06-04"
+								},
+								{
+									"key": "end-date",
+									"value": "2024-07-26"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve bulk of employees",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"approvals\": [\r\n        {\r\n            \"modification_id\": 136,\r\n            \"employee_id\": 10015845\r\n        },\r\n        {\r\n            \"modification_id\": 135,\r\n            \"employee_id\": 74000248\r\n        }\r\n    ],\r\n    \"approver_id\": \"30007706\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approver_remarks\": \"All documents verified and approved.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-makers/approve-bulk",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gradations",
+			"item": [
+				{
+					"name": "Gradations by cadre",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/gradations?cadre=PA",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"gradations"
+							],
+							"query": [
+								{
+									"key": "cadre",
+									"value": "PA"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gradations by circle id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/gradations?circle-id=21000000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"gradations"
+							],
+							"query": [
+								{
+									"key": "circle-id",
+									"value": "21000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gradations by division id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/gradations?division-id=21260000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"gradations"
+							],
+							"query": [
+								{
+									"key": "division-id",
+									"value": "21260000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Acknowledge gradations",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"remarks\": \"Verified\",\r\n  \"ack_status\": \"Acknowledged\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/gradations/10021844/acknowledge",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"gradations",
+								"10021844",
+								"acknowledge"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Temp Arrangement",
+			"item": [
+				{
+					"name": "Outsourced resources by sub division id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/outsourced-resources?sub-division-id=21260204",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"outsourced-resources"
+							],
+							"query": [
+								{
+									"key": "sub-division-id",
+									"value": "21260204"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Outsourced resources by resource id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/outsourced-resources?resource-id=100005",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"outsourced-resources"
+							],
+							"query": [
+								{
+									"key": "resource-id",
+									"value": "100005"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of outsourced resource",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\": \"Rishi\",\r\n    \"last_name\": \"Ragula\",\r\n    \"father_name\": \"Prasad\",\r\n    \"date_of_birth\": \"1992-11-25T00:00:00Z\",\r\n    \"community\": \"General\",\r\n    \"gender\": \"Male\",\r\n    \"address1\": \"Bhagath Nagar\",\r\n    \"address4\": \"Karimnagar\",\r\n    \"pin_code\": 505001,\r\n    \"personal_email_id\": \"jaggu.prd@gmail.com\",\r\n    \"mobile_no\": 9832107654,\r\n    \"aadhaar_number\": 341234893412,\r\n    \"pan_number\": \"ACDEB1234F\",\r\n    \"education_qualification\": \"Bachelor of Science\",\r\n    \"approver_post_id\": \"30007706\",\r\n    \"created_by\": 10015845,\r\n    \"remarks\": \"Temporary assignment\",\r\n    \"login_required\": true,\r\n    \"sub_division_id\": 65798097,\r\n    \"bank_acc_no\": \"01228464586\",\r\n    \"ifsc_code\": \"IPOS0000DOP\",\r\n    \"bank_type\": \"POSB\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/outsourced-resources",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"outsourced-resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Arrangement by outsourced resource",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"arrangement_type_id\": 5,\r\n    \"resource_id\": 100009,\r\n    \"new_employee_type_id\": 2,\r\n    \"new_employee_group_id\": 5,\r\n    \"new_post_id\": 30118295,\r\n    \"new_cadre_id\": 154,\r\n    \"new_designation_id\": 161,\r\n    \"new_office_id\": 21282313,\r\n    \"new_subdivision_id\": 21280000,\r\n    \"new_division_id\": 21280000,\r\n    \"arrangement_from_date\": \"2024-08-28T00:00:00Z\",\r\n    \"arrangement_to_date\": \"2024-08-28T00:00:00Z\",\r\n    \"remarks\": \"\",\r\n    \"substitute_type\": \"S\",\r\n    \"created_by\": \"10040464\",\r\n    \"approve_authority_id\": 10040464\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/outsource-arrangements",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"outsource-arrangements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Arrangement by dept emp",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"arrangement_type_id\": 1,\r\n    \"employee_id\": 10047161,\r\n    \"old_employee_type_id\": 1,\r\n    \"old_employee_group_id\": 4,\r\n    \"old_post_id\": 30007163,\r\n    \"old_cadre_id\": 154,\r\n    \"old_designation_id\": 154,\r\n    \"old_office_id\": 21260701,\r\n    \"old_subdivision_office_id\": 21260203,\r\n    \"old_division_office_id\": 21260000,\r\n    \"new_employee_type_id\": 1,\r\n    \"new_employee_group_id\": 5,\r\n    \"new_post_id\": 70001275,\r\n    \"new_cadre_id\": 211,\r\n    \"new_designation_id\": 211,\r\n    \"new_office_id\": 21260701,\r\n    \"new_subdivision_id\": 21260203,\r\n    \"new_division_id\": 21260000,\r\n    \"arrangement_from_date\": \"2024-07-26T00:00:00Z\",\r\n    \"arrangement_to_date\": \"2024-07-27T00:00:00Z\",\r\n    \"remarks\": \"\",\r\n    \"created_by\": \"10265109\",\r\n    \"approve_authority_id\": 10265109,\r\n    \"substitute_type\":\"S\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/temp-arrangements",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"temp-arrangements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Arrangements by office-id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/temp-arrangements?office-id=21260000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"temp-arrangements"
+							],
+							"query": [
+								{
+									"key": "office-id",
+									"value": "21260000"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Properties",
+			"item": [
+				{
+					"name": "Properties by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/properties/emp?emp-id=10015845&stmt-year=2023",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"properties",
+								"emp"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "stmt-year",
+									"value": "2023"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Properties by approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/properties/post?post-id=30007706&stmt-year=2023",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"properties",
+								"post"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007706"
+								},
+								{
+									"key": "stmt-year",
+									"value": "2023"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of Properties",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"properties\": [\r\n        {\r\n            \"employee_id\": 10012009,\r\n            \"employee_name\": \"Sunitha\",\r\n            \"group_name\": \"C\",\r\n            \"property_type\": \"House\",\r\n            \"property_details\": \"3-bedroom apartment\",\r\n            \"location_details\": \"123 Main Street, Madhapur\",\r\n            \"house_construction_or_purchase_cost\": 2000000,\r\n            \"house_construction_or_purchase_year\": 2010,\r\n            \"present_value\": 1600000,\r\n            \"holder_name\": \"Sunitha\",\r\n            \"holder_relationship\": \"Self\",\r\n            \"acquisition_method\": \"Purchase\",\r\n            \"acquisition_year\": 2010,\r\n            \"annual_income_from_property\": 12000,\r\n            \"statement_year\": 2023,\r\n            \"statement_as_on\": \"2024-05-12T10:00:00Z\",\r\n            \"approver_post_id\": \"10127497\",\r\n            \"created_by\": \"10452486\",\r\n            \"remarks\": \"Sample remarks\"\r\n        },\r\n        {\r\n            \"employee_id\": 10015845,\r\n            \"employee_name\": \"Dhruva kumar\",\r\n            \"group_name\": \"C\",\r\n            \"property_type\": \"Open Plot\",\r\n            \"property_details\": \"110 Sq Yards\",\r\n            \"location_details\": \"Bibi Nagar\",\r\n            \"house_construction_or_purchase_cost\": 0,\r\n            \"house_construction_or_purchase_year\": 0,\r\n            \"present_value\": 2500000,\r\n            \"holder_name\": \"Narendhar\",\r\n            \"holder_relationship\": \"Husband\",\r\n            \"acquisition_method\": \"Purchase\",\r\n            \"acquisition_year\": 2024,\r\n            \"annual_income_from_property\": 0,\r\n            \"statement_year\": 2024,\r\n            \"statement_as_on\": \"2024-05-12T10:00:00Z\",\r\n            \"approver_post_id\": \"10127497\",\r\n            \"created_by\": \"10452486\",\r\n            \"remarks\": \"Sample remarks\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bepis/v1/properties",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bepis",
+								"v1",
+								"properties"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Properties submitted emp list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/property-statuses?division-id=21260000&stmt-year=2023&submit-status=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"property-statuses"
+							],
+							"query": [
+								{
+									"key": "division-id",
+									"value": "21260000"
+								},
+								{
+									"key": "stmt-year",
+									"value": "2023"
+								},
+								{
+									"key": "submit-status",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Properties non submitted emp list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/property-statuses?division-id=21260000&stmt-year=2023&submit-status=false",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"property-statuses"
+							],
+							"query": [
+								{
+									"key": "division-id",
+									"value": "21260000"
+								},
+								{
+									"key": "stmt-year",
+									"value": "2023"
+								},
+								{
+									"key": "submit-status",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "NOCs",
+			"item": [
+				{
+					"name": "NOCS by approver authority id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nocs?post-id=30007706",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nocs"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007706"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NOCS by forward authority id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nocs?fwd-auth-id=30005933",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nocs"
+							],
+							"query": [
+								{
+									"key": "fwd-auth-id",
+									"value": "30005933"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NOCs by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/emp-nocs?emp-id=10133660",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"emp-nocs"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10133660"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pending NOCs by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/emp-nocs?emp-id=10133660&status=Pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"emp-nocs"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10133660"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of NOCs",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"employee_id\": 10015845,\r\n  \"noc_id\": 2,\r\n  \"noc_purpose\": \"Higher Studies\",\r\n  \"country_name\": \"United States\",\r\n  \"noc_from_date\": \"2024-07-01T00:00:00Z\",\r\n  \"noc_to_date\": \"2024-12-31T00:00:00Z\",\r\n  \"course_name\": \"Masters in Computer Science\",\r\n  \"course_duration\": \"2 years\",\r\n  \"institution_name\": \"Massachusetts Institute of Technology\",\r\n  \"university_name\": \"MIT\",\r\n  \"institution_location\": \"Cambridge, MA\",\r\n  \"fwd_post_id\": \"30005933\",\r\n  \"approver_post_id\": \"30007775\",\r\n  \"created_by\": \"10015845\",\r\n  \"user_remarks\": \"Application for NOC for higher studies in the US.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/nocs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nocs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forwarding of NOCs",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"fwd_post_id\": \"30005933\",\r\n\"fwd_auth_remarks\": \"May be approved\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/nocs/102/forward",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"nocs",
+								"102",
+								"forward"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approval of NOCs",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"approver_post_id\": \"30007775\",\r\n\"approve_status\": \"Approved\",\r\n\"approve_auth_remarks\": \"Approved for employee relocation.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/nocs/102/approve",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"nocs",
+								"102",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Awards",
+			"item": [
+				{
+					"name": "Withdraw pending awards",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action_type\": \"Withdraw\",\r\n    \"action_by\": 10015845,\r\n    \"remarks\": \"Wrong details submitted\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/award-makers/64",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"award-makers",
+								"64"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forward pending awards",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action_type\": \"Forward\",\r\n    \"action_by\": 14353461,\r\n    \"remarks\": \"Forwarded for further process\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/award-makers/65",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"award-makers",
+								"65"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Award makers by AO id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/award-makers?admin-office-id=21260551",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"award-makers"
+							],
+							"query": [
+								{
+									"key": "admin-office-id",
+									"value": "21260551"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Award makers by Approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/award-makers?post-id=30007775",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"award-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creation of awards",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"awards\": [\r\n        {\r\n            \"employee_id\": 10015845,\r\n            \"award_name\": \"Best Employee of the Year\",\r\n            \"award_type\": \"Annual\",\r\n            \"award_category\": \"Performance\",\r\n            \"award_description\": \"Awarded for outstanding performance throughout the year\",\r\n            \"certificate_no\": \"CERT-5678\",\r\n            \"monetary_benefit\": 1000.50,\r\n            \"approver_post_id\": \"30007775\",\r\n            \"created_by\": \"10015845\",\r\n            \"award_issue_date\": \"2023-05-15T00:00:00Z\",\r\n            \"award_for_year\": 2022,\r\n            \"user_remarks\": \"Exceptional leadership in project delivery\",\r\n            \"award_id\": 48\r\n        },\r\n        {\r\n            \"employee_id\": 10015845,\r\n            \"award_name\": \"Innovation Award\",\r\n            \"award_type\": \"Quarterly\",\r\n            \"award_category\": \"Innovation\",\r\n            \"award_description\": \"Awarded for innovative project execution\",\r\n            \"certificate_no\": \"CERT-9101\",\r\n            \"monetary_benefit\": 500.00,\r\n            \"approver_post_id\": \"30007775\",\r\n            \"created_by\": \"10015845\",\r\n            \"award_issue_date\": \"2024-06-20T00:00:00Z\",\r\n            \"award_for_year\": 2023,\r\n            \"user_remarks\": \"Developed a new workflow automation\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/award-makers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"award-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Award makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/award-makers?emp-id=10015845",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"award-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Awards by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/awards?emp-id=10015845",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"awards"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Awrds by Approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/awards?post-id=30007775",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"awards"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve awards in bulk",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"award_ids\": [\r\n        55,\r\n        65\r\n    ],\r\n    \"approved_by\": \"30007775\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approve_auth_remarks\": \"Approved for outstanding contributions\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/award-makers/approve-bulk",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"award-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Educations",
+			"item": [
+				{
+					"name": "Creation of bulk education records",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"qualifications\": [\r\n        {\r\n            \"employee_id\": 10015845,\r\n            \"education_qualification\": \"Bachelor of Science\",\r\n            \"board_studied\": \"University of XYZ\",\r\n            \"year_of_study\": 2015,\r\n            \"state_of_study\": \"Telangana\",\r\n            \"marks_grade_percentage\": 85.6,\r\n            \"approver_post_id\": \"30007775\",\r\n            \"created_by\": \"10015845\",\r\n            \"computer_knowledge\": \"F\",\r\n            \"user_remarks\": \"Good academic record\"\r\n        },\r\n        {\r\n            \"employee_id\": 10035071,\r\n            \"education_qualification\": \"Master of Engineering\",\r\n            \"board_studied\": \"Institute of ABC\",\r\n            \"year_of_study\": 2018,\r\n            \"state_of_study\": \"Karnataka\",\r\n            \"marks_grade_percentage\": 90.2,\r\n            \"approver_post_id\": \"30007775\",\r\n            \"created_by\": \"10015845\",\r\n            \"computer_knowledge\": \"T\",\r\n            \"user_remarks\": \"Highly qualified in software development\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancellation of pending education records",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"action_type\": \"Withdraw\",\r\n\"action_by\": 10015845,\r\n\"remarks\": \"Wrong details submitted\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers/74",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers",
+								"74"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forwarding of pedning education records",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"action_type\": \"Forward\",\r\n\"action_by\": 34568742,\r\n\"remarks\": \"Forwarded for further process\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers/76",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers",
+								"76"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Education makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers?emp-id=10015845&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Education makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers?emp-id=10015845&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Education makers by AO id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers?admin-office-id=21260551&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							],
+							"query": [
+								{
+									"key": "admin-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Education makers by AO id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers?admin-office-id=21260551&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							],
+							"query": [
+								{
+									"key": "admin-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Education makers by Approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers?post-id=30007775&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Education makers by Approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers?post-id=30007775&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Educations by Approver post id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/educations?post-id=30007775",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"educations"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Educations by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/educations?emp-id=10015845",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"educations"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Educations by emp id with date range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/educations?emp-id=10015845&start-date=2024-05-01&end-date=2024-07-31",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"educations"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "start-date",
+									"value": "2024-05-01"
+								},
+								{
+									"key": "end-date",
+									"value": "2024-07-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Approval of educations",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"qualification_ids\": [\r\n        72,\r\n        73\r\n    ],\r\n    \"approved_by\": \"30007775\",\r\n    \"approve_status\": \"Approved\",\r\n    \"approve_auth_remarks\": \"Approved for outstanding contributions\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/education-makers/approve-bulk",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"education-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Family Details",
+			"item": [
+				{
+					"name": "Creation of family details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"family\": [\r\n    {\r\n      \"employee_id\": 10035071,\r\n      \"dependent_name\": \"Dhruva\",\r\n      \"relation\": \"Son\",\r\n      \"date_of_birth\": \"2010-06-15T00:00:00Z\",\r\n      \"marital_status\": \"Unmarried\",\r\n      \"highest_education_qualification\": \"High School\",\r\n      \"employment_status\": \"Student\",\r\n      \"dependent_status\": \"Active\",\r\n      \"approver_post_id\": \"30007775\",\r\n      \"created_by\": \"10035071\",\r\n      \"user_remarks\": \"No remarks\",\r\n      \"gender\": \"Male\",\r\n      \"pwd\": false,\r\n      \"pwd_percentage\": 0.0,\r\n      \"gender_id\": 1,\r\n      \"marital_id\": 2,\r\n      \"relation_id\": 4\r\n    },\r\n    {\r\n      \"employee_id\": 10035071,\r\n      \"dependent_name\": \"Danvika\",\r\n      \"relation\": \"Daughter\",\r\n      \"date_of_birth\": \"2012-08-20T00:00:00Z\",\r\n      \"marital_status\": \"Unmarried\",\r\n      \"highest_education_qualification\": \"Primary School\",\r\n      \"employment_status\": \"Student\",\r\n      \"dependent_status\": \"Active\",\r\n      \"approver_post_id\": \"30007775\",\r\n      \"created_by\": \"10035071\",\r\n      \"user_remarks\": \"No remarks\",\r\n      \"gender\": \"Female\",\r\n      \"pwd\": true,\r\n      \"pwd_percentage\": 20.5,\r\n      \"gender_id\": 2,\r\n      \"marital_id\": 2,\r\n      \"relation_id\": 5\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Withdrew family details",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"action_type\": \"Withdraw\",\r\n\"action_by\": 10035071,\r\n\"remarks\": \"Wrong details submitted\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers/266",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers",
+								"266"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forward family details",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"action_type\": \"Forward\",\r\n\"action_by\": 34568742,\r\n\"remarks\": \"Forwarded for further process\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/family-details-makers/265",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"family-details-makers",
+								"265"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers?emp-id=10015845&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers?emp-id=10015845&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family makers by approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers?post-id=30007775&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family makers by approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers?post-id=30007775&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family makers by DDO id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers?ddo-office-id=21260551&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers"
+							],
+							"query": [
+								{
+									"key": "ddo-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family details by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details?emp-id=10015845",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family details by approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details?post-id=30007775",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007775"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family details by emp id with date range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details?emp-id=10015845&start-date=2020-06-01&end-date=2024-09-30",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "start-date",
+									"value": "2020-06-01"
+								},
+								{
+									"key": "end-date",
+									"value": "2024-09-30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk approval of family details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"dependent_id\": [\r\n264,\r\n265\r\n],\r\n\"approved_by\": \"30007706\",\r\n\"approve_status\": \"Approved\",\r\n\"approve_auth_remarks\": \"All details verified and approved.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details-makers/approve-bulk",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Family details by emp id for CCL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/family-details?emp-id=10015845&end-date=2024-09-30",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"family-details"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "end-date",
+									"value": "2024-09-30"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Nominations",
+			"item": [
+				{
+					"name": "Creation of nominations",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n    \"nominations\": [\n        {\n            \"employee_id\": 10133660,\n            \"employee_name\": \"KISHORE\",\n            \"type_of_nomination\": \"Pension\",\n            \"nomination_type_id\": 2,\n            \"nominee_name\": \"Anjali\",\n            \"relation\": \"Mother\",\n            \"date_of_birth\": \"1976-01-01T00:00:00Z\",\n            \"nomination_addr1\": \"address1\",\n            \"nomination_addr2\": \"adress2\",\n            \"nomination_pin\": 500001,\n            \"share_percentage\": 50,\n            \"approver_post_id\": \"30007706\",\n            \"forward_post_id\": \"30007706\",\n            \"created_by\": \"10133660\",\n            \"remarks\": \"\",\n            \"file_name\":\"Medical.pdf\"\n        },\n        {\n            \"employee_id\": 10133660,\n            \"employee_name\": \"KISHORE\",\n            \"type_of_nomination\": \"Pension\",\n            \"nomination_type_id\": 2,\n            \"nominee_name\": \"Anirudh\",\n            \"relation\": \"Father\",\n            \"date_of_birth\": \"1970-01-01T00:00:00Z\",\n            \"nomination_addr1\": \"address1\",\n            \"nomination_addr2\": \"addreess2\",\n            \"nomination_pin\": 500001,\n            \"share_percentage\": 50,\n            \"approver_post_id\": \"30007706\",\n            \"forward_post_id\": \"30007706\",\n            \"created_by\": \"10133660\",\n            \"remarks\": \"\",\n            \"file_name\":\"Apar.pdf\"\n        }\n    ]\n}",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "postman-cloud:///1efb590f-75ba-4070-a25f-7afe8f725e0f"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "postman-cloud:///1efb5910-5e03-45c0-a3c2-caab6a5245f9"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/nomination-makers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"nomination-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancellation of pending nominations",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 10133660,\r\n    \"nomination_type\": \"Pension\",\r\n    \"action_type\": \"Forward\",\r\n    \"action_by\": 10133660,\r\n    \"remarks\": \"Forwarded for further remarks.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forwarding of pending nominations",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"employee_id\": 10133660,\r\n  \"nomination_type\": \"Pension\",\r\n  \"action_type\": \"Withdraw\",\r\n  \"action_by\": 10133660,\r\n  \"remarks\": \"Wrong details.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approval of nominations",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"employee_id\": 10133660,\r\n\"type_of_nomination\": \"Pension\",\r\n\"approver_id\": \"30007706\",\r\n\"approve_status\": \"Approved\",\r\n\"approver_remarks\": \"Nomination details reviewed and approved\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers/approve-bulk",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nomination makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers?emp-id=10035071&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10035071"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nomination makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers?emp-id=10064367&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10064367"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nomination makers by DDO id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers?ddo-office-id=21260551&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers"
+							],
+							"query": [
+								{
+									"key": "ddo-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nomination makers by  DDO id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers?ddo-office-id=21260551&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers"
+							],
+							"query": [
+								{
+									"key": "ddo-office-id",
+									"value": "21260551"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nomination makers by approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers?post-id=30007706&status=Approved",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30007706"
+								},
+								{
+									"key": "status",
+									"value": "Approved"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nomination makers by  approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nomination-makers?post-id=30116602&status=Pending",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nomination-makers"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30116602"
+								},
+								{
+									"key": "status",
+									"value": "Pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nominations by approver id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nominations?post-id=30116602",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nominations"
+							],
+							"query": [
+								{
+									"key": "post-id",
+									"value": "30116602"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nominations by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nominations?emp-id=10035071",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nominations"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10035071"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nominations by emp id with date range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/nominations?emp-id=10015845&start-date=2024-10-24&end-date=2024-10-25",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"nominations"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								},
+								{
+									"key": "start-date",
+									"value": "2024-10-24"
+								},
+								{
+									"key": "end-date",
+									"value": "2024-10-25"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doc Master",
+			"item": [
+				{
+					"name": "Uploading of single file",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "folderPath",
+									"value": "Praveen",
+									"type": "text"
+								},
+								{
+									"key": "file_name_id",
+									"value": "667",
+									"type": "text"
+								},
+								{
+									"key": "employee_id",
+									"value": "10015845",
+									"type": "text"
+								},
+								{
+									"key": "service_type_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "postman-cloud:///1ef1cd26-40f5-4110-b789-8f0f87855f4d"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/files",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"files"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Downloading of single file",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/files?file_name_id=611&employee_id=10015845&service_type_id=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "file_name_id",
+									"value": "611"
+								},
+								{
+									"key": "employee_id",
+									"value": "10015845"
+								},
+								{
+									"key": "service_type_id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Downloading zip file",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v1/zip-files?file_name_id=611&employee_id=10015845",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"zip-files"
+							],
+							"query": [
+								{
+									"key": "file_name_id",
+									"value": "611"
+								},
+								{
+									"key": "employee_id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Probation",
+			"item": [
+				{
+					"name": "Creation of probation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee_id\": 10015845,\r\n    \"probation_start_date\": \"2022-11-14T00:00:00Z\",\r\n    \"probation_end_date\": \"2024-11-14T00:00:00Z\",\r\n    \"extension_status\": false,\r\n    \"reasons\": \"\",\r\n    \"approver_post_id\": \"30007775\",\r\n    \"created_by\": \"10166245\",\r\n    \"remarks\": \"Sample Remarks\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/probation-makers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"probation-makers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk approval of probations",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"probation_ids\": [33],\r\n  \"approved_by\": \"10166245\",\r\n  \"approve_status\": \"Approved\",\r\n  \"approver_remarks\": \"Probation period successfully completed.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/probation-makers/approve-bulk",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"probation-makers",
+								"approve-bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Probation makers by emp id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/probation-makers?emp-id=10015845",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"probation-makers"
+							],
+							"query": [
+								{
+									"key": "emp-id",
+									"value": "10015845"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/v1",
+			"type": "string"
+		}
+	]
+}

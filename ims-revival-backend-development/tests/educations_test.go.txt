@@ -1,0 +1,618 @@
+package tests
+
+import (
+	"bytes"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+// CreateEducationsBulk test cases
+func TestCreateEducationsBulk_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "qualifications": [
+        {
+            "employee_id": 10015845,
+            "education_qualification": "Bachelor of Science",
+            "board_studied": "University of XYZ",
+            "year_of_study": 2015,
+            "state_of_study": "Telangana",
+            "marks_grade_percentage": 85.6,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "F",
+            "user_remarks": "Good academic record",
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "education_qualification": "Master of Engineering",
+            "board_studied": "Institute of ABC",
+            "year_of_study": 2018,
+            "state_of_study": "Karnataka",
+            "marks_grade_percentage": 90.2,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "T",
+            "user_remarks": "Highly qualified in software development",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/education-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateEducationsBulk_MissingFileError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "qualifications": [
+        {
+            "employee_id": 10015845,
+            "education_qualification": "Bachelor of Science",
+            "board_studied": "University of XYZ",
+            "year_of_study": 2015,
+            "state_of_study": "Telangana",
+            "marks_grade_percentage": 85.6,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "F",
+            "user_remarks": "Good academic record",
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "education_qualification": "Master of Engineering",
+            "board_studied": "Institute of ABC",
+            "year_of_study": 2018,
+            "state_of_study": "Karnataka",
+            "marks_grade_percentage": 90.2,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "T",
+            "user_remarks": "Highly qualified in software development",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/education-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateEducationsBulk_LargeFileError(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "qualifications": [
+        {
+            "employee_id": 10015845,
+            "education_qualification": "Bachelor of Science",
+            "board_studied": "University of XYZ",
+            "year_of_study": 2015,
+            "state_of_study": "Telangana",
+            "marks_grade_percentage": 85.6,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "F",
+            "user_remarks": "Good academic record",
+            "file_name":"example-large-file.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "education_qualification": "Master of Engineering",
+            "board_studied": "Institute of ABC",
+            "year_of_study": 2018,
+            "state_of_study": "Karnataka",
+            "marks_grade_percentage": 90.2,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "T",
+            "user_remarks": "Highly qualified in software development",
+            "file_name":"example-large-file.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/education-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateEducationsBulk_InvalidFileTypeError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "qualifications": [
+        {
+            "employee_id": 10015845,
+            "education_qualification": "Bachelor of Science",
+            "board_studied": "University of XYZ",
+            "year_of_study": 2015,
+            "state_of_study": "Telangana",
+            "marks_grade_percentage": 85.6,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "F",
+            "user_remarks": "Good academic record",
+            "file_name":"example-doc.docx"
+        },
+        {
+            "employee_id": 10035071,
+            "education_qualification": "Master of Engineering",
+            "board_studied": "Institute of ABC",
+            "year_of_study": 2018,
+            "state_of_study": "Karnataka",
+            "marks_grade_percentage": 90.2,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "T",
+            "user_remarks": "Highly qualified in software development",
+            "file_name":"example-doc.docx"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/education-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateEducationsBulk_InvalidFileNameError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "qualifications": [
+        {
+            "employee_id": 10015845,
+            "education_qualification": "Bachelor of Science",
+            "board_studied": "University of XYZ",
+            "year_of_study": 2015,
+            "state_of_study": "Telangana",
+            "marks_grade_percentage": 85.6,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "F",
+            "user_remarks": "Good academic record",
+            "file_name":"edu1.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "education_qualification": "Master of Engineering",
+            "board_studied": "Institute of ABC",
+            "year_of_study": 2018,
+            "state_of_study": "Karnataka",
+            "marks_grade_percentage": 90.2,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "computer_knowledge": "T",
+            "user_remarks": "Highly qualified in software development",
+            "file_name":"edu2.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/education-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetMakerEducationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/education-makers?emp-id=10166245&status=Pending&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerEducationsByAOID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/education-makers?admin-office-id=21260551", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerEducationsByAppPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/education-makers?post-id=30007775", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerEducations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/education-makers", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerEducations_UriBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/education-makers?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerEducations_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/education-makers?admin-office-id=212605519", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetEducationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?emp-id=10166245&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetEducationsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?emp-id=1016624", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetEducationsByEmpIDWithDateRange_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?emp-id=10166245&start-date=2024-10-24&end-date=2024-10-25", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetEducationsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?post-id=30007775&skip=1&limit=5", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetEducations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetEducations_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetEducationsByEmpIDWithDateRange_InvalidStartDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?emp-id=10166245&start-date=202-10-24&end-date=2024-10-25", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetEducationsByEmpIDWithDateRange_InvalidEndDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/educations?emp-id=10166245&start-date=2024-10-24&end-date=224-10-25", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateEducationsSuccess_Withdraw(t *testing.T) {
+	input := `{
+		"action_type": "Withdraw",
+		"action_by": 10015845,
+		"remarks": "Qualification withdrawn due to incorrect details."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/82", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateEducations_DBError(t *testing.T) {
+	input := `{
+		"action_type": "Withdraw",
+		"action_by": 10015845,
+		"remarks": "Qualification withdrawn due to incorrect details.This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/82", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateEducationsSuccess_Forward(t *testing.T) {
+	input := `{
+		"action_type": "Forward",
+		"action_by": 10015845,
+		"remarks": "Qualification forwarded for approval."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/88", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateEducations_ValidationError(t *testing.T) {
+	input := `{
+		"action_by": 10015845,
+		"remarks": "Missing action type in request."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/103", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateEducations_JSONBindingError(t *testing.T) {
+	input := `{
+		"action_type": "Withdraw",
+		"action_by": "not-a-valid-int",
+		"remarks": "Invalid data type for action_by."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/104", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateEducations_UriBindingError(t *testing.T) {
+	input := `{
+		"action_type": "Forward",
+		"action_by": 10015845,
+		"remarks": "Invalid URI parameter for qualification-id."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/2147483648", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateEducations_NoAffectedRows(t *testing.T) {
+	input := `{
+		"action_type": "Withdraw",
+		"action_by": 10015845,
+		"remarks": "Qualification does not exist."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/9999", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestUpdateEducations_InvalidActionType(t *testing.T) {
+	input := `{
+		"action_type": "Approve",
+		"action_by": 10015845,
+		"remarks": "Invalid action type specified."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/education-makers/105", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveEducations_Success(t *testing.T) {
+	input := `{
+    "qualification_ids": [
+        80,
+        81
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+}`
+	req := httptest.NewRequest("POST", "/v1/education-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveEducations_JsonBindingError(t *testing.T) {
+	input := `{
+    "qualification_ids": [
+        "72",
+        "73"
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+}`
+	req := httptest.NewRequest("POST", "/v1/education-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveEducations_ValidationError(t *testing.T) {
+	input := `{
+    "qualification_id": [
+        72,
+        73
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+}`
+	req := httptest.NewRequest("POST", "/v1/education-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveEducations_DBError(t *testing.T) {
+	input := `{
+    "qualification_ids": [
+        82,
+        83
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions.This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("POST", "/v1/education-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveEducations_NoAffectedRows(t *testing.T) {
+	input := `{
+    "qualification_ids": [
+        72,
+        73
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions."
+}`
+	req := httptest.NewRequest("POST", "/v1/education-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+func TestApproveEducations_SuccessRejected(t *testing.T) {
+	input := `{
+    "qualification_ids": [
+        273,
+        275
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Rejected",
+    "approve_auth_remarks": "Rejected"
+}`
+	req := httptest.NewRequest("POST", "/v1/education-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}

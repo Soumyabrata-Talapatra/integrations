@@ -1,0 +1,5167 @@
+{
+  "components": {
+    "schemas": {
+      "APIErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/AppError"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status_code": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "success": {
+            "default": false,
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "AppError": {
+        "properties": {
+          "code": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "field_errors": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalDecisionData": {
+        "properties": {
+          "approved": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "sla_end_date": {
+            "example": "2026-02-19T13:06:05.288325+05:30",
+            "type": "string"
+          },
+          "sla_remaining_days": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "example": "2026-02-19T13:06:05.288315+05:30",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalDecisionRequest": {
+        "properties": {
+          "approved": {
+            "type": "boolean"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "performed_by": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "example": "2026-02-19T13:06:05.288304+05:30",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "comments",
+          "performed_by",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "ApprovalDecisionResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ApprovalDecisionData"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalDetails": {
+        "properties": {
+          "approval_timestamp": {
+            "example": "2026-02-19T13:06:05.28816+05:30",
+            "type": "string"
+          },
+          "approved": {
+            "type": "boolean"
+          },
+          "approved_by": {
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "sla_end_date": {
+            "example": "2026-02-19T13:06:05.288176+05:30",
+            "type": "string"
+          },
+          "sla_start_date": {
+            "example": "2026-02-19T13:06:05.288169+05:30",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalRedirectData": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "redirected_to": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "example": "2026-02-19T13:06:05.28835+05:30",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalRedirectRequest": {
+        "properties": {
+          "comments": {
+            "type": "string"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "performed_by": {
+            "type": "string"
+          },
+          "redirect_to": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "example": "2026-02-19T13:06:05.288344+05:30",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "redirect_to",
+          "performed_by",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "ApprovalRedirectResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ApprovalRedirectData"
+          }
+        },
+        "type": "object"
+      },
+      "BatchFirstCollectionRequest": {
+        "properties": {
+          "collections": {
+            "items": {
+              "$ref": "#/components/schemas/FirstCollectionRequest"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "collections"
+        ],
+        "type": "object"
+      },
+      "BatchFirstCollectionResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "failed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/FirstCollectionResultItem"
+            },
+            "type": "array"
+          },
+          "successful": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_submitted": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "BatchInstallmentRequest": {
+        "properties": {
+          "installments": {
+            "items": {
+              "$ref": "#/components/schemas/CreateInstallmentRequest"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "installments"
+        ],
+        "type": "object"
+      },
+      "BatchInstallmentResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "failed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/InstallmentResultItem"
+            },
+            "type": "array"
+          },
+          "successful": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_submitted": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ChequeDetails": {
+        "properties": {
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "bank_name": {
+            "type": "string"
+          },
+          "cheque_date": {
+            "example": "2026-02-19T13:06:05.288412+05:30",
+            "type": "string"
+          },
+          "cheque_number": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cheque_number",
+          "bank_name",
+          "cheque_date",
+          "amount"
+        ],
+        "type": "object"
+      },
+      "CreateInstallmentRequest": {
+        "properties": {
+          "cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_number": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "interest": {
+            "format": "double",
+            "type": "number"
+          },
+          "neft_details": {
+            "$ref": "#/components/schemas/NEFTDetails"
+          },
+          "number_of_installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "payment_mode": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "rebate": {
+            "format": "double",
+            "type": "number"
+          },
+          "sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "policy_number",
+          "installment_number",
+          "installment_amount",
+          "payment_mode",
+          "status"
+        ],
+        "type": "object"
+      },
+      "DataEntryData": {
+        "properties": {
+          "data_entry_timestamp": {
+            "example": "2026-02-19T13:06:05.288667+05:30",
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DataEntryDetails": {
+        "properties": {
+          "cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "data_entered_by": {
+            "type": "string"
+          },
+          "data_entry_timestamp": {
+            "example": "2026-02-19T13:06:05.288116+05:30",
+            "type": "string"
+          },
+          "documents_submitted": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentSubmission"
+            },
+            "type": "array"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "interest": {
+            "format": "double",
+            "type": "number"
+          },
+          "missing_documents": {
+            "items": {
+              "$ref": "#/components/schemas/MissingDocument"
+            },
+            "type": "array"
+          },
+          "number_of_installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "revival_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "sgst": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "DataEntryRequest": {
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "data_entered_by": {
+            "type": "string"
+          },
+          "data_entry_timestamp": {
+            "example": "2026-02-19T13:06:05.288257+05:30",
+            "type": "string"
+          },
+          "documents_submitted": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentSubmission"
+            },
+            "type": "array"
+          },
+          "lapse_date": {
+            "example": "2026-02-19T13:06:05.288238+05:30",
+            "type": "string"
+          },
+          "missing_documents": {
+            "items": {
+              "$ref": "#/components/schemas/MissingDocument"
+            },
+            "type": "array"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "premium_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "product": {
+            "type": "string"
+          },
+          "revival_details": {
+            "$ref": "#/components/schemas/RevivalDetails"
+          },
+          "sum_assured": {
+            "format": "double",
+            "type": "number"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "policy_number",
+          "customer_id",
+          "customer_name",
+          "product",
+          "sum_assured",
+          "premium_amount",
+          "lapse_date",
+          "office_id",
+          "revival_details",
+          "data_entered_by"
+        ],
+        "type": "object"
+      },
+      "DataEntryResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DataEntryData"
+          }
+        },
+        "type": "object"
+      },
+      "DocumentReceipt": {
+        "properties": {
+          "document_name": {
+            "type": "string"
+          },
+          "document_type": {
+            "type": "string"
+          },
+          "received_by": {
+            "type": "string"
+          },
+          "received_date": {
+            "example": "2026-02-19T13:06:05.288593+05:30",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_type",
+          "document_name",
+          "received_date",
+          "received_by"
+        ],
+        "type": "object"
+      },
+      "DocumentSubmission": {
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "document_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FieldError": {
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "FirstCollectionRequest": {
+        "properties": {
+          "cheque_details": {
+            "$ref": "#/components/schemas/ChequeDetails"
+          },
+          "collection_date": {
+            "example": "2026-02-19T13:06:05.288404+05:30",
+            "type": "string"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "interest": {
+            "format": "double",
+            "type": "number"
+          },
+          "neft_details": {
+            "$ref": "#/components/schemas/NEFTDetails"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "payment_mode": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "premium_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "rebate": {
+            "format": "double",
+            "type": "number"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "total_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "user_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "policy_number",
+          "collection_date",
+          "payment_mode",
+          "premium_amount",
+          "installment_amount",
+          "total_amount"
+        ],
+        "type": "object"
+      },
+      "FirstCollectionResultItem": {
+        "properties": {
+          "due_date": {
+            "example": "2026-02-19T13:06:05.288455+05:30",
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "message": {
+            "type": "string"
+          },
+          "payment_mode": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "premium_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "receipt_date": {
+            "example": "2026-02-19T13:06:05.288445+05:30",
+            "type": "string"
+          },
+          "receipt_number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "total_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "total_gst": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "GetAllRequestsResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/RequestListItem"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GetInstallmentCollectionResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/InstallmentCollectionData"
+          }
+        },
+        "type": "object"
+      },
+      "GetRevivalRequestResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RevivalRequestDetails"
+          }
+        },
+        "type": "object"
+      },
+      "IndexRequestData": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "request_date_time": {
+            "example": "2026-02-19T13:06:05.288219+05:30",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "workflow_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IndexRequestResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/IndexRequestData"
+          }
+        },
+        "type": "object"
+      },
+      "IndexRevivalRequest": {
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentSubmission"
+            },
+            "type": "array"
+          },
+          "indexed_by": {
+            "type": "string"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "request_date_time": {
+            "example": "2026-02-19T13:06:05.288204+05:30",
+            "type": "string"
+          },
+          "request_owner": {
+            "type": "string"
+          },
+          "revival_eligibility": {
+            "$ref": "#/components/schemas/RevivalEligibilityInfo"
+          }
+        },
+        "required": [
+          "policy_number",
+          "customer_id",
+          "customer_name",
+          "request_owner",
+          "indexed_by",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "IndexingDetails": {
+        "properties": {
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentSubmission"
+            },
+            "type": "array"
+          },
+          "indexed_by": {
+            "type": "string"
+          },
+          "indexed_date": {
+            "example": "2026-02-19T13:06:05.288099+05:30",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InstallmentCollectionData": {
+        "properties": {
+          "customer_name": {
+            "type": "string"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_number": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "installment_sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "number_of_installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "premium_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "revival_type": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "total_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "total_installments": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "InstallmentResultItem": {
+        "properties": {
+          "error_message": {
+            "type": "string"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installment_number": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "receipt_number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Location": {
+        "properties": {
+          "cacheEnd": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cacheStart": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cacheZone": {
+            "$ref": "#/components/schemas/zone"
+          },
+          "extend": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tx": {
+            "items": {
+              "$ref": "#/components/schemas/zoneTrans"
+            },
+            "type": "array"
+          },
+          "zone": {
+            "items": {
+              "$ref": "#/components/schemas/zone"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MissingDocument": {
+        "properties": {
+          "document_name": {
+            "type": "string"
+          },
+          "remarks": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NEFTDetails": {
+        "properties": {
+          "bank": {
+            "type": "string"
+          },
+          "date": {
+            "example": "2026-02-19T13:06:05.288486+05:30",
+            "type": "string"
+          },
+          "ifsc_code": {
+            "type": "string"
+          },
+          "urt_number": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyDetailsData": {
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "date_of_commencement": {
+            "example": "2026-02-19T13:06:05.287959+05:30",
+            "type": "string"
+          },
+          "lapse_date": {
+            "example": "2026-02-19T13:06:05.28782+05:30",
+            "type": "string"
+          },
+          "last_revival_date": {
+            "example": "2026-02-19T13:06:05.287979+05:30",
+            "type": "string"
+          },
+          "maturity_date": {
+            "example": "2026-02-19T13:06:05.287961+05:30",
+            "type": "string"
+          },
+          "paid_to_date": {
+            "example": "2026-02-19T13:06:05.287968+05:30",
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "policy_status": {
+            "type": "string"
+          },
+          "premium_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "premium_frequency": {
+            "type": "string"
+          },
+          "product": {
+            "type": "string"
+          },
+          "product_code": {
+            "type": "string"
+          },
+          "revival_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sum_assured": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyDetailsResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PolicyDetailsData"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyEligibilityData": {
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "max_installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_revivals_allowed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "revival_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "revival_eligibility_reason": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyEligibilityResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PolicyEligibilityData"
+          }
+        },
+        "type": "object"
+      },
+      "QCDetails": {
+        "properties": {
+          "missing_documents": {
+            "items": {
+              "$ref": "#/components/schemas/MissingDocument"
+            },
+            "type": "array"
+          },
+          "qc_comments": {
+            "type": "string"
+          },
+          "qc_passed": {
+            "type": "boolean"
+          },
+          "qc_performed_by": {
+            "type": "string"
+          },
+          "qc_timestamp": {
+            "example": "2026-02-19T13:06:05.288146+05:30",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "QualityCheckData": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "qc_timestamp": {
+            "example": "2026-02-19T13:06:05.288286+05:30",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "QualityCheckRequest": {
+        "properties": {
+          "missing_documents": {
+            "items": {
+              "$ref": "#/components/schemas/MissingDocument"
+            },
+            "type": "array"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "qc_comments": {
+            "type": "string"
+          },
+          "qc_passed": {
+            "type": "boolean"
+          },
+          "qc_performed_by": {
+            "type": "string"
+          },
+          "qc_timestamp": {
+            "example": "2026-02-19T13:06:05.288276+05:30",
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "qc_comments",
+          "qc_performed_by",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "QualityCheckResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/QualityCheckData"
+          }
+        },
+        "type": "object"
+      },
+      "QuotationData": {
+        "properties": {
+          "from_due_date": {
+            "example": "2026-02-19T13:06:05.288574+05:30",
+            "type": "string"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "interest": {
+            "format": "double",
+            "type": "number"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "premium": {
+            "format": "double",
+            "type": "number"
+          },
+          "quote_valid_until": {
+            "example": "2026-02-19T13:06:05.288561+05:30",
+            "type": "string"
+          },
+          "revival_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "revival_type": {
+            "type": "string"
+          },
+          "tax_breakdown": {
+            "$ref": "#/components/schemas/TaxBreakdown"
+          },
+          "to_due_date": {
+            "example": "2026-02-19T13:06:05.288575+05:30",
+            "type": "string"
+          },
+          "total_amount_due": {
+            "format": "double",
+            "type": "number"
+          },
+          "total_premium_due": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "QuotationRequest": {
+        "properties": {
+          "installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "quote_date": {
+            "example": "2026-02-19T13:06:05.288551+05:30",
+            "type": "string"
+          }
+        },
+        "required": [
+          "policy_number",
+          "installments"
+        ],
+        "type": "object"
+      },
+      "QuotationResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/QuotationData"
+          }
+        },
+        "type": "object"
+      },
+      "ReceiveDocumentsRequest": {
+        "properties": {
+          "all_documents_received": {
+            "type": "boolean"
+          },
+          "documents_received": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentReceipt"
+            },
+            "type": "array"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "documents_received",
+          "all_documents_received",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "RequestListItem": {
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          },
+          "insured_name": {
+            "type": "string"
+          },
+          "next_action": {
+            "type": "string"
+          },
+          "next_actor": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "request_status": {
+            "type": "string"
+          },
+          "request_type": {
+            "type": "string"
+          },
+          "requested_date": {
+            "example": "2026-02-19T13:06:05.288068+05:30",
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "workflow_state": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RevivalAcceptanceLetterRequest": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "approval_date": {
+            "example": "2026-02-19T13:06:05.288621+05:30",
+            "type": "string"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "policyholder_name": {
+            "type": "string"
+          },
+          "revival_details": {
+            "$ref": "#/components/schemas/RevivalDetails"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "policy_number",
+          "policyholder_name",
+          "address",
+          "approval_date",
+          "revival_details",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "RevivalDetails": {
+        "properties": {
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "interest": {
+            "format": "double",
+            "type": "number"
+          },
+          "revival_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "revival_type": {
+            "type": "string"
+          },
+          "tax_breakdown": {
+            "$ref": "#/components/schemas/TaxBreakdown"
+          },
+          "total_amount_due": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "revival_type",
+          "installments",
+          "revival_amount",
+          "installment_amount",
+          "total_amount_due"
+        ],
+        "type": "object"
+      },
+      "RevivalEligibilityInfo": {
+        "properties": {
+          "eligible": {
+            "type": "boolean"
+          },
+          "max_installments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_revivals_allowed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "revival_count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RevivalHistoryData": {
+        "properties": {
+          "completed_revivals_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "revival_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "revival_history": {
+            "items": {
+              "$ref": "#/components/schemas/RevivalHistoryEntry"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RevivalHistoryEntry": {
+        "properties": {
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "installments_paid": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_date": {
+            "example": "2026-02-19T13:06:05.288027+05:30",
+            "type": "string"
+          },
+          "revival_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "total_installments": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RevivalHistoryResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RevivalHistoryData"
+          }
+        },
+        "type": "object"
+      },
+      "RevivalMemoRequest": {
+        "properties": {
+          "approval_date": {
+            "example": "2026-02-19T13:06:05.288655+05:30",
+            "type": "string"
+          },
+          "office_id": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "revival_summary": {
+            "$ref": "#/components/schemas/RevivalSummary"
+          },
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "policy_number",
+          "office_id",
+          "approval_date",
+          "revival_summary"
+        ],
+        "type": "object"
+      },
+      "RevivalRequestDetails": {
+        "properties": {
+          "approval_details": {
+            "$ref": "#/components/schemas/ApprovalDetails"
+          },
+          "created_at": {
+            "example": "2026-02-19T13:06:05.288094+05:30",
+            "type": "string"
+          },
+          "current_status": {
+            "type": "string"
+          },
+          "customer_id": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "data_entry_details": {
+            "$ref": "#/components/schemas/DataEntryDetails"
+          },
+          "indexing_details": {
+            "$ref": "#/components/schemas/IndexingDetails"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "qc_details": {
+            "$ref": "#/components/schemas/QCDetails"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "request_type": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "status_history": {
+            "items": {
+              "$ref": "#/components/schemas/StatusHistoryEntry"
+            },
+            "type": "array"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "workflow_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RevivalSummary": {
+        "properties": {
+          "dual_collection_date": {
+            "example": "2026-02-19T13:06:05.288661+05:30",
+            "type": "string"
+          },
+          "installment_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "revival_amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "total_installments": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revival_amount",
+          "total_installments",
+          "installment_amount",
+          "dual_collection_date"
+        ],
+        "type": "object"
+      },
+      "StatusCodeAndMessage": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "status_code": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "StatusHistoryEntry": {
+        "properties": {
+          "change_reason": {
+            "type": "string"
+          },
+          "changed_at": {
+            "example": "2026-02-19T13:06:05.288181+05:30",
+            "type": "string"
+          },
+          "changed_by": {
+            "type": "string"
+          },
+          "from_status": {
+            "type": "string"
+          },
+          "history_id": {
+            "type": "string"
+          },
+          "to_status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SuspenseAdjustment": {
+        "properties": {
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "reversed_to_premium": {
+            "type": "boolean"
+          },
+          "suspense_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TaxBreakdown": {
+        "properties": {
+          "cgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "sgst": {
+            "format": "double",
+            "type": "number"
+          },
+          "total_tax": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "Time": {
+        "properties": {
+          "ext": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "loc": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "wall": {
+            "format": "uint64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "WithdrawalData": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "suspense_adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/SuspenseAdjustment"
+            },
+            "type": "array"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "withdrawal_date": {
+            "example": "2026-02-19T13:06:05.288376+05:30",
+            "type": "string"
+          },
+          "withdrawal_reason": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WithdrawalRequest": {
+        "properties": {
+          "office_id": {
+            "type": "string"
+          },
+          "policy_number": {
+            "type": "string"
+          },
+          "ticket_id": {
+            "type": "string"
+          },
+          "withdrawal_date": {
+            "example": "2026-02-19T13:06:05.288371+05:30",
+            "type": "string"
+          },
+          "withdrawal_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "policy_number",
+          "withdrawal_reason",
+          "office_id"
+        ],
+        "type": "object"
+      },
+      "WithdrawalResponse": {
+        "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WithdrawalData"
+          }
+        },
+        "type": "object"
+      },
+      "stackFrame": {
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "function": {
+            "type": "string"
+          },
+          "function_pointer": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "line": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pointer": {
+            "format": "uint64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "stackTrace": {
+        "properties": {
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/stackFrame"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "statusCodeAndMessage": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "status_code": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "success": {
+            "default": false,
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "zone": {
+        "properties": {
+          "isDST": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "zoneTrans": {
+        "properties": {
+          "index": {
+            "format": "uint8",
+            "type": "integer"
+          },
+          "isstd": {
+            "type": "boolean"
+          },
+          "isutc": {
+            "type": "boolean"
+          },
+          "when": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "test@gmail.com"
+    },
+    "description": "PLI Installment Revival System",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "termsOfService": "https://example.com/terms",
+    "title": "PLI Revival",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/v1/revival/first-collections": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchFirstCollectionRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "failed": 0,
+                  "results": [
+                    {
+                      "due_date": "string",
+                      "error_message": "string",
+                      "installment_amount": 0,
+                      "installment_cgst": 0,
+                      "installment_sgst": 0,
+                      "message": "string",
+                      "payment_mode": "string",
+                      "policy_number": "string",
+                      "premium_amount": 0,
+                      "premium_cgst": 0,
+                      "premium_sgst": 0,
+                      "receipt_date": "string",
+                      "receipt_number": "string",
+                      "status": "string",
+                      "success": true,
+                      "ticket_id": "string",
+                      "total_amount": 0,
+                      "total_gst": 0
+                    }
+                  ],
+                  "successful": 0,
+                  "total_submitted": 0
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/BatchFirstCollectionResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Batch First Collection",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/installments": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInstallmentRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "failed": 0,
+                  "results": [
+                    {
+                      "error_message": "string",
+                      "installment_amount": 0,
+                      "installment_number": 0,
+                      "message": "string",
+                      "policy_number": "string",
+                      "receipt_number": "string",
+                      "status": "string",
+                      "success": true,
+                      "ticket_id": "string"
+                    }
+                  ],
+                  "successful": 0,
+                  "total_submitted": 0
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/BatchInstallmentResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Batch Installments",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/policies/{policy_number}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "customer_id": "string",
+                    "customer_name": "string",
+                    "date_of_commencement": "string",
+                    "lapse_date": "string",
+                    "last_revival_date": "string",
+                    "maturity_date": "string",
+                    "paid_to_date": "string",
+                    "policy_number": "string",
+                    "policy_status": "string",
+                    "premium_amount": 0,
+                    "premium_frequency": "string",
+                    "product": "string",
+                    "product_code": "string",
+                    "revival_count": 0,
+                    "sum_assured": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDetailsResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Policy",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/policies/{policy_number}/eligibility": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "eligible": true,
+                    "max_installments": 0,
+                    "max_revivals_allowed": 0,
+                    "policy_number": "string",
+                    "revival_count": 0,
+                    "revival_eligibility_reason": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyEligibilityResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Policy Eligibility",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/policies/{policy_number}/quote": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuotationRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "from_due_date": "string",
+                    "installment_amount": 0,
+                    "installments": 0,
+                    "interest": 0,
+                    "policy_number": "string",
+                    "premium": 0,
+                    "quote_valid_until": "string",
+                    "revival_amount": 0,
+                    "revival_type": "string",
+                    "tax_breakdown": {
+                      "cgst": 0,
+                      "sgst": 0,
+                      "total_tax": 0
+                    },
+                    "to_due_date": "string",
+                    "total_amount_due": 0,
+                    "total_premium_due": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/QuotationResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Quotation",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": [
+                    {
+                      "customer_id": "string",
+                      "insured_name": "string",
+                      "next_action": "string",
+                      "next_actor": "string",
+                      "policy_number": "string",
+                      "request_id": "string",
+                      "request_status": "string",
+                      "request_type": "string",
+                      "requested_date": "string",
+                      "ticket_id": "string",
+                      "workflow_state": "string"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllRequestsResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get All Revival Requests",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/index": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IndexRevivalRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "message": "string",
+                    "request_date_time": "string",
+                    "status": "string",
+                    "ticket_id": "string",
+                    "workflow_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IndexRequestResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Index Revival Request",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/installments": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "number_of_installments",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "policy_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "office_id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "customer_name": "string",
+                    "installment_amount": 0,
+                    "installment_cgst": 0,
+                    "installment_number": 0,
+                    "installment_sgst": 0,
+                    "number_of_installments": 0,
+                    "policy_number": "string",
+                    "premium_amount": 0,
+                    "premium_cgst": 0,
+                    "premium_sgst": 0,
+                    "revival_type": "string",
+                    "ticket_id": "string",
+                    "total_amount": 0,
+                    "total_installments": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GetInstallmentCollectionResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Installment Collection By Policy",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "approval_details": {
+                      "approval_timestamp": "string",
+                      "approved": true,
+                      "approved_by": "string",
+                      "comments": "string",
+                      "sla_end_date": "string",
+                      "sla_start_date": "string"
+                    },
+                    "created_at": "string",
+                    "current_status": "string",
+                    "customer_id": "string",
+                    "customer_name": "string",
+                    "data_entry_details": {
+                      "cgst": 0,
+                      "data_entered_by": "string",
+                      "data_entry_timestamp": "string",
+                      "documents_submitted": [
+                        null
+                      ],
+                      "installment_amount": 0,
+                      "interest": 0,
+                      "missing_documents": [
+                        null
+                      ],
+                      "number_of_installments": 0,
+                      "revival_amount": 0,
+                      "sgst": 0
+                    },
+                    "indexing_details": {
+                      "documents": [
+                        null
+                      ],
+                      "indexed_by": "string",
+                      "indexed_date": "string"
+                    },
+                    "policy_number": "string",
+                    "qc_details": {
+                      "missing_documents": [
+                        null
+                      ],
+                      "qc_comments": "string",
+                      "qc_passed": true,
+                      "qc_performed_by": "string",
+                      "qc_timestamp": "string"
+                    },
+                    "request_id": "string",
+                    "request_type": "string",
+                    "run_id": "string",
+                    "status_history": [
+                      {
+                        "change_reason": null,
+                        "changed_at": null,
+                        "changed_by": null,
+                        "from_status": null,
+                        "history_id": null,
+                        "to_status": null
+                      }
+                    ],
+                    "ticket_id": "string",
+                    "workflow_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GetRevivalRequestResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Revival Request",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/acceptance-letter": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevivalAcceptanceLetterRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "data_entry_timestamp": "string",
+                    "message": "string",
+                    "status": "string",
+                    "ticket_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DataEntryResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Generate Acceptance Letter",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/approval-decision": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalDecisionRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "approved": true,
+                    "message": "string",
+                    "sla_end_date": "string",
+                    "sla_remaining_days": 0,
+                    "status": "string",
+                    "ticket_id": "string",
+                    "timestamp": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalDecisionResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Approval Decision",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/approval-redirect": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalRedirectRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "message": "string",
+                    "redirected_to": "string",
+                    "status": "string",
+                    "ticket_id": "string",
+                    "timestamp": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalRedirectResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Approval Redirect",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/data-entry": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataEntryRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "data_entry_timestamp": "string",
+                    "message": "string",
+                    "status": "string",
+                    "ticket_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DataEntryResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Submit Data Entry",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/documents": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveDocumentsRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "data_entry_timestamp": "string",
+                    "message": "string",
+                    "status": "string",
+                    "ticket_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DataEntryResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Receive Documents",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/quality-check": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualityCheckRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "message": "string",
+                    "qc_timestamp": "string",
+                    "status": "string",
+                    "ticket_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/QualityCheckResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Submit Quality Check",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/revival-memo": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevivalMemoRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "data_entry_timestamp": "string",
+                    "message": "string",
+                    "status": "string",
+                    "ticket_id": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DataEntryResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Generate Revival Memo",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/requests/{ticket_id}/withdraw": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-originalParamName": "body"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "message": "string",
+                    "policy_number": "string",
+                    "status": "string",
+                    "suspense_adjustments": [
+                      {
+                        "amount": null,
+                        "reversed_to_premium": null,
+                        "suspense_id": null
+                      }
+                    ],
+                    "ticket_id": "string",
+                    "withdrawal_date": "string",
+                    "withdrawal_reason": "string"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Withdraw Request",
+        "tags": [
+          "Revival"
+        ]
+      }
+    },
+    "/v1/revival/{policy_number}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policy_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0,
+                    "success": true
+                  },
+                  "data": {
+                    "completed_revivals_count": 0,
+                    "policy_number": "string",
+                    "revival_count": 0,
+                    "revival_history": [
+                      {
+                        "installment_amount": null,
+                        "installments_paid": null,
+                        "request_date": null,
+                        "revival_amount": null,
+                        "status": null,
+                        "ticket_id": null,
+                        "total_installments": null
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RevivalHistoryResponse"
+                }
+              }
+            },
+            "description": "Successful Operation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "400",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Bad Request"
+                  },
+                  "message": "Bad Request",
+                  "status_code": 400,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "401",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Unauthorized"
+                  },
+                  "message": "Unauthorized",
+                  "status_code": 401,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "403",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Forbidden"
+                  },
+                  "message": "Forbidden",
+                  "status_code": 403,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "404",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Not Found"
+                  },
+                  "message": "Not Found",
+                  "status_code": 404,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "422",
+                    "field_errors": [
+                      {
+                        "field": "string",
+                        "message": "string",
+                        "value": ""
+                      }
+                    ],
+                    "message": "validation error"
+                  },
+                  "message": "Validation Error",
+                  "status_code": 422,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "500",
+                    "id": "ERR-EXAMPLE-ID",
+                    "message": "Internal Server Error"
+                  },
+                  "message": "Internal Server Error",
+                  "status_code": 500,
+                  "success": false
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Revival History",
+        "tags": [
+          "Revival"
+        ]
+      }
+    }
+  }
+}

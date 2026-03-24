@@ -44,9 +44,6 @@ type SurrenderProcessingInput struct {
 
 	// TimeoutAt is the deadline assigned by PM's routing-timeout config.
 	TimeoutAt time.Time `json:"timeout_at"`
-
-	ProductCode  string    `json:"product_code"`
-	MaturityDate time.Time `json:"maturity_date"`
 }
 
 // PMSurrenderRequestPayload is the shape of RequestPayload sent by PM.
@@ -93,7 +90,7 @@ const (
 
 // State transitions sent back to PM.
 const (
-	StateTransitionSurrendered       = "PENDING_SURRENDER→SURRENDERED"
-	StateTransitionSurrenderRejected = "PENDING_SURRENDER→ACTIVE"
-	StateTransitionSurrenderTimeout  = "PENDING_SURRENDER→ACTIVE"
+	StateTransitionSurrendered        = "PENDING_SURRENDER→SURRENDERED"
+	StateTransitionSurrenderRejected  = "PENDING_SURRENDER→ACTIVE"
+	StateTransitionSurrenderTimeout   = "PENDING_SURRENDER→ACTIVE"
 )

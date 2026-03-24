@@ -1,0 +1,586 @@
+package tests
+
+import (
+	"bytes"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateCommunications_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "employee_id": 10015845,
+    "communication_addr1": "1234 Main St",
+    "communication_addr2": "Apt 101",
+    "communication_addr3": "Near Central Park",
+    "communication_pin": 110001,
+    "india_post_email_id": "employee@indiapost.gov.in",
+    "personal_email_id": "employee.personal@gmail.com",
+    "mobile_no": "9876543210",
+    "aadhaar_ref_number": "1234-5678-9012",
+    "pan_number": "ABCDE1234F",
+    "approver_post_id": "30007775",
+    "created_by": "10015845",
+    "user_remarks": "Some remarks"
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/communication-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateCommunicationsBindingError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "employee_id": "10015845",
+    "communication_addr1": "1234 Main St",
+    "communication_addr2": "Apt 101",
+    "communication_addr3": "Near Central Park",
+    "communication_pin": 110001,
+    "india_post_email_id": "employee@indiapost.gov.in",
+    "personal_email_id": "employee.personal@gmail.com",
+    "mobile_no": "9876543210",
+    "aadhaar_ref_number": "1234-5678-9012",
+    "pan_number": "ABCDE1234F",
+    "approver_post_id": "30007775",
+    "created_by": "10015845",
+    "user_remarks": "Some remarks"
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/communication-makers", body)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateCommunications_ValidationError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "employee_id": 10015845,
+    "communication_addr2": "Apt 101",
+    "communication_addr3": "Near Central Park",
+    "communication_pin": 110001,
+    "india_post_email_id": "employee@indiapost.gov.in",
+    "personal_email_id": "employee.personal@gmail.com",
+    "mobile_no": "9876543210",
+    "aadhaar_ref_number": "1234-5678-9012",
+    "pan_number": "ABCDE1234F",
+    "approver_post_id": "30007775",
+    "created_by": "10015845",
+    "user_remarks": "Some remarks"
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/communication-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateCommunications_LargeFileError(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "employee_id": 10015845,
+    "communication_addr1": "1234 Main St",
+    "communication_addr2": "Apt 101",
+    "communication_addr3": "Near Central Park",
+    "communication_pin": 110001,
+    "india_post_email_id": "employee@indiapost.gov.in",
+    "personal_email_id": "employee.personal@gmail.com",
+    "mobile_no": "9876543210",
+    "aadhaar_ref_number": "1234-5678-9012",
+    "pan_number": "ABCDE1234F",
+    "approver_post_id": "30007775",
+    "created_by": "10015845",
+    "user_remarks": "Some remarks"
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/communication-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateCommunications_InvalidFileError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "employee_id": 10015845,
+    "communication_addr1": "1234 Main St",
+    "communication_addr2": "Apt 101",
+    "communication_addr3": "Near Central Park",
+    "communication_pin": 110001,
+    "india_post_email_id": "employee@indiapost.gov.in",
+    "personal_email_id": "employee.personal@gmail.com",
+    "mobile_no": "9876543210",
+    "aadhaar_ref_number": "1234-5678-9012",
+    "pan_number": "ABCDE1234F",
+    "approver_post_id": "30007775",
+    "created_by": "10015845",
+    "user_remarks": "Some remarks"
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/communication-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateCommunications_DBError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+	"employee_id": 10015845,
+	"communication_addr1": "1234 Main St, Some very long address to exceed fifty characters",
+	"communication_addr2": "Apt 101",
+	"communication_addr3": "Near Central Park",
+	"communication_pin": 110001,
+	"india_post_email_id": "employee@indiapost.gov.in",
+	"personal_email_id": "employee.personal@gmail.com",
+	"mobile_no": "9876543210",
+	"aadhaar_ref_number": "1234-5678-9012",
+	"pan_number": "ABCDE1234F",
+	"approver_post_id": "30007775",
+	"created_by": "10015845",
+	"user_remarks": "Some remarks"
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/communication-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateCommunicationsSuccess_Withdraw(t *testing.T) {
+	input := `{
+  "action_type": "Withdraw",
+  "action_by": 10015845,
+  "remarks": "Wrong details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/10864", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateCommunicationsSuccess_Forward(t *testing.T) {
+	input := `{
+  "action_type": "Forward",
+  "action_by": 10015845,
+  "remarks": "Forwarding for approval"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/10864", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateCommunications_InvalidActionType(t *testing.T) {
+	input := `{
+  "action_type": "Approve",
+  "action_by": 10015845,
+  "remarks": "Wrong details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/10267", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateCommunications_UriBindingError(t *testing.T) {
+	input := `{
+  "action_type": "Withdraw",
+  "action_by": 10015845,
+  "remarks": "Wrong details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/abc", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateCommunications_JSONBindingError(t *testing.T) {
+	input := `{
+  "action_type": "Forward",
+  "action_by": "10015845",
+  "remarks": "Forwarding for approval"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/10267", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateCommunications_ValidationError(t *testing.T) {
+	input := `{
+  "action_by": 10015845,
+  "remarks": "Wrong details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/10267", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateCommunications_NoRowsAffected(t *testing.T) {
+	input := `{
+  "action_type": "Withdraw",
+  "action_by": 10015845,
+  "remarks": "Wrong details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/1026756", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestUpdateCommunications_DBError(t *testing.T) {
+	input := `{
+    "action_type": "Withdraw",
+    "action_by": 10015845,
+    "remarks": "Communication details withdrawn due to error in communication details. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/communication-makers/10864", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveCommunicationsSuccess_Approved(t *testing.T) {
+	input := `{
+      "employee_ids": [
+       10015845
+    ],
+    "approved_by": "30117424",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Verified"
+	}`
+	req := httptest.NewRequest("POST", "/v1/communication-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveCommunicationsSuccess_Rejected(t *testing.T) {
+	input := `{
+      "employee_ids": [
+       10015845
+    ],
+    "approved_by": "30117424",
+    "approve_status": "Rejected",
+    "approve_auth_remarks": "Verified"
+	}`
+	req := httptest.NewRequest("POST", "/v1/communication-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveCommunications_InvalidApproveStatus(t *testing.T) {
+	input := `{
+      "employee_ids": [
+       10015845
+    ],
+    "approved_by": "30117424",
+    "approve_status": "Withdrawn",
+    "approve_auth_remarks": "Verified"
+	}`
+	req := httptest.NewRequest("POST", "/v1/communication-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestApproveCommunications_JSONBindingError(t *testing.T) {
+	input := `{
+      "employee_ids": [
+       10015845
+    ],
+    "approved_by": 30117424,
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Verified"
+	}`
+	req := httptest.NewRequest("POST", "/v1/communication-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveCommunications_ValidationError(t *testing.T) {
+	input := `{
+      "employee_ids": [
+       10015845
+    ],
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Verified"
+	}`
+	req := httptest.NewRequest("POST", "/v1/communication-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveCommunications_NoRowsUpdated(t *testing.T) {
+	input := `{
+      "employee_ids": [
+       1001584521
+    ],
+    "approved_by": "30117424",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Verified"
+	}`
+	req := httptest.NewRequest("POST", "/v1/communication-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestHealthCheckSuccess(t *testing.T) {
+	req := httptest.NewRequest("GET", "/healthz", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetCommunicationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communications?emp-id=10015845&skip=1&limit=5", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetCommunicationsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communications?emp-id=1001584", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetCommunicationsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communications?post-id=30007775&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetCommunications_ByNoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communications", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetCommunications_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communications?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerCommunicationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communication-makers?emp-id=10015845&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetMakerCommunicationsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communication-makers?emp-id=1001584", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetMakerCommunicationsSuccess_ByAOID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communication-makers?admin-office-id=21260551", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerCommunicationsSuccess_ByAppPostID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communication-makers?post-id=30007775", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerCommunications_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communication-makers", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerCommunications_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/communication-makers?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// func TestGetLeaveCommunications_NoInput(t *testing.T) {
+// 	req := httptest.NewRequest("GET", "/v1/leave-communications", nil)
+// 	rec := httptest.NewRecorder()
+// 	Engine.ServeHTTP(rec, req)
+// 	assert.Equal(t, http.StatusBadRequest, rec.Code)
+// }
+
+func TestGetLeaveCommunications_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/leave-communications?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetLeaveCommunications_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/leave-communications?emp-id=10015845", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// func TestGetLeaveCommunications_NotFound(t *testing.T) {
+// 	req := httptest.NewRequest("GET", "/v1/leave-communications?emp-id=99999999", nil)
+// 	req.Header.Set(contentType, applicationJson)
+// 	rec := httptest.NewRecorder()
+// 	Engine.ServeHTTP(rec, req)
+// 	assert.Equal(t, http.StatusNotFound, rec.Code)
+// }
+
+func TestGetLeaveCommunications_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/leave-communications?emp-id=12345", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}

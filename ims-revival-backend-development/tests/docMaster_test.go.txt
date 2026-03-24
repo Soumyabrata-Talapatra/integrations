@@ -1,0 +1,249 @@
+package tests
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestFileUpload_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", "667")
+	_ = writer.WriteField("employee_id", "10015845")
+	_ = writer.WriteField("service_type_id", "4")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestFileUpload_FileNameIdMissingError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("employee_id", "10015845")
+	_ = writer.WriteField("service_type_id", "4")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestFileUpload_FileNameIdStringError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", "AS667")
+	_ = writer.WriteField("employee_id", "10015845")
+	_ = writer.WriteField("service_type_id", "4")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestFileUpload_NoEmpId(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", "667")
+	_ = writer.WriteField("service_type_id", "4")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestFileUpload_EmpIdStringError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", "667")
+	_ = writer.WriteField("employee_id", "AS10015845")
+	_ = writer.WriteField("service_type_id", "4")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestFileUploadNoServiceTypeIdError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", "667")
+	_ = writer.WriteField("employee_id", "10015845")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestFileUploadServiceTypeIdStringError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	_ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", "667")
+	_ = writer.WriteField("employee_id", "10015845")
+	_ = writer.WriteField("service_type_id", "AS4")
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestDownloadSingleFileHandlerSuccess(t *testing.T) {
+	// Define mock variables
+	mockEmployeeID := 10015845
+	mockFileNameID := 10852
+	mockServiceTypeID := 4
+	filePath := "../tests/files/example.pdf"
+
+	// Open the mock file
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	// Create a multipart form body
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Write form fields
+	// _ = writer.WriteField("folderPath", "Praveen")
+	_ = writer.WriteField("file_name_id", fmt.Sprintf("%d", mockFileNameID))
+	_ = writer.WriteField("employee_id", fmt.Sprintf("%d", mockEmployeeID))
+	_ = writer.WriteField("service_type_id", fmt.Sprintf("%d", mockServiceTypeID))
+
+	// Attach the file to the request
+	part, err := writer.CreateFormFile("file", "example.pdf")
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	// Make the POST request to upload the file
+	req := httptest.NewRequest("POST", "/v1/files", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	// Extract and validate response from the POST request (if required)
+	// Example: Check response JSON if necessary
+
+	// Build the GET request to download the file
+	req = httptest.NewRequest("GET", fmt.Sprintf("/v1/files?employee_id=%d&file_name_id=%d&service_type_id=%d", mockEmployeeID, mockFileNameID, mockServiceTypeID), nil)
+	req.Header.Set(contentType, applicationJson)
+	rec = httptest.NewRecorder()
+
+	// Make the GET request
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}

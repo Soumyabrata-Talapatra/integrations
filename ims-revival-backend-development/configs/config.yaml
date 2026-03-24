@@ -1,0 +1,96 @@
+# Configuration File - Temporal and Database
+
+temporal:
+  host: "localhost"
+  port: "7233"
+  namespace: "default"
+  taskqueue: "revival-tq"
+
+db: 
+  username: "insurance_admin_user"
+  password: "DoP#insuranceadm@026T"
+  host: 172.28.13.162
+  port: 5432
+  database: "insurancedb"
+  schema: "public"
+  maxconns: 10
+  minconns: 1
+  maxconnlifetime: 30
+  maxconnidletime: 10
+  healthcheckperiod: 5
+  QueryTimeoutLow: 2s
+  QueryTimeoutMed: 5s  
+
+
+
+cache:
+  redisserver: "10.20.30.33"
+  redispassword: ""
+  redisdbindex: 1
+  redisexpirationtime: 20m
+  lccapacity: 10000
+  lcnumshards: 20
+  lcbatchsize: 10
+  lcbatchbuffertimeout: 30s
+  lcevictionpercentage: 10
+  lcmaxrefreshdelay: 15m
+  lcminrefreshdelay: 30m
+  lcretrybasedelay: 1s
+  lcttl: 2m
+  # lcevictionpercentage: 10
+  # lcmaxrefreshdelay: 30m
+  # lcretrybasedelay: 1s
+  # lcmaxrefreshdelay: 30m
+  # lcttl: 2m
+  isredisenabled: true
+  islocalcacheenabled: false
+server: 
+  # encrypt: true
+  debug:
+    stats:
+      expose: true #stats enable/disable
+      path: "/debug/statsviz"
+    pprof:
+      expose: true #pprof enable/disable
+      path: "/debug/pprof"
+  dashboard:
+    Enabled: true #dashboard enable/disable
+  healthcheck:
+    expose: true     #healthcheck enable/disable
+    path: "/healthzz"   
+  bodylimit: 2097152
+  readbuffersize: 16384
+  addr: ":8081"
+  readtimeout: 10s
+  writetimeout: 60s
+  timeout: 40 ## Over all timeout for the request  
+  cors:       
+    alloworigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"        
+    allowheaders:
+      - "Authorization"
+      - "Content-Type"
+      - "X-Request-Id"
+    allowmethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"  
+log:
+  level: "debug"
+  format: "json"
+  output: "stdout"
+minio:
+  url: "devminio.cept.gov.in"
+  accesskey: "ncMdhCXFXoq8a5fKWduA"
+  secretkey: "uMfja1erWdKp1LIF5zjnoLuHe48zjnoLuHe48zJQjWbJQjWbB"
+
+info:
+  name: "pli-revival-service"
+  version: "1.0.0"
+  description: "PLI Installment Revival System"
+  title: "PLI Revival"
+  terms: "https://example.com/terms"
+  email: "test@gmail.com"

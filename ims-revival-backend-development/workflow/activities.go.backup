@@ -1,0 +1,314 @@
+package workflow
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"plirevival/core/domain"
+	"plirevival/repo/postgres"
+)
+
+// Activities for Revival Workflow
+
+// Activities holds repository dependencies
+type Activities struct {
+	revivalRepo *repo.RevivalRepository
+	policyRepo  *repo.PolicyRepository
+	paymentRepo *repo.PaymentRepository
+}
+
+// NewActivities creates a new activities instance
+func NewActivities(revivalRepo *repo.RevivalRepository, policyRepo *repo.PolicyRepository, paymentRepo *repo.PaymentRepository) *Activities {
+	return &Activities{
+		revivalRepo: revivalRepo,
+		policyRepo:  policyRepo,
+		paymentRepo: paymentRepo,
+	}
+}
+
+// FirstCollectionInput represents input for first collection workflow
+type FirstCollectionInput struct {
+	RequestID         string
+	PolicyNumber      string
+	PremiumAmount     float64
+	InstallmentAmount float64
+	PaymentMode       string
+	TotalAmount       float64
+	ChequeNumber      *string
+	BankName          *string
+	ChequeDate        *time.Time
+	ChequeAmount      *float64
+}
+
+// ValidatePolicyActivity validates policy for revival
+func (a *Activities) ValidatePolicyActivity(ctx context.Context, requestID, policyNumber string) error {
+	// Get policy from repository
+	policy, err := a.policyRepo.GetPolicyByNumber(ctx, policyNumber)
+	if err != nil {
+		return fmt.Errorf("policy not found: %w", err)
+	}
+
+	// Check if policy is in AL (lapsed) status
+	if policy.PolicyStatus != "AL" {
+		return fmt.Errorf("policy is not in lapsed status, current status: %s", policy.PolicyStatus)
+	}
+
+	// Check for ongoing revival requests
+	hasOngoing, err := a.revivalRepo.CheckOngoingRevival(ctx, policyNumber)
+	if err != nil {
+		return fmt.Errorf("failed to check ongoing revival: %w", err)
+	}
+
+	if hasOngoing {
+		return fmt.Errorf("ongoing revival request exists for policy")
+	}
+
+	// Check max revivals allowed
+	maxRevivals, err := a.policyRepo.GetMaxRevivalsAllowed(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get max revivals allowed: %w", err)
+	}
+
+	if policy.RevivalCount >= maxRevivals {
+		return fmt.Errorf("max revivals (%d) exceeded for policy", maxRevivals)
+	}
+
+	return nil
+}
+
+// ValidateDualCollectionActivity validates dual collection request (IR_36)
+func (a *Activities) ValidateDualCollectionActivity(ctx context.Context, input FirstCollectionInput) error {
+	// Validate Premium + Installment = Total Amount (IR_36)
+	totalAmount := input.PremiumAmount + input.InstallmentAmount
+	if totalAmount != input.TotalAmount {
+		return fmt.Errorf("amount mismatch: premium (%.2f) + installment (%.2f) = %.2f, expected %.2f",
+			input.PremiumAmount, input.InstallmentAmount, totalAmount, input.TotalAmount)
+	}
+
+	// Validate payment mode is valid
+	validModes := map[string]bool{"CASH": true, "CHEQUE": true, "NEFT": true, "RTGS": true, "UPI": true, "CARD": true}
+	if !validModes[input.PaymentMode] {
+		return fmt.Errorf("invalid payment mode: %s", input.PaymentMode)
+	}
+
+	// Validate collection date is not in future
+	if input.ChequeDate != nil && input.ChequeDate.After(time.Now()) {
+		return fmt.Errorf("cheque date cannot be in future")
+	}
+
+	return nil
+}
+
+// ProcessDualPaymentActivity processes dual payment (premium + installment)
+func (a *Activities) ProcessDualPaymentActivity(ctx context.Context, input FirstCollectionInput, status string) error {
+	// Generate batch ID
+	batchID := fmt.Sprintf("BATCH%s", time.Now().Format("20060102150405"))
+
+	// Create premium payment transaction
+	premiumPayment := domain.PaymentTransaction{
+		RequestID:      input.RequestID,
+		PolicyNumber:   input.PolicyNumber,
+		CollectionDate: time.Now(),
+		PaymentMode:    input.PaymentMode,
+		Amount:         input.PremiumAmount,
+		TotalAmount:    input.PremiumAmount,
+		PaymentStatus:  status,
+		CollectedBy:    &[]string{""}[0], // Will be set from auth context
+	}
+
+	// Create installment payment transaction
+	installmentPayment := domain.PaymentTransaction{
+		RequestID:      input.RequestID,
+		PolicyNumber:   input.PolicyNumber,
+		CollectionDate: time.Now(),
+		PaymentMode:    input.PaymentMode,
+		Amount:         input.InstallmentAmount,
+		TotalAmount:    input.InstallmentAmount,
+		PaymentStatus:  status,
+		CollectedBy:    &[]string{""}[0], // Will be set from auth context
+	}
+
+	// Create dual payment records in batch (IR_36)
+	err := a.paymentRepo.CreateDualPaymentRecords(ctx, premiumPayment, installmentPayment, batchID)
+	if err != nil {
+		return fmt.Errorf("failed to create dual payment records: %w", err)
+	}
+
+	// Update revival request status if payment is complete
+	if status == "PAID" || status == "CLEARED" {
+		err = a.revivalRepo.UpdateRevivalRequestForFirstCollection(ctx, input.RequestID)
+		if err != nil {
+			return fmt.Errorf("failed to update revival request for first collection: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// CreateChequeRecordActivity creates cheque tracking record
+func (a *Activities) CreateChequeRecordActivity(ctx context.Context, input FirstCollectionInput) (string, error) {
+	// Only create if cheque mode
+	if input.PaymentMode != "CHEQUE" || input.ChequeNumber == nil {
+		return "", fmt.Errorf("cheque details required for cheque mode")
+	}
+
+	chequeID := fmt.Sprintf("CHEQUE%s", time.Now().Format("20060102150405"))
+
+	// Create cheque clearing status record
+	chequeStatus := domain.ChequeClearingStatus{
+		ChequeID:        chequeID,
+		RequestID:       input.RequestID,
+		PolicyNumber:    input.PolicyNumber,
+		ChequeNumber:    *input.ChequeNumber,
+		BankName:        *input.BankName,
+		ChequeDate:      *input.ChequeDate,
+		Amount:          *input.ChequeAmount,
+		ClearanceStatus: "PENDING",
+	}
+
+	err := a.paymentRepo.CreateChequeClearingRecord(ctx, chequeStatus)
+	if err != nil {
+		return "", fmt.Errorf("failed to create cheque record: %w", err)
+	}
+
+	return chequeID, nil
+}
+
+// ProcessInstallmentActivity processes subsequent installment payment
+func (a *Activities) ProcessInstallmentActivity(ctx context.Context, requestID string, installmentNumber int, amount float64, paymentMode, status string) error {
+	// Get revival request
+	revivalReq, err := a.revivalRepo.GetRevivalRequestByID(ctx, requestID)
+	if err != nil {
+		return fmt.Errorf("failed to get revival request: %w", err)
+	}
+
+	// Validate installment number
+	if installmentNumber < 2 || installmentNumber > revivalReq.NumberOfInstallments {
+		return fmt.Errorf("invalid installment number: %d, total installments: %d",
+			installmentNumber, revivalReq.NumberOfInstallments)
+	}
+
+	// Create installment schedule record
+	scheduleID := fmt.Sprintf("SCHED%s", time.Now().Format("20060102150405"))
+
+	// Calculate due date (IR_11: 1st of each month)
+	// This would be calculated based on installment number
+	now := time.Now()
+	dueDate := time.Date(now.Year(), now.Month()+time.Month(installmentNumber-1), 1, 0, 0, 0, time.Now().Nanosecond(), time.Now().Location())
+
+	// Note: In production, would create installment schedule record via repository
+	_ = scheduleID
+	_ = dueDate
+
+	// Update revival request if payment is complete
+	if status == "PAID" || status == "CLEARED" {
+		// TODO: Increment installmentsPaid in revival request
+		// TODO: Check if all installments paid, set status to COMPLETED
+	}
+
+	return nil
+}
+
+// HandleDefaultActivity handles installment default (moves to suspense, reverts to AL)
+func (a *Activities) HandleDefaultActivity(ctx context.Context, requestID string, installmentNumber int) error {
+	// Get revival request
+	revivalReq, err := a.revivalRepo.GetRevivalRequestByID(ctx, requestID)
+	if err != nil {
+		return fmt.Errorf("failed to get revival request: %w", err)
+	}
+
+	// Move all collected amounts to suspense (IR_28)
+	// Create suspense entry for premium amount
+	premiumSuspense := domain.SuspenseAccount{
+		PolicyNumber: revivalReq.PolicyNumber,
+		RequestID:    &requestID,
+		SuspenseType: "PREMIUM",
+		Amount:       revivalReq.RevivalAmount, // This would be actual collected premium
+		IsReversed:   false,
+		CreatedBy:    &[]string{""}[0], // System user
+	}
+
+	err = a.paymentRepo.CreateSuspenseEntry(ctx, premiumSuspense)
+	if err != nil {
+		return fmt.Errorf("failed to create premium suspense entry: %w", err)
+	}
+
+	// Create suspense entry for collected installments
+	for i := 1; i <= revivalReq.InstallmentsPaid; i++ {
+		installmentSuspense := domain.SuspenseAccount{
+			PolicyNumber: revivalReq.PolicyNumber,
+			RequestID:    &requestID,
+			SuspenseType: fmt.Sprintf("INSTALLMENT_%d", i),
+			Amount:       revivalReq.InstallmentAmount,
+			IsReversed:   false,
+			CreatedBy:    &[]string{""}[0], // System user
+		}
+
+		err = a.paymentRepo.CreateSuspenseEntry(ctx, installmentSuspense)
+		if err != nil {
+			return fmt.Errorf("failed to create installment %d suspense entry: %w", i, err)
+		}
+	}
+
+	// Revert policy status to AL (lapsed)
+	err = a.policyRepo.UpdatePolicyStatus(ctx, revivalReq.PolicyNumber, "AL")
+	if err != nil {
+		return fmt.Errorf("failed to revert policy status to AL: %w", err)
+	}
+
+	// Update revival request status to DEFAULTED
+	// Note: Would need UpdateRevivalRequestForDefault method
+	_ = installmentNumber
+
+	return nil
+}
+
+// TerminateRevivalActivity terminates revival request (60-day SLA expiry)
+func (a *Activities) TerminateRevivalActivity(ctx context.Context, requestID, reason string) error {
+	// Get revival request
+	_, err := a.revivalRepo.GetRevivalRequestByID(ctx, requestID)
+	if err != nil {
+		return fmt.Errorf("failed to get revival request: %w", err)
+	}
+
+	// Update revival request status to TERMINATED
+	err = a.revivalRepo.UpdateRevivalRequestForTermination(ctx, requestID)
+	if err != nil {
+		return fmt.Errorf("failed to update revival request for termination: %w", err)
+	}
+
+	// Note: Would need to revert policy status and handle suspense reversals
+	_ = reason
+
+	return nil
+}
+
+// GenerateLetterActivity generates letters (acceptance, rejection, memo)
+func (a *Activities) GenerateLetterActivity(ctx context.Context, letterType, requestID, policyNumber string) (string, error) {
+	// Generate letter ID
+	letterID := fmt.Sprintf("LETTER%s", time.Now().Format("20060102150405"))
+
+	// This would call Document System API to generate PDF
+	// Store letter_id in database
+	// Send notification to policyholder
+
+	// Note: In production, would integrate with Document System
+	_ = policyNumber
+	_ = letterType
+
+	return letterID, nil
+}
+
+// SendNotificationActivity sends notifications (SMS/Email)
+func (a *Activities) SendNotificationActivity(ctx context.Context, recipient, message, channel string) error {
+	// Call Notification System API
+	_ = recipient
+	_ = message
+	_ = channel
+
+	// This would integrate with notification service
+	// Example: notifService.Send(ctx, recipient, message, channel)
+
+	return nil
+}

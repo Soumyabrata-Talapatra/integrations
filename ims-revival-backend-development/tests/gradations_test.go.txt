@@ -1,0 +1,121 @@
+package tests
+
+import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestUpdateGradations_UriBindingError(t *testing.T) {
+	input := `{
+	 "remarks": "Verified",
+  	 "ack_status": "Acknowledged"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/gradations/abc/acknowledge", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateGradations_JSONBindingError(t *testing.T) {
+	input := `{
+	 "remarks": Verified,
+  	 "ack_status": "Acknowledged"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/gradations/10021844/acknowledge", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateGradations_ValidationError(t *testing.T) {
+	input := `{
+	 "remarks": "Verified",
+  	 "ack_status": "Acknowledged"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/gradations//acknowledge", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetGradationsSuccess_ByCadre(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/gradations?cadre=PA", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetGradationsSuccess_ByDivisionID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/gradations?division-id=21260000&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetGradationsSuccess_ByCircleID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/gradations?circle-id=21000000", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetGradations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/gradations", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetGradations_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/gradations?division-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetGradations_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/gradations?division-id=212600009", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateGradations_Success(t *testing.T) {
+	// Define the JSON input for the test
+	input := `{
+		"ack_status": "Acknowledged",
+		"remarks": "Gradation updated successfully"
+	}`
+
+	// Create a test request
+	req := httptest.NewRequest("PUT", "/v1/gradations/10015845/acknowledge", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	// Create a test recorder to capture the response
+	rec := httptest.NewRecorder()
+	// Simulate the API call
+	Engine.ServeHTTP(rec, req)
+	// Assert that the response code is 200 OK
+	assert.Equal(t, http.StatusOK, rec.Code)
+}

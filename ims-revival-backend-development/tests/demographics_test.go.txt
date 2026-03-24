@@ -1,0 +1,138 @@
+package tests
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestListEmpCommunities_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/communities", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListEmpGenders_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/genders", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListEmpMaritalDetails_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/marital-details", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListRecruitmentModes_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/recruitments", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListPWDCategories_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/pwd-categories", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListEmpTypes_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/emp-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListRelationTypes_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/relation-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListNominationTypes_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/nomination-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListEmpGroup_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/emp-groups", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListDesignations_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/designations", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListNOCs_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/noc-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListDemographics_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestListArrangements_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/arrangement-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListBloodGroups_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/blood-groups", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListHierarchicalLevel_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/hierarchy", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListBankTypes_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/bank-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestListEmploymentStatusTypes_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/demographics/exit-types", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}

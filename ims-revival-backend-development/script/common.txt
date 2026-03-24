@@ -1,0 +1,166 @@
+CREATE OR REPLACE FUNCTION common.log_configuration_change()
+-- DROP SCHEMA common;
+
+CREATE SCHEMA common AUTHORIZATION postgres;
+
+COMMENT ON SCHEMA common IS 'Shared entities, policies, TigerBeetle accounts, audit logs';
+-- common.configuration_audit definition
+
+-- Drop table
+
+-- DROP TABLE common.configuration_audit;
+
+CREATE OR REPLACE FUNCTION common.update_updated_at_column()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$function$
+;
+
+
+
+CREATE OR REPLACE FUNCTION common.log_configuration_change()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    IF TG_OP = 'UPDATE' AND OLD.config_value IS DISTINCT FROM NEW.config_value THEN
+        INSERT INTO common.configuration_audit (
+            config_key,
+            previous_value,
+            new_value,
+            changed_by
+        ) VALUES (
+            NEW.config_key,
+            OLD.config_value,
+            NEW.config_value,
+            NEW.last_updated_by
+        );
+    END IF;
+    RETURN NEW;
+END;
+$function$
+;
+
+-- DROP FUNCTION common.update_updated_at_column();
+
+
+CREATE TABLE common.configuration_audit (
+	audit_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	config_key varchar(100) NOT NULL,
+	previous_value text NULL,
+	new_value text NOT NULL,
+	changed_by varchar(100) NOT NULL,
+	changed_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	change_reason text NULL,
+	affected_policies_count int4 DEFAULT 0 NULL,
+	CONSTRAINT configuration_audit_pkey PRIMARY KEY (audit_id)
+);
+CREATE INDEX idx_config_audit_changed_at ON common.configuration_audit USING btree (changed_at DESC);
+CREATE INDEX idx_config_audit_key ON common.configuration_audit USING btree (config_key);
+COMMENT ON TABLE common.configuration_audit IS 'Configuration change history for compliance (IR_29)';
+
+
+-- common.policies definition
+
+-- Drop table
+
+-- DROP TABLE common.policies;
+
+CREATE TABLE common.policies (
+	policy_number varchar(13) NOT NULL,
+	customer_id varchar(50) NOT NULL,
+	customer_name varchar(200) NOT NULL,
+	product_code varchar(20) NOT NULL,
+	product_name varchar(100) NOT NULL,
+	policy_status varchar(10) NOT NULL,
+	premium_frequency varchar(20) NOT NULL,
+	premium_amount numeric(15, 2) NOT NULL,
+	sum_assured numeric(15, 2) NOT NULL,
+	paid_to_date date NOT NULL,
+	maturity_date date NOT NULL,
+	date_of_commencement date NOT NULL,
+	revival_count int4 DEFAULT 0 NULL, -- Number of times policy has been revived (IR_29 validation)
+	last_revival_date date NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT chk_policy_number CHECK (((policy_number)::text ~ '^\d{13}$'::text)),
+	CONSTRAINT chk_premium_amount CHECK ((premium_amount > (0)::numeric)),
+	CONSTRAINT chk_revival_count CHECK ((revival_count >= 0)),
+	CONSTRAINT policies_pkey PRIMARY KEY (policy_number),
+	billing_method VARCHAR(50),
+	office VARCHAR(50)
+);
+CREATE INDEX idx_policies_customer ON common.policies USING btree (customer_id);
+CREATE INDEX idx_policies_product ON common.policies USING btree (product_code);
+CREATE INDEX idx_policies_status ON common.policies USING btree (policy_status);
+COMMENT ON TABLE common.policies IS 'Policy master data - may sync from external PAS';
+
+-- Column comments
+
+COMMENT ON COLUMN common.policies.revival_count IS 'Number of times policy has been revived (IR_29 validation)';
+
+-- Table Triggers
+
+create trigger trg_policies_updated_at before
+update
+    on
+    common.policies for each row execute function common.update_updated_at_column();
+
+
+-- common.system_configuration definition
+
+-- Drop table
+
+-- DROP TABLE common.system_configuration;
+
+CREATE TABLE common.system_configuration (
+	config_key varchar(100) NOT NULL,
+	config_value text NOT NULL,
+	data_type varchar(20) NOT NULL,
+	description text NULL,
+	is_configurable bool DEFAULT false NULL,
+	last_updated_by varchar(100) NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT chk_data_type CHECK (((data_type)::text = ANY ((ARRAY['INTEGER'::character varying, 'DECIMAL'::character varying, 'STRING'::character varying, 'BOOLEAN'::character varying, 'JSON'::character varying])::text[]))),
+	CONSTRAINT system_configuration_pkey PRIMARY KEY (config_key)
+);
+COMMENT ON TABLE common.system_configuration IS 'System configuration - only max_revivals_allowed is user-configurable per IR_29';
+
+-- Table Triggers
+
+create trigger trg_log_config_change after
+update
+    on
+    common.system_configuration for each row execute function common.log_configuration_change();
+
+
+-- common.tigerbeetle_accounts definition
+
+-- Drop table
+
+-- DROP TABLE common.tigerbeetle_accounts;
+
+CREATE TABLE common.tigerbeetle_accounts (
+	policy_number varchar(13) NOT NULL,
+	premium_account_id bytea NOT NULL,
+	revival_account_id bytea NOT NULL,
+	loan_account_id bytea NOT NULL,
+	combined_suspense_account_id bytea NOT NULL,
+	revival_suspense_account_id bytea NOT NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT chk_account_ids_not_empty CHECK (((length(premium_account_id) > 0) AND (length(revival_account_id) > 0) AND (length(loan_account_id) > 0) AND (length(combined_suspense_account_id) > 0) AND (length(revival_suspense_account_id) > 0))),
+	CONSTRAINT tigerbeetle_accounts_pkey PRIMARY KEY (policy_number),
+	CONSTRAINT tigerbeetle_accounts_policy_number_fkey FOREIGN KEY (policy_number) REFERENCES common.policies(policy_number)
+);
+CREATE INDEX idx_tb_premium_account ON common.tigerbeetle_accounts USING btree (premium_account_id);
+CREATE INDEX idx_tb_revival_account ON common.tigerbeetle_accounts USING btree (revival_account_id);
+COMMENT ON TABLE common.tigerbeetle_accounts IS 'TigerBeetle account ID mappings - 5 accounts per policy';
+
+
+
+-- DROP FUNCTION common.log_configuration_change();

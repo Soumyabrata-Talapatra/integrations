@@ -66,150 +66,15 @@ func NewPMLifecycleActivities(
 type StartPMLifecycleInput struct {
 	// PolicyNumber uniquely identifies the issued policy (e.g. "PLI/2026/GJ/000001").
 	PolicyNumber string `json:"policy_number"`
-	// RequestID is a UUID for the policy creation request
-	RequestID string `json:"request_id,omitempty"`
 	// PolicyType is "PLI" or "RPLI", used to build the PM workflow ID.
 	PolicyType string `json:"policy_type"`
-	// Additional parameters from PolicyIssuanceWorkflow
-	ProposalID              int64     `json:"proposal_id"`
-	ProposalNumber          string    `json:"proposal_number"`
-	CustomerID              string    `json:"customer_id"`
-	PolicyholderDOB         time.Time `json:"policyholder_dob,omitempty"`
-	ProductCode             string    `json:"product_code"`
-	ProductType             string    `json:"product_type,omitempty"`
-	SumAssured              float64   `json:"sum_assured"`
-	PolicyTerm              int       `json:"policy_term"`
-	AgeAtEntry              int       `json:"age_at_entry,omitempty"`
-	Gender                  string    `json:"gender,omitempty"`
-	PremiumPaymentFrequency string    `json:"premium_payment_frequency"`
-	AgeProofType            string    `json:"age_proof_type,omitempty"`
-	InsuredState            string    `json:"insured_state,omitempty"`
-	ProposalDate            time.Time `json:"proposal_date,omitempty"`
-	// Additional fields from proposals table
-	SpouseCustomerID        *int64  `json:"spouse_customer_id,omitempty"`
-	ProposerCustomerID      *int64  `json:"proposer_customer_id,omitempty"`
-	IsProposerSameAsInsured bool    `json:"is_proposer_same_as_insured"`
-	PremiumPayerType        string  `json:"premium_payer_type,omitempty"`
-	PayerCustomerID         *int64  `json:"payer_customer_id,omitempty"`
-	PremiumCeasingAge       *int    `json:"premium_ceasing_age,omitempty"`
-	BasePremium             float64 `json:"base_premium"`
-	GSTAmount               float64 `json:"gst_amount"`
-	TotalPremium            float64 `json:"total_premium"`
-	AnnualPremiumEquivalent float64 `json:"annual_premium_equivalent"`
-	ModalPremium            float64 `json:"modal_premium"`
-	AdditionalPremium       float64 `json:"additional_premium"`
-	EntryPath               string  `json:"entry_path"`
-	Channel                 string  `json:"channel"`
-	CurrentStage            string  `json:"current_stage"`
-	// Dates from proposal_indexing
-	DeclarationDate time.Time `json:"declaration_date,omitempty"`
-	ReceiptDate     time.Time `json:"receipt_date,omitempty"`
-	IndexingDate    time.Time `json:"indexing_date,omitempty"`
-	// Dates from proposal_issuance
-	PolicyIssueDate        time.Time `json:"policy_issue_date,omitempty"`
-	AcceptanceDate         time.Time `json:"acceptance_date,omitempty"`
-	PolicyCommencementDate time.Time `json:"policy_commencement_date,omitempty"`
-	DispatchDate           time.Time `json:"dispatch_date,omitempty"`
-	DeliveryDate           time.Time `json:"delivery_date,omitempty"`
-	FLCStartDate           time.Time `json:"flc_start_date,omitempty"`
-	FLCEndDate             time.Time `json:"flc_end_date,omitempty"`
-	// Payment information
-	FirstPremiumPaid          bool      `json:"first_premium_paid"`
-	FirstPremiumDate          time.Time `json:"first_premium_date,omitempty"`
-	FirstPremiumReference     string    `json:"first_premium_reference,omitempty"`
-	FirstPremiumReceiptNumber string    `json:"first_premium_receipt_number,omitempty"`
-	PremiumPaymentMethod      string    `json:"premium_payment_method,omitempty"`
-	// Location information
-	POCode          string `json:"po_code,omitempty"`
-	IssueCircle     string `json:"issue_circle,omitempty"`
-	IssueHO         string `json:"issue_ho,omitempty"`
-	IssuePostOffice string `json:"issue_post_office,omitempty"`
 }
 
 // PMCreatedSignal is the signal payload sent to PM's lifecycle workflow.
-// This must match the PolicyLifecycleState struct expected by PolicyLifecycleWorkflow.
 type PMCreatedSignal struct {
-	PolicyNumber                   string               `json:"policy_number"`
-	PolicyID                       string               `json:"policy_id"` // UUID from Policy Issue (audit cross-ref)
-	RequestID                      string               `json:"request_id"`
-	PolicyDBID                     int64                `json:"policy_db_id"` // BIGINT from PM seq_policy_id [A13]
-	CurrentStatus                  string               `json:"current_status"`
-	PreviousStatus                 string               `json:"previous_status"`
-	PreviousStatusBeforeSuspension string               `json:"previous_status_before_suspension"` // AML revert [BR-PM-110/111]
-	Encumbrances                   EncumbranceFlags     `json:"encumbrances"`
-	DisplayStatus                  string               `json:"display_status"` // Computed: status + encumbrances
-	Version                        int64                `json:"version"`        // Optimistic locking
-	Metadata                       PolicyMetadata       `json:"metadata"`
-	PendingRequests                []PendingRequest     `json:"pending_requests"`
-	ActiveLock                     *FinancialLock       `json:"active_lock,omitempty"`
-	ProcessedSignalIDs             map[string]time.Time `json:"processed_signal_ids"` // Dedup, 90-day TTL
-	EventCount                     int                  `json:"event_count"`          // For CAN threshold [FR-PM-002]
-	LastCANTime                    time.Time            `json:"last_can_time"`
-	LastTransitionAt               time.Time            `json:"last_transition_at"`
-	CachedConfig                   map[string]string    `json:"cached_config,omitempty"` // lazy-loaded config cache [Review-Fix-3]
-	// FLCExpiryAt is the absolute time when the FLC timer goroutine should fire.
-	// Persisted so the goroutine can be respawned after Continue-As-New (goroutines
-	// are lost on CAN; without this field the FLC transition would never fire for
-	// policies that cross a CAN boundary during the free-look period). [D1]
-	FLCExpiryAt  time.Time `json:"flc_expiry_at,omitempty"`
-	ProductCode  string    `json:"product_code"`
-	MaturityDate time.Time `json:"maturity_date"`
-}
-
-// PolicyMetadata holds policy-level data needed by the workflow for state gate
-// decisions, eligibility checks, and activity calls. [§9.1]
-type PolicyMetadata struct {
-	CustomerID                  int64      `json:"customer_id"`
-	PolicyholderDOB             time.Time  `json:"policyholder_dob"`
-	ProductCode                 string     `json:"product_code"`
-	ProductType                 string     `json:"product_type"` // PLI or RPLI
-	SumAssured                  float64    `json:"sum_assured"`
-	CurrentPremium              float64    `json:"current_premium"`
-	PremiumMode                 string     `json:"premium_mode"`   // MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY
-	BillingMethod               string     `json:"billing_method"` // CASH or PAY_RECOVERY [BR-PM-074]
-	IssueDate                   time.Time  `json:"issue_date"`
-	MaturityDate                time.Time  `json:"maturity_date"`
-	PaidToDate                  time.Time  `json:"paid_to_date"`
-	AgentID                     *int64     `json:"agent_id,omitempty"` // Nullable BIGINT [Review-Fix-5]
-	LoanOutstanding             float64    `json:"loan_outstanding"`
-	AssignmentStatus            string     `json:"assignment_status"`
-	PremiumsPaidMonths          int        `json:"premiums_paid_months"` // For paid-up calc [BR-PM-061]
-	TotalPremiumsMonths         int        `json:"total_premiums_months"`
-	RemissionExpiryDate         *time.Time `json:"remission_expiry_date,omitempty"`          // Nullable [Review-Fix-5]
-	PayRecoveryProtectionExpiry *time.Time `json:"pay_recovery_protection_expiry,omitempty"` // Nullable, first_unpaid + 12mo [BR-PM-074, Review-Fix-5]
-	SBInstallmentsPaid          int        `json:"sb_installments_paid"`
-	NominationStatus            string     `json:"nomination_status"`
-	IsDistanceMarketing         bool       `json:"is_distance_marketing"` // 30d FLC for distance-marketing products [Review-Fix-9]
-	WorkflowID                  string     `json:"workflow_id"`           // plw-{policy_number}
-}
-
-// EncumbranceFlags groups all encumbrance state; passed to isStateEligible(). [§9.1]
-type EncumbranceFlags struct {
-	HasActiveLoan  bool   `json:"has_active_loan"` // Blocks new LOAN requests
-	AssignmentType string `json:"assignment_type"` // NONE, ABSOLUTE, CONDITIONAL
-	AMLHold        bool   `json:"aml_hold"`        // true when SUSPENDED [BR-PM-110]
-	DisputeFlag    bool   `json:"dispute_flag"`    // Advisory only; never blocks [BR-PM-113, ADR-003]
-}
-
-// PendingRequest tracks a routed in-flight request waiting for a completion signal. [§9.1]
-type PendingRequest struct {
-	RequestID          string     `json:"request_id"`         // Dedup key (BIGINT as string or UUID)
-	ServiceRequestID   int64      `json:"service_request_id"` // BIGINT from service_request table
-	RequestType        string     `json:"request_type"`
-	RequestCategory    string     `json:"request_category"`    // FINANCIAL or NON_FINANCIAL
-	DownstreamWorkflow string     `json:"downstream_workflow"` // Child workflow ID
-	RoutedAt           time.Time  `json:"routed_at"`
-	TimeoutAt          time.Time  `json:"timeout_at"`
-	SubmittedAt        *time.Time `json:"submitted_at,omitempty"` // Partition key for service_request [D4]
-}
-
-// FinancialLock represents an exclusive lock held by a financial request. [BR-PM-030]
-// Only one active lock at a time; death-notification and NFR bypass this.
-type FinancialLock struct {
-	RequestID   string    `json:"request_id"`
-	RequestType string    `json:"request_type"`
-	LockedAt    time.Time `json:"locked_at"`
-	TimeoutAt   time.Time `json:"timeout_at"`
+	PolicyNumber string    `json:"policy_number"`
+	PolicyType   string    `json:"policy_type"`
+	IssuedAt     time.Time `json:"issued_at"`
 }
 
 // StartPMLifecycleActivity sends a SignalWithStart to the PM service for the given policy.
@@ -233,90 +98,10 @@ func (a *PMLifecycleActivities) StartPMLifecycleActivity(ctx context.Context, in
 	// Count the attempt before we call PM — best-effort, does not change status.
 	_ = a.store.IncrementPMSignalAttempts(ctx, input.PolicyNumber)
 
-	// For a newly issued policy, we need to set initial state
-	now := time.Now().UTC()
-
-	// Parse customer ID from string to int64
-	var customerID int64
-	if input.CustomerID != "" {
-		_, err := fmt.Sscanf(input.CustomerID, "%d", &customerID)
-		if err != nil {
-			// If parsing fails, use 0 as default
-			customerID = 0
-		}
-	}
-
-	// Calculate PolicyholderDOB if not provided
-	//TODO: Integrate with customer service to fetch DOB using customerID if not provided in input, instead of calculating approximate DOB
-	policyholderDOB := input.PolicyholderDOB
-	if policyholderDOB.IsZero() && input.AgeAtEntry > 0 && !input.PolicyCommencementDate.IsZero() {
-		// Calculate approximate DOB by subtracting age from policy commencement date
-		policyholderDOB = input.PolicyCommencementDate.AddDate(-input.AgeAtEntry, 0, 0)
-	}
-
-	// Use PolicyID from input (generated by workflow)
-	// If empty, PM service will generate one
-
-	// Create financial lock with request ID if provided
-	var activeLock *FinancialLock
-	if input.RequestID != "" {
-		activeLock = &FinancialLock{
-			RequestID:   input.RequestID,
-			RequestType: "POLICY_CREATION",
-			LockedAt:    now,
-			TimeoutAt:   now.Add(24 * time.Hour), // 24-hour lock for policy creation
-		}
-	}
-
 	signal := PMCreatedSignal{
-		PolicyNumber:                   input.PolicyNumber,
-		PolicyDBID:                     0, // Will be assigned by PM service
-		CurrentStatus:                  "ACTIVE",
-		RequestID:                      input.RequestID,
-		PreviousStatus:                 "",
-		PreviousStatusBeforeSuspension: "",
-		Encumbrances: EncumbranceFlags{
-			HasActiveLoan:  false,
-			AssignmentType: "NONE",
-			AMLHold:        false,
-			DisputeFlag:    false,
-		},
-		DisplayStatus:      "ACTIVE",
-		Version:            1,
-		PendingRequests:    []PendingRequest{},
-		ActiveLock:         activeLock,
-		ProcessedSignalIDs: make(map[string]time.Time),
-		EventCount:         0,
-		LastCANTime:        time.Time{},
-		LastTransitionAt:   now,
-		CachedConfig:       make(map[string]string),
-		FLCExpiryAt:        input.FLCEndDate,
-		ProductCode:        input.ProductCode,
-		MaturityDate:       calculateMaturityDate(input.PolicyCommencementDate, input.PolicyTerm),
-		Metadata: PolicyMetadata{
-			CustomerID:                  customerID,
-			PolicyholderDOB:             policyholderDOB,
-			ProductCode:                 input.ProductCode,
-			ProductType:                 input.ProductType,
-			SumAssured:                  input.SumAssured,
-			CurrentPremium:              input.ModalPremium,
-			PremiumMode:                 convertPremiumFrequencyToMode(input.PremiumPaymentFrequency),
-			BillingMethod:               "CASH", // Default for new policies
-			IssueDate:                   input.PolicyIssueDate,
-			MaturityDate:                calculateMaturityDate(input.PolicyCommencementDate, input.PolicyTerm),
-			PaidToDate:                  input.FirstPremiumDate,
-			AgentID:                     nil, // Will be populated from proposal data if available
-			LoanOutstanding:             0,
-			AssignmentStatus:            "NONE",
-			PremiumsPaidMonths:          0,
-			TotalPremiumsMonths:         input.PolicyTerm * 12,
-			RemissionExpiryDate:         nil,
-			PayRecoveryProtectionExpiry: nil,
-			SBInstallmentsPaid:          0,
-			NominationStatus:            "PENDING",
-			IsDistanceMarketing:         input.Channel == "DISTANCE_MARKETING",
-			WorkflowID:                  fmt.Sprintf("plw-%s", input.PolicyNumber),
-		},
+		PolicyNumber: input.PolicyNumber,
+		PolicyType:   input.PolicyType,
+		IssuedAt:     time.Now().UTC(),
 	}
 
 	startOpts := client.StartWorkflowOptions{
@@ -348,30 +133,6 @@ func (a *PMLifecycleActivities) StartPMLifecycleActivity(ctx context.Context, in
 	}
 
 	return nil
-}
-
-// calculateMaturityDate calculates the maturity date based on policy commencement date and term in years
-func calculateMaturityDate(commencementDate time.Time, policyTermYears int) time.Time {
-	if commencementDate.IsZero() {
-		return time.Time{}
-	}
-	return commencementDate.AddDate(policyTermYears, 0, 0)
-}
-
-// convertPremiumFrequencyToMode converts premium payment frequency string to premium mode
-func convertPremiumFrequencyToMode(frequency string) string {
-	switch frequency {
-	case "MONTHLY":
-		return "MONTHLY"
-	case "QUARTERLY":
-		return "QUARTERLY"
-	case "HALF_YEARLY":
-		return "HALF_YEARLY"
-	case "YEARLY":
-		return "YEARLY"
-	default:
-		return "YEARLY" // Default fallback
-	}
 }
 
 // FindUnsignalledPoliciesInput is the input for FindUnsignalledPoliciesActivity.
@@ -408,8 +169,6 @@ func (a *PMLifecycleActivities) FindUnsignalledPoliciesActivity(
 		result = append(result, StartPMLifecycleInput{
 			PolicyNumber: t.PolicyNumber,
 			PolicyType:   t.PolicyType,
-			ProposalID:   t.ProposalID,
-			ProposalDate: t.PolicyIssueDate,
 		})
 	}
 	return result, nil

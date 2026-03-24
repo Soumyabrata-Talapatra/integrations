@@ -1,0 +1,515 @@
+package tests
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateEmpNocDetail_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	var input string
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input = `{
+  "employee_id": 10015845,
+  "noc_id": 2,
+  "noc_purpose": "Higher Studies",
+  "country_name": "United States",
+  "noc_from_date": "2024-07-01T00:00:00Z",
+  "noc_to_date": "2024-12-31T00:00:00Z",
+  "course_name": "Masters in Computer Science",
+  "course_duration": "2 years",
+  "institution_name": "Massachusetts Institute of Technology",
+  "university_name": "MIT",
+  "institution_location": "Cambridge, MA",
+  "fwd_post_id": "30005933",
+  "approver_post_id": "30007775",
+  "created_by": "10015845",
+  "user_remarks": "Application for NOC for higher studies in the US."
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateEmpNocDetail_BindingError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	var input string
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input = `{
+  "employee_id": "10015845",
+  "noc_id": 2,
+  "noc_purpose": "Higher Studies",
+  "country_name": "United States",
+  "noc_from_date": "2024-07-01T00:00:00Z",
+  "noc_to_date": "2024-12-31T00:00:00Z",
+  "course_name": "Masters in Computer Science",
+  "course_duration": "2 years",
+  "institution_name": "Massachusetts Institute of Technology",
+  "university_name": "MIT",
+  "institution_location": "Cambridge, MA",
+  "fwd_post_id": "30005933",
+  "approver_post_id": "30007775",
+  "created_by": "10015845",
+  "user_remarks": "Application for NOC for higher studies in the US."
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateEmpNocDetail_ValidationError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	var input string
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input = `{
+  "employee_id": 10015845,
+  "noc_purpose": "Higher Studies",
+  "country_name": "United States",
+  "noc_from_date": "2024-07-01T00:00:00Z",
+  "noc_to_date": "2024-12-31T00:00:00Z",
+  "course_name": "Masters in Computer Science",
+  "course_duration": "2 years",
+  "institution_name": "Massachusetts Institute of Technology",
+  "university_name": "MIT",
+  "institution_location": "Cambridge, MA",
+  "fwd_post_id": "30005933",
+  "approver_post_id": "30007775",
+  "created_by": "10015845",
+  "user_remarks": "Application for NOC for higher studies in the US."
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateEmpNocDetail_LargeFileError(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	var input string
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input = `{
+  "employee_id": 10015845,
+  "noc_purpose": "Higher Studies",
+  "country_name": "United States",
+  "noc_from_date": "2024-07-01T00:00:00Z",
+  "noc_to_date": "2024-12-31T00:00:00Z",
+  "course_name": "Masters in Computer Science",
+  "course_duration": "2 years",
+  "institution_name": "Massachusetts Institute of Technology",
+  "university_name": "MIT",
+  "institution_location": "Cambridge, MA",
+  "fwd_post_id": "30005933",
+  "approver_post_id": "30007775",
+  "created_by": "10015845",
+  "user_remarks": "Application for NOC for higher studies in the US."
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateEmpNocDetail_InvalidFileError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	var input string
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input = `{
+  "employee_id": 10015845,
+  "noc_purpose": "Higher Studies",
+  "country_name": "United States",
+  "noc_from_date": "2024-07-01T00:00:00Z",
+  "noc_to_date": "2024-12-31T00:00:00Z",
+  "course_name": "Masters in Computer Science",
+  "course_duration": "2 years",
+  "institution_name": "Massachusetts Institute of Technology",
+  "university_name": "MIT",
+  "institution_location": "Cambridge, MA",
+  "fwd_post_id": "30005933",
+  "approver_post_id": "30007775",
+  "created_by": "10015845",
+  "user_remarks": "Application for NOC for higher studies in the US."
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateEmpNocDetail_DBError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+	var input string
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input = `{
+  "employee_id": 10015845,
+  "noc_id": 2,
+  "noc_purpose": "Higher Studies",
+  "country_name": "The United States of America and its Territories",
+  "noc_from_date": "2024-07-01T00:00:00Z",
+  "noc_to_date": "2024-12-31T00:00:00Z",
+  "course_name": "Masters in Computer Science",
+  "course_duration": "2 years",
+  "institution_name": "Massachusetts Institute of Technology",
+  "university_name": "MIT",
+  "institution_location": "Cambridge, MA",
+  "fwd_post_id": "30005933",
+  "approver_post_id": "30007775",
+  "created_by": "10015845",
+  "user_remarks": "Application for NOC for higher studies in the US."
+}`
+	_ = writer.WriteField("data", input)
+
+	part, err := writer.CreateFormFile("file", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateEmpNocDetail_FileValidationError(t *testing.T) {
+	// Prepare JSON payload
+	jsonData := `{
+		"employee_id": 10171709,
+		"noc_id": 5,
+		"noc_purpose": "Education"
+	}`
+
+	// Prepare an empty multipart form body (no file provided)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	_ = writer.WriteField("data", jsonData)
+	_ = writer.Close()
+
+	// Create the HTTP request
+	req := httptest.NewRequest("POST", "/v1/nocs", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+
+	// Perform the request
+	Engine.ServeHTTP(rec, req)
+
+	// Assert validation error due to missing file
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestForwardPendNocs_Success(t *testing.T) {
+	rawBody := `{
+	"fwd_post_id": "30005933",
+	"fwd_auth_remarks": "May be approved"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/nocs/207/forward", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestForwardPendNocs_ValidationError(t *testing.T) {
+	rawBody := `{
+		"fwd_post_id": "30005933"
+	}` // Missing required "fwd_auth_remarks"
+	req := httptest.NewRequest("PUT", "/v1/nocs/102/forward", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestForwardPendNocs_BindingError(t *testing.T) {
+	rawBody := `{
+	"fwd_post_id": 30005933,
+	"fwd_auth_remarks": "May be approved"
+	}`
+	body, _ := json.Marshal(rawBody)
+	req := httptest.NewRequest("PUT", "/v1/nocs/102/forward", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestForwardPendNocs_URIError(t *testing.T) {
+	rawBody := `{
+		"fwd_post_id": "30005933",
+		"fwd_auth_remarks": "May be approved"
+	}`
+	body, _ := json.Marshal(rawBody)
+	req := httptest.NewRequest("PUT", "/v1/nocs/invalid-id/forward", bytes.NewBuffer(body)) // Invalid emp-noc-id
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestForwardPendNocs_NoRowsAffected(t *testing.T) {
+
+	input := `{
+		"fwd_post_id": "30005933",
+		"fwd_auth_remarks": "May be approved"
+	}`
+
+	req := httptest.NewRequest("PUT", "/v1/nocs/999/forward", bytes.NewBuffer([]byte(input))) // Non-existent emp-noc-id
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApprovePendNocs_Success(t *testing.T) {
+	rawBody := `{
+	"approver_post_id": "30007775",
+	"approve_status": "Approved",
+	"approve_auth_remarks": "Approved for employee relocation."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/nocs/207/approve", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApprovePendNocs_ValidationError(t *testing.T) {
+	rawBody := `{
+		"approve_status": "Approved",
+		"approve_auth_remarks": "Approved for employee relocation."
+		}`
+	req := httptest.NewRequest("PUT", "/v1/nocs/102/approve", bytes.NewBuffer([]byte(rawBody)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApprovePendNocs_BindingError(t *testing.T) {
+	rawBody := `{
+		"approver_post_id": 30007775,
+		"approve_status": "Approved",
+		"approve_auth_remarks": "Approved for employee relocation."
+	}`
+	body, _ := json.Marshal(rawBody)
+	req := httptest.NewRequest("PUT", "/v1/nocs/102/approve", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApprovePendNocs_URIError(t *testing.T) {
+	rawBody := `{
+		"approver_post_id": 30007775,
+		"approve_status": "Approved",
+		"approve_auth_remarks": "Approved for employee relocation."
+	}`
+	body, _ := json.Marshal(rawBody)
+	req := httptest.NewRequest("PUT", "/v1/nocs/invalid-id/approve", bytes.NewBuffer(body)) // Invalid emp-noc-id
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNocsByEmpID_SuccessAll(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-nocs?emp-id=10133660&status=All&skip=0&limit=10", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNocsByEmpID_SuccessPending(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-nocs?emp-id=10133660&status=Pending&skip=0&limit=10", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNocsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-nocs?status=Pending", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetNocsByEmpID_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-nocs?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNocsByEmpID_InvalidStatusValue(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/emp-nocs?emp-id=10133660&status=InvalidStatus", nil) // Invalid status
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetNOCsByPostIDAuthority_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nocs?post-id=30007706&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNOCsByFwdIDAuthority_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nocs?fwd-auth-id=30005933&skip=0&limit=10", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNocsByAuthority_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nocs?post-id", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNOCsByAuthority_MissingParameters(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nocs?skip=0&limit=10", nil) // Missing post-id and fwd-auth-id
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNOCsByAuthority_InvalidSkipAndLimit(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nocs?post-id=12345&skip=-10&limit=-1", nil) // Invalid skip and limit values
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNOCsByAuthority_NoResultsFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nocs?post-id=99999&skip=0&limit=10", nil) // Non-existent post-id
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestApprovePendNocs_NoAffectedRows(t *testing.T) {
+	// Prepare the input JSON
+	input := `{
+		"approver_post_id": "30117424",
+		"approve_status": "Rejected",
+		"approve_auth_remarks": "Request rejected due to invalid data"
+	}`
+
+	// Prepare the request
+	req := httptest.NewRequest("PUT", "/nocs/12345/approve", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+
+	// Mock the response for no rows affected
+	Engine.ServeHTTP(rec, req)
+
+	// Assert that the response status code matches the expected outcome (404 for no rows affected)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}

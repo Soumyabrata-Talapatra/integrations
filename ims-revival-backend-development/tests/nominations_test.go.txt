@@ -1,0 +1,643 @@
+package tests
+
+import (
+	"bytes"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+// CreateBulkNominations test cases
+func TestCreateBulkNominations_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "nominations": [
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anjali",
+            "relation": "Mother",
+            "date_of_birth": "1976-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "adress2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anirudh",
+            "relation": "Father",
+            "date_of_birth": "1970-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "addreess2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/nomination-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateBulkNominations_FileMissingError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "nominations": [
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anjali",
+            "relation": "Mother",
+            "date_of_birth": "1976-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "adress2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anirudh",
+            "relation": "Father",
+            "date_of_birth": "1970-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "addreess2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/nomination-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateBulkNominations_InvalidFileNameError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "nominations": [
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anjali",
+            "relation": "Mother",
+            "date_of_birth": "1976-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "adress2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"nomination1.pdf"
+        },
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anirudh",
+            "relation": "Father",
+            "date_of_birth": "1970-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "addreess2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"nomination2.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/nomination-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateBulkNominations_InvalidLargeFileError(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "nominations": [
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anjali",
+            "relation": "Mother",
+            "date_of_birth": "1976-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "adress2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example-large-file.pdf"
+        },
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anirudh",
+            "relation": "Father",
+            "date_of_birth": "1970-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "addreess2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example-large-file.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/nomination-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateBulkNominations_InvalidFileTypeError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "nominations": [
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anjali",
+            "relation": "Mother",
+            "date_of_birth": "1976-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "adress2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example-doc.docx"
+        },
+        {
+            "employee_id": 10133660,
+            "employee_name": "KISHORE",
+            "type_of_nomination": "Pension",
+            "nomination_type_id": 2,
+            "nominee_name": "Anirudh",
+            "relation": "Father",
+            "date_of_birth": "1970-01-01T00:00:00Z",
+            "nomination_addr1": "address1",
+            "nomination_addr2": "addreess2",
+            "nomination_pin": 500001,
+            "share_percentage": 50,
+            "approver_post_id": "30007706",
+            "forward_post_id": "30007706",
+            "created_by": "10133660",
+            "remarks": "",
+            "file_name":"example-doc.docx"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_ = writer.Close()
+	req := httptest.NewRequest("POST", "/v1/nomination-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetMakerNominationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nomination-makers?emp-id=10166245&status=Pending&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerNominationsByDDOID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nomination-makers?ddo-office-id=21260551", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerNominationsByAppPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nomination-makers?post-id=30007775", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerNominations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nomination-makers", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerNominations_UriBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nomination-makers?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerNominations_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nomination-makers?ddo-office-id=212605519", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetNominationsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?emp-id=10166245&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetNominationsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?emp-id=1016624", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestGetNominationsByEmpIDWithDateRange_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?emp-id=10166245&start-date=2024-10-24&end-date=2024-10-25", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNominationsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?post-id=30007775&skip=1&limit=5", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetNominations_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNominations_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNominationsByEmpIDWithDateRange_InvalidStartDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?emp-id=10166245&start-date=202-10-24&end-date=2024-10-25", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetNominationsByEmpIDWithDateRange_InvalidEndDate(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/nominations?emp-id=10166245&start-date=2024-10-24&end-date=224-10-25", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestUpdateNominationsSuccess_Withdraw(t *testing.T) {
+	input := `{
+  "nomination_type": "GPF",
+  "action_type": "Withdraw",
+  "action_by": 10035071,
+  "remarks": "Wrong details."
+}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/10035071", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateNominationsSuccess_Forward(t *testing.T) {
+	input := `{
+  "nomination_type": "Gratuity",
+  "action_type": "Forward",
+  "action_by": 10035071,
+  "remarks": "Wrong details."
+}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/10035071", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateNominations_DBError(t *testing.T) {
+	input := `{
+  "nomination_type": "GPF",
+  "action_type": "Withdraw",
+  "action_by": 10035071,
+  "remarks": "Wrong details.This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/10035071", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateNominations_ValidationError(t *testing.T) {
+	input := `{
+  "nomination_type": "Pension",
+  "action_type": "Withdraw",
+  "action_by": 10133660
+	}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/10133660", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateNominations_JSONBindingError(t *testing.T) {
+	input := `{
+  "nomination_type": "Pension",
+  "action_type": "Withdraw",
+  "action_by": "10133660"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/10133660", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateNominations_UriBindingError(t *testing.T) {
+	input := `{
+  "nomination_type": "Pension",
+  "action_type": "Withdraw",
+  "action_by": 10133660,
+  "remarks": "Wrong details."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/invalid", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateNominationsSuccess_NoAffectedRows(t *testing.T) {
+	input := `{
+  "nomination_type": "Pensions",
+  "action_type": "Withdraw",
+  "action_by": 10133660,
+  "remarks": "Wrong details."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/nomination-makers/10133660", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveBulkNominations_Success(t *testing.T) {
+	input := `{
+	"employee_id": 10035071,
+"type_of_nomination": "Gratuity",
+"approver_id": "30007775",
+"approve_status": "Approved",
+"approver_remarks": "Nomination details reviewed and approved"
+	}`
+	req := httptest.NewRequest("POST", "/v1/nomination-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveBulkNominations_JsonBindingError(t *testing.T) {
+	input := `{
+    	"employee_id": "10133660",
+"type_of_nomination": "Pension",
+"approver_id": "30007706",
+"approve_status": "Approved",
+"approver_remarks": "Nomination details reviewed and approved"
+}`
+	req := httptest.NewRequest("POST", "/v1/nomination-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveBulkNominations_ValidationError(t *testing.T) {
+	input := `{
+    	"employee-id": 10133660,
+"type_of_nomination": "Pension",
+"approver_id": "30007706",
+"approve_status": "Approved",
+"approver_remarks": "Nomination details reviewed and approved"
+}`
+	req := httptest.NewRequest("POST", "/v1/nomination-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveBulkNominations_NoAffectedRows(t *testing.T) {
+	input := `{
+    	"employee_id": 10015840,
+"type_of_nomination": "Pension",
+"approver_id": "30007706",
+"approve_status": "Approved",
+"approver_remarks": "Nomination details reviewed and approved"
+}`
+	req := httptest.NewRequest("POST", "/v1/nomination-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveBulkNominations_SuccessRejected(t *testing.T) {
+	input := `{
+	"employee_id": 10133660,
+"type_of_nomination": "Pension",
+"approver_id": "30007706",
+"approve_status": "Rejected",
+"approver_remarks": "Nomination details reviewed and rejected"
+	}`
+	req := httptest.NewRequest("POST", "/v1/nomination-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveBulkNominations_DBError(t *testing.T) {
+	input := `{
+	"employee_id": 10035071,
+"type_of_nomination": "Gratuity",
+"approver_id": "30007775",
+"approve_status": "Approved",
+"approver_remarks": "Nomination details reviewed and approved.This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/nomination-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}

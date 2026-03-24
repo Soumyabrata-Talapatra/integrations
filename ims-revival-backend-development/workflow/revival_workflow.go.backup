@@ -1,0 +1,371 @@
+package workflow
+
+import (
+	"time"
+
+	"go.temporal.io/sdk/workflow"
+)
+
+// InstallmentRevivalWorkflow is the main workflow orchestrating the complete revival process
+// Lifespan: 6-12 months
+func InstallmentRevivalWorkflow(ctx workflow.Context, requestID string) error {
+	// Workflow state
+	state := &RevivalWorkflowState{
+		RequestID:     requestID,
+		CurrentStatus: "INDEXED",
+		StartedAt:     workflow.Now(ctx),
+	}
+
+	// Stage 1: Wait for data entry completion
+	dataEntryChannel := workflow.GetSignalChannel(ctx, "data-entry-complete")
+	var dataEntrySignal DataEntryCompleteSignal
+
+	workflow.ExecuteActivity(ctx, ValidatePolicyActivity, requestID).Get(ctx, nil)
+
+	// Wait for data entry
+	selector := workflow.NewSelector(ctx)
+
+	dataEntryChannel.Receive(ctx, &dataEntrySignal)
+
+	selector.Select(ctx)
+
+	// State transition: INDEXED → DATA_ENTRY_COMPLETE
+	state.CurrentStatus = "DATA_ENTRY_COMPLETE"
+
+	// Stage 2: Wait for quality check
+	qcChannel := workflow.GetSignalChannel(ctx, "quality-check-complete")
+	var qcSignal QualityCheckCompleteSignal
+
+	selector = workflow.NewSelector(ctx)
+	qcChannel.Receive(ctx, &qcSignal)
+	selector.Select(ctx)
+
+	// State transition: DATA_ENTRY_COMPLETE → QC_COMPLETE
+	if !qcSignal.QCPassed {
+		// Return to data entry
+		state.CurrentStatus = "DATA_ENTRY_PENDING"
+		return nil
+	}
+
+	state.CurrentStatus = "QC_COMPLETE"
+
+	// Stage 3: Wait for approval decision
+	approvalChannel := workflow.GetSignalChannel(ctx, "approval-decision")
+	var approvalSignal ApprovalDecisionSignal
+
+	selector = workflow.NewSelector(ctx)
+	approvalChannel.Receive(ctx, &approvalSignal)
+	selector.Select(ctx)
+
+	if !approvalSignal.Approved {
+		// Request rejected
+		state.CurrentStatus = "WITHDRAWN"
+		state.CompletedAt = timePtr(workflow.Now(ctx))
+		return nil
+	}
+
+	// State transition: QC_COMPLETE → APPROVED
+	state.CurrentStatus = "APPROVED"
+	slaStartDate := workflow.Now(ctx)
+	slaEndDate := slaStartDate.Add(60 * 24 * time.Hour) // 60 days
+	state.SLAStartDate = &slaStartDate
+	state.SLAEndDate = &slaEndDate
+
+	// Start SLA timer and first collection child workflow
+	slaTimer := workflow.NewTimer(ctx, 60*24*time.Hour)
+	firstCollectionChannel := workflow.GetSignalChannel(ctx, "first-collection-complete")
+
+	selector = workflow.NewSelector(ctx)
+
+	// Wait for EITHER first collection OR SLA timeout
+	selector.AddFuture(slaTimer, func(f workflow.Future) {
+		// 60-day SLA expired - TERMINATE (IR_10)
+		state.CurrentStatus = "TERMINATED"
+		state.SLAExpired = true
+		state.CompletedAt = timePtr(workflow.Now(ctx))
+
+		workflow.ExecuteActivity(ctx, TerminateRevivalActivity, requestID, "60-day SLA expired")
+
+		return nil
+	})
+
+	selector.AddReceive(firstCollectionChannel, func(c workflow.ReceiveChannel, more bool) {
+		var signal FirstCollectionCompleteSignal
+		c.Receive(ctx, &signal)
+
+		// First collection completed
+		state.CurrentStatus = "ACTIVE"
+		state.FirstCollectionDone = true
+		state.InstallmentsPaid = 1
+
+		// Start InstallmentMonitorWorkflow as child
+		childOptions := workflow.ChildWorkflowOptions{
+			WorkflowID: fmt.Sprintf("installment-monitor-%s", requestID),
+		}
+
+		childCtx := workflow.WithChildOptions(ctx, childOptions)
+		workflow.ExecuteChildWorkflow(childCtx, InstallmentMonitorWorkflow, InstallmentMonitorInput{
+			RequestID:   requestID,
+			NextDueDate: slaStartDate.Add(30 * 24 * time.Hour), // 1 month from approval
+		})
+
+		return nil
+	})
+
+	selector.Select(ctx)
+
+	return nil
+}
+
+// FirstCollectionWorkflow handles the first installment collection (IR_36: Dual Collection)
+// Lifespan: Minutes (cash/online) or Up to 30 days (cheque)
+func FirstCollectionWorkflow(ctx workflow.Context, input FirstCollectionInput) error {
+	// Validate dual collection: Premium + Installment
+	err := workflow.ExecuteActivity(ctx, ValidateDualCollectionActivity, input)
+	if err != nil {
+		return err
+	}
+
+	// Process payment based on mode
+	if input.PaymentMode == "CASH" || input.PaymentMode == "NEFT" || input.PaymentMode == "RTGS" || input.PaymentMode == "UPI" || input.PaymentMode == "CARD" {
+		// Immediate completion
+		err = workflow.ExecuteActivity(ctx, ProcessDualPaymentActivity, input, "COMPLETED")
+		if err != nil {
+			return err
+		}
+	} else if input.PaymentMode == "CHEQUE" {
+		// Cheque - start monitoring
+		err = workflow.ExecuteActivity(ctx, CreateChequeRecordActivity, input)
+		if err != nil {
+			return err
+		}
+
+		// Start ChequeMonitorWorkflow
+		childOptions := workflow.ChildWorkflowOptions{
+			WorkflowID: fmt.Sprintf("cheque-monitor-%s", input.RequestID),
+		}
+
+		childCtx := workflow.WithChildOptions(ctx, childOptions)
+		workflow.ExecuteChildWorkflow(childCtx, ChequeMonitorWorkflow, ChequeMonitorInput{
+			RequestID: input.RequestID,
+			ChequeID:  input.ChequeID,
+			Amount:    input.TotalAmount,
+		})
+
+		// Wait for clearance before returning
+		chequeChannel := workflow.GetSignalChannel(ctx, "cheque-cleared")
+		var chequeSignal ChequeClearedSignal
+
+		selector := workflow.NewSelector(ctx)
+		chequeChannel.Receive(ctx, &chequeSignal)
+		selector.Select(ctx)
+
+		// Process cleared cheque
+		err = workflow.ExecuteActivity(ctx, ProcessDualPaymentActivity, input, "COMPLETED")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ChequeMonitorWorkflow monitors cheque clearance status
+// Lifespan: Up to 30 days
+func ChequeMonitorWorkflow(ctx workflow.Context, input ChequeMonitorInput) error {
+	// Wait for clearance or dishonor
+	selector := workflow.NewSelector(ctx)
+
+	clearedChannel := workflow.GetSignalChannel(ctx, "cheque-cleared")
+	dishonoredChannel := workflow.GetSignalChannel(ctx, "cheque-dishonored")
+
+	// Set timeout to next due date (typically 30 days)
+	nextDue := workflow.Now(ctx).Add(30 * 24 * time.Hour)
+	timeout := workflow.NewTimer(ctx, nextDue.Sub(workflow.Now(ctx)))
+
+	selector.AddReceive(clearedChannel, func(c workflow.ReceiveChannel, more bool) {
+		var signal ChequeClearedSignal
+		c.Receive(ctx, &signal)
+		// Cheque cleared - complete collection
+	})
+
+	selector.AddReceive(dishonoredChannel, func(c workflow.ReceiveChannel, more bool) {
+		var signal ChequeDishonoredSignal
+		c.Receive(ctx, &signal)
+		// Cheque dishonored - move to suspense (IR_28: NO first collection suspense reversal)
+	})
+
+	selector.AddFuture(timeout, func(f workflow.Future) {
+		// Timeout - cheque not cleared by due date
+	})
+
+	selector.Select(ctx)
+
+	return nil
+}
+
+// InstallmentMonitorWorkflow monitors subsequent installment payments
+// Lifespan: Months (until all installments paid or default)
+func InstallmentMonitorWorkflow(ctx workflow.Context, input InstallmentMonitorInput) error {
+	// TODO: Query total installments for request
+	totalInstallments := 12 // TODO: Get from database
+
+	for installmentNumber := 2; installmentNumber <= totalInstallments; installmentNumber++ {
+		// Calculate next due date (IR_11: 1st of next month)
+		// For 2nd+ installments, due on 1st of month
+		var nextDue time.Time
+		if installmentNumber == 2 {
+			nextDue = input.NextDueDate
+		} else {
+			// Calculate 1st of subsequent month
+			nextDue = time.Date(input.NextDueDate.Year(), input.NextDueDate.Month()+time.Month(installmentNumber-1), 1)
+		}
+
+		// Set timer for due date + 1 day (IR_9: Zero grace period)
+		dueTimer := workflow.NewTimer(ctx, nextDue.Add(24*time.Hour).Sub(workflow.Now(ctx)))
+		paymentChannel := workflow.GetSignalChannel(ctx, fmt.Sprintf("installment-payment-received-%d", installmentNumber))
+
+		selector := workflow.NewSelector(ctx)
+
+		selector.AddReceive(paymentChannel, func(c workflow.ReceiveChannel, more bool) {
+			// Payment received - process installment
+			var signal InstallmentPaymentSignal
+			c.Receive(ctx, &signal)
+
+			err := workflow.ExecuteActivity(ctx, ProcessInstallmentActivity, input.RequestID, installmentNumber)
+			if err != nil {
+				return
+			}
+
+			// Check if all installments paid
+			if installmentNumber == totalInstallments {
+				// All installments paid - signal parent
+				// TODO: Send all-installments-paid signal to parent
+				return
+			}
+		})
+
+		selector.AddFuture(dueTimer, func(f workflow.Future) {
+			// TIMEOUT - No grace period (IR_9)
+			// Move to suspense + revert to AL
+			err := workflow.ExecuteActivity(ctx, HandleDefaultActivity, input.RequestID, installmentNumber)
+			if err != nil {
+				return
+			}
+
+			// Signal parent about default
+			// TODO: Send installment-defaulted signal to parent
+			return
+		})
+
+		selector.Select(ctx)
+	}
+
+	return nil
+}
+
+// SLATimerWorkflow manages 60-day SLA countdown
+func SLATimerWorkflow(ctx workflow.Context, slaEnd time.Time) error {
+	remaining := slaEnd.Sub(workflow.Now(ctx))
+	if remaining > 0 {
+		// Wait for SLA expiration
+		workflow.NewTimer(ctx, remaining).Get(ctx, nil)
+
+		// SLA expired - notify parent
+		// TODO: Send sla-expired signal
+	}
+
+	return nil
+}
+
+// Workflow state structures
+type RevivalWorkflowState struct {
+	RequestID           string     `json:"request_id"`
+	CurrentStatus       string     `json:"current_status"`
+	StartedAt           time.Time  `json:"started_at"`
+	SLAStartDate        *time.Time `json:"sla_start_date"`
+	SLAEndDate          *time.Time `json:"sla_end_date"`
+	FirstCollectionDone bool       `json:"first_collection_done"`
+	InstallmentsPaid    int        `json:"installments_paid"`
+	SLAExpired          bool       `json:"sla_expired"`
+	CompletedAt         *time.Time `json:"completed_at"`
+}
+
+// Signal structures
+type DataEntryCompleteSignal struct {
+	EnteredBy   string    `json:"entered_by"`
+	EnteredAt   time.Time `json:"entered_at"`
+	MissingDocs []string  `json:"missing_docs,omitempty"`
+}
+
+type QualityCheckCompleteSignal struct {
+	QCPassed    bool      `json:"qc_passed"`
+	QCComments  string    `json:"qc_comments"`
+	PerformedBy string    `json:"performed_by"`
+	PerformedAt time.Time `json:"performed_at"`
+	MissingDocs []string  `json:"missing_docs,omitempty"`
+}
+
+type ApprovalDecisionSignal struct {
+	Approved    bool      `json:"approved"`
+	Comments    string    `json:"comments"`
+	ApprovedBy  string    `json:"approved_by"`
+	ApprovedAt  time.Time `json:"approved_at"`
+	MissingDocs []string  `json:"missing_docs,omitempty"`
+}
+
+type FirstCollectionCompleteSignal struct {
+	CollectionDate time.Time `json:"collection_date"`
+	PaymentMode    string    `json:"payment_mode"`
+	TotalAmount    float64   `json:"total_amount"`
+}
+
+type ChequeClearedSignal struct {
+	ClearedAt time.Time `json:"cleared_at"`
+	BankName  string    `json:"bank_name"`
+}
+
+type ChequeDishonoredSignal struct {
+	DishonoredAt time.Time `json:"dishonored_at"`
+	Reason       string    `json:"reason"`
+}
+
+type InstallmentPaymentSignal struct {
+	PaymentDate time.Time `json:"payment_date"`
+	Amount      float64   `json:"amount"`
+}
+
+// Workflow input structures
+type FirstCollectionInput struct {
+	RequestID         string         `json:"request_id"`
+	PolicyNumber      string         `json:"policy_number"`
+	PremiumAmount     float64        `json:"premium_amount"`
+	InstallmentAmount float64        `json:"installment_amount"`
+	TotalAmount       float64        `json:"total_amount"`
+	PaymentMode       string         `json:"payment_mode"`
+	ChequeDetails     *ChequeDetails `json:"cheque_details,omitempty"`
+	ChequeID          string         `json:"cheque_id,omitempty"`
+}
+
+type ChequeDetails struct {
+	ChequeNumber string    `json:"cheque_number"`
+	BankName     string    `json:"bank_name"`
+	ChequeDate   time.Time `json:"cheque_date"`
+	Amount       float64   `json:"amount"`
+}
+
+type ChequeMonitorInput struct {
+	RequestID string  `json:"request_id"`
+	ChequeID  string  `json:"cheque_id"`
+	Amount    float64 `json:"amount"`
+}
+
+type InstallmentMonitorInput struct {
+	RequestID   string    `json:"request_id"`
+	NextDueDate time.Time `json:"next_due_date"`
+}
+
+// Helper functions
+func timePtr(t time.Time) *time.Time {
+	return &t
+}

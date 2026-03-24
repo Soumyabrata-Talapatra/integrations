@@ -1,0 +1,730 @@
+package tests
+
+import (
+	"bytes"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateBankDetailsBulk_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "banks": [
+        {
+            "employee_id": 10035071,
+            "bank_name": "SBI",
+            "branch_code": "500007",
+            "bank_acc_no": "547369345680",
+            "ifsc_code": "SBIN002315",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "Home",
+            "draw_type": "Main bank",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "bank_name": "POSB",
+            "branch_code": "500007",
+            "bank_acc_no": "3313456789",
+            "ifsc_code": "IPOS0000DOP",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "POSB",
+            "draw_type": "Main bank details for Off-Cycle",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateBankDetailsBulk_FileMissingError(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "banks": [
+        {
+            "employee_id": 10035071,
+            "bank_name": "SBI",
+            "branch_code": "500007",
+            "bank_acc_no": "547369345680",
+            "ifsc_code": "SBIN002315",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "Home",
+            "draw_type": "Main bank",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example.pdf"
+			},
+			{
+            "employee_id": 10035071,
+            "bank_name": "POSB",
+            "branch_code": "500007",
+            "bank_acc_no": "3313456789",
+            "ifsc_code": "IPOS0000DOP",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "POSB",
+            "draw_type": "Main bank details for Off-Cycle",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateBankDetails_LargeFileError(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "banks": [
+        {
+            "employee_id": 10035071,
+            "bank_name": "SBI",
+            "branch_code": "500007",
+            "bank_acc_no": "547369345680",
+            "ifsc_code": "SBIN002315",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "Home",
+            "draw_type": "Main bank",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example-large-file.pdf"
+        },
+        {
+            "employee_id": 10035071,
+            "bank_name": "POSB",
+            "branch_code": "500007",
+            "bank_acc_no": "3313456789",
+            "ifsc_code": "IPOS0000DOP",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "POSB",
+            "draw_type": "Main bank details for Off-Cycle",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example-large-file.pdf"
+        }
+    ]
+}`
+
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateBankDetails_InvalidFileTypeError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "banks": [
+        {
+            "employee_id": 10035071,
+            "bank_name": "SBI",
+            "branch_code": "500007",
+            "bank_acc_no": "547369345680",
+            "ifsc_code": "SBIN002315",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "Home",
+            "draw_type": "Main bank",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example-doc.docx"
+			},
+			{
+            "employee_id": 10035071,
+            "bank_name": "POSB",
+            "branch_code": "500007",
+            "bank_acc_no": "3313456789",
+            "ifsc_code": "IPOS0000DOP",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "POSB",
+            "draw_type": "Main bank details for Off-Cycle",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "example-doc.docx"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+func TestCreateBankDetailsInvalidFileNameError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "banks": [
+        {
+            "employee_id": 10035071,
+            "bank_name": "SBI",
+            "branch_code": "500007",
+            "bank_acc_no": "547369345680",
+            "ifsc_code": "SBIN002315",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "Home",
+            "draw_type": "Main bank",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "sbi1.pdf"
+			},
+			{
+            "employee_id": 10035071,
+            "bank_name": "POSB",
+            "branch_code": "500007",
+            "bank_acc_no": "3313456789",
+            "ifsc_code": "IPOS0000DOP",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "POSB",
+            "draw_type": "Main bank details for Off-Cycle",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "file_name": "sbi2.pdf"
+        }
+    ]
+	}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateBankDetailsBulk_JSONBindingError(t *testing.T) {
+	input := `{
+	 "banks": [
+        {
+            "employee_id": "10015845",
+            "employee_name": "SHRILAKSHMI",
+            "bank_name": "SBI",
+            "branch_code": "500007",
+            "bank_acc_no": "1223456800",
+            "ifsc_code": "SBIN002315",
+            "branch_addr1": "123-1 Abids",
+            "branch_addr2": "Hyderabad",
+            "branch_pin": 500001,
+            "approver_post_id": "30007706",
+            "bank_type": "Home",
+            "draw_type": "Main bank",
+            "created_by": "10035071",
+            "user_remarks": "sample remarks",
+            "bank_type_id": 1,
+            "draw_type_id": 6
+        }
+    ]
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// func TestCreateBankDetailsBulk_DatabaseError(t *testing.T) {
+// 	input := `{
+// 	 "banks": [
+//         {
+//             "employee_id": 1001584512,
+//             "employee_name": "SHRILAKSHMI",
+//             "bank_name": "SBI",
+//             "branch_code": "500007",
+//             "bank_acc_no": "1223456800",
+//             "ifsc_code": "SBIN002315",
+//             "branch_addr1": "123-1 Abids",
+//             "branch_addr2": "Hyderabad",
+//             "branch_pin": 500001,
+//             "approver_post_id": "30007706",
+//             "bank_type": "Home",
+//             "draw_type": "Main bank",
+//             "created_by": "10035071",
+//             "user_remarks": "sample remarks",
+//             "bank_type_id": 1,
+//             "draw_type_id": 6
+//         }
+//     ]
+// 	}`
+// 	req := httptest.NewRequest("POST", "/v1/bank-detail-makers", bytes.NewBuffer([]byte(input)))
+// 	req.Header.Set(contentType, applicationJson)
+// 	rec := httptest.NewRecorder()
+// 	Engine.ServeHTTP(rec, req)
+
+// 	assert.Equal(t, http.StatusConflict, rec.Code)
+// }
+
+func TestUpdateBankDetailsSuccess_Withdraw(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": 10166245,
+	"remarks": "Typo Error"
+}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2443", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateBankSuccess_Forward(t *testing.T) {
+	input := `{
+  	"action_type": "Forward",
+	"action_by": 10166245,
+	"remarks": "Forwarded for further process"
+}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2443", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestUpdateBankDetailsWithdraw_DBError(t *testing.T) {
+	input := `{
+ 	"action_type": "Withdraw",
+    "action_by": 10015845,
+    "remarks": "Bank details withdrawn due to error in bank details. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2440", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+func TestUpdateBankDetailsForward_DBError(t *testing.T) {
+	input := `{
+ 	"action_type": "Forward",
+    "action_by": 10015845,
+    "remarks": "Bank details forwarded for further approval. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2440", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateBankDetails_InvalidActionType(t *testing.T) {
+	input := `{
+	"action_type": "Approve",
+    "action_by": 10166245,
+    "remarks": "Typo Error."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2440", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateBankDetails_UriBindingError(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+    "action_by": 10166245,
+    "remarks": "Typo Error."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/abc", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateBankDetails_JSONBindingError(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+    "action_by": "10166245",
+    "remarks": "Typo Error."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2405", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateBankDetails_ValidationError(t *testing.T) {
+	input := `{
+    "action_by": 10166245,
+    "remarks": "Typo Error."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/2405", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateBankDetails_NoAffectedRows(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+    "action_by": 10166245,
+    "remarks": "Typo Error."
+	}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/240590", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveBankDetailsSuccess_Approved(t *testing.T) {
+	input := `{
+	     "bank_details_ids": [
+        2443
+    ],
+    "approved_by": "30007706",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveBankDetailsSuccess_Rejected(t *testing.T) {
+	input := `{
+	     "bank_details_ids": [
+        2443
+    ],
+    "approved_by": "30007706",
+    "approve_status": "Rejected",
+    "approve_auth_remarks": "Rejected based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveBankDetailsSuccess_InvalidApproveStatus(t *testing.T) {
+	input := `{
+	     "bank_details_ids": [
+        2405
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Withdraw",
+    "approve_auth_remarks": "Approved based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestApproveBankDetails_JSONBindingError(t *testing.T) {
+	input := `{
+	     "bank_details_ids": [
+        2405
+    ],
+    "approved_by": 30007775,
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveBankDetails_ValidationError(t *testing.T) {
+	input := `{
+	     "bank_details_ids": [
+        2405
+    ],
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveBankDetails_NoRows(t *testing.T) {
+	input := `{
+	     "bank_details_ids": [
+        240556
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveBankDetails_DBError(t *testing.T) {
+	input := `{
+"bank_details_ids": [
+        2443
+    ],
+    "approved_by": "30007706",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Bank details approved based on provided bank details. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/bank-detail-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerBankDetailsSuccess_ByEmpID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-detail-makers?emp-id=10166245&status=Pending&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerBankDetailsSuccess_ByDDOID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-detail-makers?ddo-office-id=21260551", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerBankDetailsSuccess_ByAppPostID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-detail-makers?post-id=30007775", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerBankDetails_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-detail-makers", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerBankDetails_UriBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-detail-makers?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerBankDetails_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-detail-makers?ddo-office-id=212605519", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetBankDetailsSuccess_ByEmpID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-details?emp-id=10166245&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetBankDetailsSuccess_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-details?emp-id=1016624", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetBankDetailsSuccess_ByPostID(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-details?post-id=30007775&skip=1&limit=5", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetBankDetails_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-details", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetBankDetails_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/bank-details?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}

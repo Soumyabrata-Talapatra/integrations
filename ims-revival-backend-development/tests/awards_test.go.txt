@@ -1,0 +1,625 @@
+package tests
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetAwardsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/awards?emp-id=10015845&skip=0&limit=0", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetAwardsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/awards?emp-id=1001584", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetAwardsByPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/awards?post-id=30007775&skip=0&limit=10", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetAwardsBy_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/awards", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetAwards_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/awards?emp-id=abc", nil)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateAwardsBulk_BindingError(t *testing.T) {
+	rawBody := `{
+	"awards": [
+        {
+            "employee_id": "12345",
+            "award_name": "Best Employee of the Year",
+            "award_type": "Annual",
+            "award_category": "Performance",
+            "award_description": "Awarded for outstanding performance throughout the year",
+            "certificate_no": "CERT-5678",
+            "monetary_benefit": 1000.50,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2023-05-15T00:00:00Z",
+            "award_for_year": 2022,
+            "user_remarks": "Exceptional leadership in project delivery",
+            "award_id": 48
+        },
+    ]
+	}`
+	body, _ := json.Marshal(rawBody)
+	req := httptest.NewRequest("POST", "/v1/award-makers", bytes.NewBuffer(body))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+// CreateAwardsBulk test cases
+
+func TestCreateAwardsBulk_Success(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "awards": [
+        {
+            "employee_id": 10015845,
+            "award_name": "Best Employee of the Year",
+            "award_type": "Annual",
+            "award_category": "Performance",
+            "award_description": "Awarded for outstanding performance throughout the year",
+            "certificate_no": "CERT-5678",
+            "monetary_benefit": 1000.50,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2023-05-15T00:00:00Z",
+            "award_for_year": 2022,
+            "user_remarks": "Exceptional leadership in project delivery",
+            "award_id": 48,
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10015845,
+            "award_name": "Innovation Award",
+            "award_type": "Quarterly",
+            "award_category": "Innovation",
+            "award_description": "Awarded for innovative project execution",
+            "certificate_no": "CERT-9101",
+            "monetary_benefit": 500.00,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2024-06-20T00:00:00Z",
+            "award_for_year": 2023,
+            "user_remarks": "Developed a new workflow automation",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/award-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestCreateAwardsBulk_BindingFileMissing(t *testing.T) {
+	filePath := "../tests/files/example.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "awards": [
+        {
+            "employee_id": 10015845,
+            "award_name": "Best Employee of the Year",
+            "award_type": "Annual",
+            "award_category": "Performance",
+            "award_description": "Awarded for outstanding performance throughout the year",
+            "certificate_no": "CERT-5678",
+            "monetary_benefit": 1000.50,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2023-05-15T00:00:00Z",
+            "award_for_year": 2022,
+            "user_remarks": "Exceptional leadership in project delivery",
+            "award_id": 48,
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10015845,
+            "award_name": "Innovation Award",
+            "award_type": "Quarterly",
+            "award_category": "Innovation",
+            "award_description": "Awarded for innovative project execution",
+            "certificate_no": "CERT-9101",
+            "monetary_benefit": 500.00,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2024-06-20T00:00:00Z",
+            "award_for_year": 2023,
+            "user_remarks": "Developed a new workflow automation",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/award-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateAwardsBulk_InvalidFileError(t *testing.T) {
+	filePath := "../tests/files/example-doc.docx"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "awards": [
+        {
+            "employee_id": 10015845,
+            "award_name": "Best Employee of the Year",
+            "award_type": "Annual",
+            "award_category": "Performance",
+            "award_description": "Awarded for outstanding performance throughout the year",
+            "certificate_no": "CERT-5678",
+            "monetary_benefit": 1000.50,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2023-05-15T00:00:00Z",
+            "award_for_year": 2022,
+            "user_remarks": "Exceptional leadership in project delivery",
+            "award_id": 48,
+            "file_name":"example.pdf"
+        },
+        {
+            "employee_id": 10015845,
+            "award_name": "Innovation Award",
+            "award_type": "Quarterly",
+            "award_category": "Innovation",
+            "award_description": "Awarded for innovative project execution",
+            "certificate_no": "CERT-9101",
+            "monetary_benefit": 500.00,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2024-06-20T00:00:00Z",
+            "award_for_year": 2023,
+            "user_remarks": "Developed a new workflow automation",
+            "file_name":"example.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/award-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestCreateAwardsBulk_LargeFileError(t *testing.T) {
+	filePath := "../tests/files/example-large-file.pdf"
+	file, err := os.Open(filePath)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	input := `{
+    "awards": [
+        {
+            "employee_id": 10015845,
+            "award_name": "Best Employee of the Year",
+            "award_type": "Annual",
+            "award_category": "Performance",
+            "award_description": "Awarded for outstanding performance throughout the year",
+            "certificate_no": "CERT-5678",
+            "monetary_benefit": 1000.50,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2023-05-15T00:00:00Z",
+            "award_for_year": 2022,
+            "user_remarks": "Exceptional leadership in project delivery",
+            "award_id": 48,
+            "file_name":"example-large-file.pdf"
+        },
+        {
+            "employee_id": 10015845,
+            "award_name": "Innovation Award",
+            "award_type": "Quarterly",
+            "award_category": "Innovation",
+            "award_description": "Awarded for innovative project execution",
+            "certificate_no": "CERT-9101",
+            "monetary_benefit": 500.00,
+            "approver_post_id": "30007775",
+            "created_by": "10015845",
+            "award_issue_date": "2024-06-20T00:00:00Z",
+            "award_for_year": 2023,
+            "user_remarks": "Developed a new workflow automation",
+            "file_name":"example-large-file.pdf"
+        }
+    ]
+}`
+	_ = writer.WriteField("data", input)
+
+	part1, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	part2, err := writer.CreateFormFile("files", filePath)
+	assert.NoError(t, err)
+	_, err = io.Copy(part2, file)
+	assert.NoError(t, err)
+	_, err = io.Copy(part1, file)
+	assert.NoError(t, err)
+
+	_ = writer.Close()
+
+	req := httptest.NewRequest("POST", "/v1/award-makers", body)
+	req.Header.Set(contentType, writer.FormDataContentType())
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateAwardsSuccess_Withdraw(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": 10015845,
+	"remarks": "Award withdrawn due to error in award details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/765", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateAwardsSuccess_Forward(t *testing.T) {
+	input := `{
+	"action_type": "Forward",
+	"action_by": 10015845,
+	"remarks": "Award Forwarded to higher authority for approval"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/766", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestUpdateAwards_ValidationError(t *testing.T) {
+	input := `{
+	"action_by": 10015845,
+	"remarks": "Award withdrawn due to error in award details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/45", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestUpdateAwards_JSONBindingError(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": "10015845",
+	"remarks": "Award withdrawn due to error in award details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/45", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateAwards_UriBindingError(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": 10015845,
+	"remarks": "Award withdrawn due to error in award details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/2147483648", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateAwardsSuccess_NoAffectedRows(t *testing.T) {
+	input := `{
+	"action_type": "Withdraw",
+	"action_by": 10015845,
+	"remarks": "Award withdrawn due to error in award details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/6900", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestUpdateAwards_InvalidActionType(t *testing.T) {
+	input := `{
+	"action_type": "Approve",
+	"action_by": 10015845,
+	"remarks": "Award withdrawn due to error in award details"
+	}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/45", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateAwardsWithdraw_DBError(t *testing.T) {
+	input := `{
+ "action_type": "Withdraw",
+    "action_by": 10015845,
+    "remarks": "Award withdrawn due to error in award details. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/45", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUpdateAwardsForward_DBError(t *testing.T) {
+	input := `{
+ "action_type": "Forward",
+    "action_by": 10015845,
+    "remarks": "Award forwarded for further approval. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("PUT", "/v1/award-makers/45", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveAwardsSuccess_Approved(t *testing.T) {
+	input := `{
+	"award_ids": [
+        766
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+	}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveAwardsSuccess_Rejected(t *testing.T) {
+	input := `{
+	"award_ids": [
+        790
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Rejected",
+    "approve_auth_remarks": "Rejected based on the provided information"
+	}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestApproveAwardsSuccess_InvalidApproveStatus(t *testing.T) {
+	input := `{
+	     "award_ids": [
+        790
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Withdraw",
+    "approve_auth_remarks": "Approved based on the provided documentation."
+	}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestApproveAwards_ValidationError(t *testing.T) {
+	input := `{
+	"award_ids": [
+        791
+    ],
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+	}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestApproveAwards_JSONBindingError(t *testing.T) {
+	input := `{
+	"award_ids": [
+        45
+    ],
+    "approved_by": 30007775,
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+	}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestApproveAwards_NoAffectedRows(t *testing.T) {
+	input := `{
+	"award_ids": [
+        6000
+    ],
+    "approved_by": "30007775",
+    "approve_status": "Rejected",
+    "approve_auth_remarks": "Approved for outstanding contributions"
+	}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestApproveAwards_DBError(t *testing.T) {
+	input := `{
+"award_ids": [
+        765
+    ],
+    "approved_by": "30007706",
+    "approve_status": "Approved",
+    "approve_auth_remarks": "Awards approved based on provided award details. This is a test case for throwing a database error by intentionally providing a remarks field that exceeds the maximum allowed character limit. The purpose is to ensure proper handling of database errors and to validate the error handling logic in the API implementation."
+}`
+	req := httptest.NewRequest("POST", "/v1/award-makers/approve-bulk", bytes.NewBuffer([]byte(input)))
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerAwardsByEmpID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/award-makers?emp-id=10015845&skip=0&limit=0", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+func TestGetMakerAwardsByEmpID_ValidationError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/award-makers?emp-id=1001584", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+}
+
+func TestGetMakerAwardsByAOID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/award-makers?admin-office-id=21260551", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerAwardsByAppPostID_Success(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/award-makers?post-id=30007775", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestGetMakerAwards_NoInput(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/award-makers", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetMakerAwards_QueryBindingError(t *testing.T) {
+	req := httptest.NewRequest("GET", "/v1/award-makers?emp-id=abc", nil)
+	req.Header.Set(contentType, applicationJson)
+	rec := httptest.NewRecorder()
+	Engine.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
