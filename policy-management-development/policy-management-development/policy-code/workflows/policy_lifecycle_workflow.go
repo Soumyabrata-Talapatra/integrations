@@ -76,8 +76,8 @@ func getFLCPeriod(flcDays int) time.Duration {
 	if flcDays <= 0 {
 		flcDays = 15 // safe default [§10.1.6]
 	}
-	//return time.Duration(flcDays) * 24 * time.Hour
-	return time.Second
+	return time.Duration(flcDays) * 24 * time.Hour
+	//return time.Second
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
