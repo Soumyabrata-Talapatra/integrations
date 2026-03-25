@@ -7,10 +7,10 @@ import (
 
 	enums "go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"go.temporal.io/sdk/worker"
 	"go.uber.org/fx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	config "gitlab.cept.gov.in/it-2.0-common/api-config"
 	serverHandler "gitlab.cept.gov.in/it-2.0-common/n-api-server/handler"
@@ -105,20 +105,20 @@ var FxTemporal = fx.Module(
 		// Config keys: temporal.hostport (default localhost:7233), temporal.namespace (default pli-insurance).
 		// Overridden per environment via configs/config.{env}.yaml.
 		func(cfg *config.Config) (client.Client, error) {
-			hostPort := cfg.GetString("temporal.hostport")
-			if hostPort == "" {
-				hostPort = "localhost:7233" // safe fallback for local dev
-			}
+			host := cfg.GetString("temporal.host")
+			Port := cfg.GetString("temporal.port")
+
 			namespace := cfg.GetString("temporal.namespace")
 			if namespace == "" {
 				namespace = "pli-insurance" // safe fallback for local dev
 			}
 			c, err := client.Dial(client.Options{
-				HostPort:  hostPort,
+				HostPort:  host + ":" + Port,
 				Namespace: namespace,
 			})
 			if err != nil {
-				return nil, fmt.Errorf("temporal client dial hostPort=%s namespace=%s: %w", hostPort, namespace, err)
+				return nil, fmt.Errorf("temporal client dial hostPort=%s namespace=%s: %w", host+":"+
+					Port, namespace, err)
 			}
 			return c, nil
 		},

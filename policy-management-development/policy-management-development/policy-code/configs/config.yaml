@@ -45,7 +45,8 @@ db:
 # Temporal Workflow Engine
 # ---------------------------------------------------------------------------
 temporal:
-  hostport: "localhost:7233"
+  host: "localhost"
+  port: "7233"
   namespace: "default"
   # Single task queue for all PM workflows and activities
   taskqueue: "policy-management-tq"

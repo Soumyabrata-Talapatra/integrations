@@ -2,18 +2,29 @@
 appname: "policy-management-dev"
 
 db:
-  username: "postgres"
-  password: "postgres"
-  host: "localhost"
-  port: "5432"
-  database: "ims_pli_dev"
+  username: "plicommon_admin_user" 
+  password: "PlIcommonadm@0203" 
+  host: 172.28.13.177 
+  port: "5432" 
+  database: "plicommondb" 
   schema: "policy_mgmt"
-  maxconns: 10
-  minconns: 1
+
+  # Connection pool — tuned for 3M active policies
+  maxconns: 20
+  minconns: 2
+  maxconnlifetime: 30        # minutes
+  maxconnidletime: 10        # minutes
+  healthcheckperiod: 5       # minutes
+
+  # Query timeouts
+  QueryTimeoutLow: 2s        # Simple SELECT (policy by number, lookups)
+  QueryTimeoutMed:  5s       # Batch inserts, aggregations, history queries
+  QueryTimeoutHigh: 30s      # Batch scan full-table queries (lapsation, maturity, paid-up)
 
 temporal:
-  hostport: "localhost:7233"
-  namespace: "pli-insurance"
+  host: ""
+  port: ""
+  namespace: "default"
   taskqueue: "policy-management-tq"
 
 trace:
