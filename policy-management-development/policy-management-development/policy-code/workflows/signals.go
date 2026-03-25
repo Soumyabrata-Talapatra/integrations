@@ -112,32 +112,36 @@ type PolicyLifecycleState struct {
 	// are lost on CAN; without this field the FLC transition would never fire for
 	// policies that cross a CAN boundary during the free-look period). [D1]
 	FLCExpiryAt                    time.Time            `json:"flc_expiry_at,omitempty"`
+	ProductCode  string    `json:"product_code"`
+	MaturityDate time.Time `json:"maturity_date"`
 }
 
 // PolicyMetadata holds policy-level data needed by the workflow for state gate
 // decisions, eligibility checks, and activity calls. [§9.1]
+
 type PolicyMetadata struct {
-	CustomerID                  int64     `json:"customer_id"`
-	ProductCode                 string    `json:"product_code"`
-	ProductType                 string    `json:"product_type"`    // PLI or RPLI
-	SumAssured                  float64   `json:"sum_assured"`
-	CurrentPremium              float64   `json:"current_premium"`
-	PremiumMode                 string    `json:"premium_mode"`    // MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY
-	BillingMethod               string    `json:"billing_method"`  // CASH or PAY_RECOVERY [BR-PM-074]
-	IssueDate                   time.Time `json:"issue_date"`
-	MaturityDate                time.Time `json:"maturity_date"`
-	PaidToDate                  time.Time `json:"paid_to_date"`
-	AgentID                     *int64     `json:"agent_id,omitempty"`              // Nullable BIGINT [Review-Fix-5]
+	CustomerID                  int64      `json:"customer_id"`
+	ProductCode                 string     `json:"product_code"`
+	ProductType                 string     `json:"product_type"` // PLI or RPLI
+	SumAssured                  float64    `json:"sum_assured"`
+	CurrentPremium              float64    `json:"current_premium"`
+	PremiumMode                 string     `json:"premium_mode"`   // MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY
+	BillingMethod               string     `json:"billing_method"` // CASH or PAY_RECOVERY [BR-PM-074]
+	IssueDate                   time.Time  `json:"issue_date"`
+	MaturityDate                time.Time  `json:"maturity_date"`
+	PaidToDate                  time.Time  `json:"paid_to_date"`
+	PolicyholderDOB             time.Time  `json:"policyholder_dob"`
+	AgentID                     *int64     `json:"agent_id,omitempty"` // Nullable BIGINT [Review-Fix-5]
 	LoanOutstanding             float64    `json:"loan_outstanding"`
 	AssignmentStatus            string     `json:"assignment_status"`
-	PremiumsPaidMonths          int        `json:"premiums_paid_months"`           // For paid-up calc [BR-PM-061]
+	PremiumsPaidMonths          int        `json:"premiums_paid_months"` // For paid-up calc [BR-PM-061]
 	TotalPremiumsMonths         int        `json:"total_premiums_months"`
-	RemissionExpiryDate         *time.Time `json:"remission_expiry_date,omitempty"` // Nullable [Review-Fix-5]
+	RemissionExpiryDate         *time.Time `json:"remission_expiry_date,omitempty"`          // Nullable [Review-Fix-5]
 	PayRecoveryProtectionExpiry *time.Time `json:"pay_recovery_protection_expiry,omitempty"` // Nullable, first_unpaid + 12mo [BR-PM-074, Review-Fix-5]
-	SBInstallmentsPaid          int       `json:"sb_installments_paid"`
-	NominationStatus            string    `json:"nomination_status"`
-	IsDistanceMarketing         bool      `json:"is_distance_marketing"` // 30d FLC for distance-marketing products [Review-Fix-9]
-	WorkflowID                  string    `json:"workflow_id"` // plw-{policy_number}
+	SBInstallmentsPaid          int        `json:"sb_installments_paid"`
+	NominationStatus            string     `json:"nomination_status"`
+	IsDistanceMarketing         bool       `json:"is_distance_marketing"` // 30d FLC for distance-marketing products [Review-Fix-9]
+	WorkflowID                  string     `json:"workflow_id"`           // plw-{policy_number}
 }
 
 // PendingRequest tracks a routed in-flight request waiting for a completion signal. [§9.1]
@@ -207,6 +211,9 @@ type ChildWorkflowInput struct {
 	RequestPayload   json.RawMessage `json:"request_payload"`    // Original JSONB from handler
 	TimeoutAt        time.Time       `json:"timeout_at"`
 	PMWorkflowID     string          `json:"pm_workflow_id"`     // PLW workflow ID for completion signal back to PM
+
+	ProductCode  string    `json:"product_code"`
+	MaturityDate time.Time `json:"maturity_date"`
 }
 
 // OperationCompletedSignal is sent by downstream services to PM on completion. [A10.1C]

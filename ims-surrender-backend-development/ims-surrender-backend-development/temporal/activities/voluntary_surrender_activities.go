@@ -29,6 +29,9 @@ func InitVoluntarySurrenderActivities(surrenderRepo *repo.SurrenderRequestReposi
 type ValidateEligibilityInput struct {
 	PolicyID           string
 	SurrenderRequestID string
+
+	ProductCode  string
+	MaturityDate time.Time
 }
 
 type ValidateEligibilityResult struct {
@@ -47,22 +50,22 @@ func ValidateEligibilityActivity(ctx context.Context, input ValidateEligibilityI
 		return nil, fmt.Errorf("activities not initialized")
 	}
 
-	policy, err := activitiesInstance.surrenderRepo.FindByPolicyNumber(ctx, input.PolicyID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch policy details for %s: %w", input.PolicyID, err)
-	}
+	// policy, err := activitiesInstance.surrenderRepo.FindByPolicyNumber(ctx, input.PolicyID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to fetch policy details for %s: %w", input.PolicyID, err)
+	// }
 
 	var reasons []string
 
 	ineligibleProducts := []string{"AEA", "AEA-10", "GY"}
 	for _, prod := range ineligibleProducts {
-		if policy.Product_name == prod {
-			reasons = append(reasons, fmt.Sprintf("product '%s' is not eligible for surrender", policy.Product_name))
+		if input.ProductCode == prod {
+			reasons = append(reasons, fmt.Sprintf("product '%s' is not eligible for surrender", input.ProductCode))
 			break
 		}
 	}
 
-	if policy.Maturity_date.Before(time.Now()) {
+	if input.MaturityDate.Before(time.Now()) {
 		reasons = append(reasons, "policy has reached maturity; process through Maturity Claims")
 	}
 
@@ -191,7 +194,7 @@ func IndexSurrenderActivity(ctx context.Context, input IndexSurrenderInput) (*In
 		return nil, fmt.Errorf("activities not initialized")
 	}
 
-	req := domain.IndexSurrenderRequestInput{
+	req := domain.IndexSurrenderRequestInput2{
 		PolicyNumber:              input.PolicyNumber,
 		Surrender_request_channel: input.SurrenderRequestChannel,
 		Stage_name:                input.Stage_name,

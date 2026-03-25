@@ -159,99 +159,7 @@
           "data": {
             "properties": {
               "calculation_breakdown": {
-                "properties": {
-                  "bonus_details": {
-                    "items": {
-                      "properties": {
-                        "bonus_amount": {
-                          "format": "double",
-                          "type": "number"
-                        },
-                        "bonus_rate": {
-                          "format": "double",
-                          "type": "number"
-                        },
-                        "financial_year": {
-                          "type": "string"
-                        },
-                        "sum_assured": {
-                          "format": "double",
-                          "type": "number"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "type": "array"
-                  },
-                  "calculation_date": {
-                    "type": "string"
-                  },
-                  "deductions": {
-                    "properties": {
-                      "loan_interest": {
-                        "format": "double",
-                        "type": "number"
-                      },
-                      "loan_principal": {
-                        "format": "double",
-                        "type": "number"
-                      },
-                      "other_charges": {
-                        "format": "double",
-                        "type": "number"
-                      },
-                      "total_deductions": {
-                        "format": "double",
-                        "type": "number"
-                      },
-                      "total_loan": {
-                        "format": "double",
-                        "type": "number"
-                      },
-                      "unpaid_premiums": {
-                        "format": "double",
-                        "type": "number"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "gross_surrender_value": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "net_surrender_value": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "paid_up_value": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "policy_id": {
-                    "type": "string"
-                  },
-                  "premiums_paid": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "sum_assured": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "surrender_factor": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "total_bonus": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "total_premiums": {
-                    "format": "int64",
-                    "type": "integer"
-                  }
-                },
-                "type": "object"
+                "$ref": "#/components/schemas/CalculationBreakdownData"
               },
               "disbursement_options": {
                 "properties": {
@@ -421,99 +329,7 @@
       "CalculationData": {
         "properties": {
           "calculation_breakdown": {
-            "properties": {
-              "bonus_details": {
-                "items": {
-                  "properties": {
-                    "bonus_amount": {
-                      "format": "double",
-                      "type": "number"
-                    },
-                    "bonus_rate": {
-                      "format": "double",
-                      "type": "number"
-                    },
-                    "financial_year": {
-                      "type": "string"
-                    },
-                    "sum_assured": {
-                      "format": "double",
-                      "type": "number"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "calculation_date": {
-                "type": "string"
-              },
-              "deductions": {
-                "properties": {
-                  "loan_interest": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "loan_principal": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "other_charges": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "total_deductions": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "total_loan": {
-                    "format": "double",
-                    "type": "number"
-                  },
-                  "unpaid_premiums": {
-                    "format": "double",
-                    "type": "number"
-                  }
-                },
-                "type": "object"
-              },
-              "gross_surrender_value": {
-                "format": "double",
-                "type": "number"
-              },
-              "net_surrender_value": {
-                "format": "double",
-                "type": "number"
-              },
-              "paid_up_value": {
-                "format": "double",
-                "type": "number"
-              },
-              "policy_id": {
-                "type": "string"
-              },
-              "premiums_paid": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "sum_assured": {
-                "format": "double",
-                "type": "number"
-              },
-              "surrender_factor": {
-                "format": "double",
-                "type": "number"
-              },
-              "total_bonus": {
-                "format": "double",
-                "type": "number"
-              },
-              "total_premiums": {
-                "format": "int64",
-                "type": "integer"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/CalculationBreakdownData"
           },
           "disbursement_options": {
             "properties": {
@@ -1036,43 +852,7 @@
           },
           "documents": {
             "items": {
-              "properties": {
-                "display_name": {
-                  "type": "string"
-                },
-                "document_id": {
-                  "type": "string"
-                },
-                "document_name": {
-                  "type": "string"
-                },
-                "document_type": {
-                  "type": "string"
-                },
-                "file_size_bytes": {
-                  "format": "int64",
-                  "type": "integer"
-                },
-                "rejection_reason": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "uploaded_date": {
-                  "type": "string"
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "verified_at": {
-                  "type": "string"
-                },
-                "verified_by": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/DocumentInfoData"
             },
             "type": "array"
           },
@@ -1109,43 +889,7 @@
               },
               "documents": {
                 "items": {
-                  "properties": {
-                    "display_name": {
-                      "type": "string"
-                    },
-                    "document_id": {
-                      "type": "string"
-                    },
-                    "document_name": {
-                      "type": "string"
-                    },
-                    "document_type": {
-                      "type": "string"
-                    },
-                    "file_size_bytes": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "rejection_reason": {
-                      "type": "string"
-                    },
-                    "status": {
-                      "type": "string"
-                    },
-                    "uploaded_date": {
-                      "type": "string"
-                    },
-                    "verified": {
-                      "type": "boolean"
-                    },
-                    "verified_at": {
-                      "type": "string"
-                    },
-                    "verified_by": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/DocumentInfoData"
                 },
                 "type": "array"
               },
@@ -1818,11 +1562,139 @@
             "type": "object"
           },
           "calculation_details": {
-            "$ref": "#/components/schemas/CalculationBreakdownData"
+            "properties": {
+              "bonus_details": {
+                "items": {
+                  "properties": {
+                    "bonus_amount": {
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "bonus_rate": {
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "financial_year": {
+                      "type": "string"
+                    },
+                    "sum_assured": {
+                      "format": "double",
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "calculation_date": {
+                "type": "string"
+              },
+              "deductions": {
+                "properties": {
+                  "loan_interest": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "loan_principal": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "other_charges": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "total_deductions": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "total_loan": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "unpaid_premiums": {
+                    "format": "double",
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "gross_surrender_value": {
+                "format": "double",
+                "type": "number"
+              },
+              "net_surrender_value": {
+                "format": "double",
+                "type": "number"
+              },
+              "paid_up_value": {
+                "format": "double",
+                "type": "number"
+              },
+              "policy_id": {
+                "type": "string"
+              },
+              "premiums_paid": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "sum_assured": {
+                "format": "double",
+                "type": "number"
+              },
+              "surrender_factor": {
+                "format": "double",
+                "type": "number"
+              },
+              "total_bonus": {
+                "format": "double",
+                "type": "number"
+              },
+              "total_premiums": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
           },
           "documents": {
             "items": {
-              "$ref": "#/components/schemas/DocumentInfoData"
+              "properties": {
+                "display_name": {
+                  "type": "string"
+                },
+                "document_id": {
+                  "type": "string"
+                },
+                "document_name": {
+                  "type": "string"
+                },
+                "document_type": {
+                  "type": "string"
+                },
+                "file_size_bytes": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "rejection_reason": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "uploaded_date": {
+                  "type": "string"
+                },
+                "verified": {
+                  "type": "boolean"
+                },
+                "verified_at": {
+                  "type": "string"
+                },
+                "verified_by": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -1902,11 +1774,139 @@
                 "type": "object"
               },
               "calculation_details": {
-                "$ref": "#/components/schemas/CalculationBreakdownData"
+                "properties": {
+                  "bonus_details": {
+                    "items": {
+                      "properties": {
+                        "bonus_amount": {
+                          "format": "double",
+                          "type": "number"
+                        },
+                        "bonus_rate": {
+                          "format": "double",
+                          "type": "number"
+                        },
+                        "financial_year": {
+                          "type": "string"
+                        },
+                        "sum_assured": {
+                          "format": "double",
+                          "type": "number"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "calculation_date": {
+                    "type": "string"
+                  },
+                  "deductions": {
+                    "properties": {
+                      "loan_interest": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "loan_principal": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "other_charges": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "total_deductions": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "total_loan": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "unpaid_premiums": {
+                        "format": "double",
+                        "type": "number"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "gross_surrender_value": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "net_surrender_value": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "paid_up_value": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "policy_id": {
+                    "type": "string"
+                  },
+                  "premiums_paid": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "sum_assured": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "surrender_factor": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "total_bonus": {
+                    "format": "double",
+                    "type": "number"
+                  },
+                  "total_premiums": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
               },
               "documents": {
                 "items": {
-                  "$ref": "#/components/schemas/DocumentInfoData"
+                  "properties": {
+                    "display_name": {
+                      "type": "string"
+                    },
+                    "document_id": {
+                      "type": "string"
+                    },
+                    "document_name": {
+                      "type": "string"
+                    },
+                    "document_type": {
+                      "type": "string"
+                    },
+                    "file_size_bytes": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "rejection_reason": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "uploaded_date": {
+                      "type": "string"
+                    },
+                    "verified": {
+                      "type": "boolean"
+                    },
+                    "verified_at": {
+                      "type": "string"
+                    },
+                    "verified_by": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -2045,11 +2045,139 @@
                     "type": "object"
                   },
                   "calculation_details": {
-                    "$ref": "#/components/schemas/CalculationBreakdownData"
+                    "properties": {
+                      "bonus_details": {
+                        "items": {
+                          "properties": {
+                            "bonus_amount": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "bonus_rate": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "financial_year": {
+                              "type": "string"
+                            },
+                            "sum_assured": {
+                              "format": "double",
+                              "type": "number"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "calculation_date": {
+                        "type": "string"
+                      },
+                      "deductions": {
+                        "properties": {
+                          "loan_interest": {
+                            "format": "double",
+                            "type": "number"
+                          },
+                          "loan_principal": {
+                            "format": "double",
+                            "type": "number"
+                          },
+                          "other_charges": {
+                            "format": "double",
+                            "type": "number"
+                          },
+                          "total_deductions": {
+                            "format": "double",
+                            "type": "number"
+                          },
+                          "total_loan": {
+                            "format": "double",
+                            "type": "number"
+                          },
+                          "unpaid_premiums": {
+                            "format": "double",
+                            "type": "number"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "gross_surrender_value": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "net_surrender_value": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "paid_up_value": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "policy_id": {
+                        "type": "string"
+                      },
+                      "premiums_paid": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "sum_assured": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "surrender_factor": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "total_bonus": {
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "total_premiums": {
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
                   },
                   "documents": {
                     "items": {
-                      "$ref": "#/components/schemas/DocumentInfoData"
+                      "properties": {
+                        "display_name": {
+                          "type": "string"
+                        },
+                        "document_id": {
+                          "type": "string"
+                        },
+                        "document_name": {
+                          "type": "string"
+                        },
+                        "document_type": {
+                          "type": "string"
+                        },
+                        "file_size_bytes": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "rejection_reason": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "uploaded_date": {
+                          "type": "string"
+                        },
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "verified_at": {
+                          "type": "string"
+                        },
+                        "verified_by": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
                     },
                     "type": "array"
                   },
@@ -5030,53 +5158,7 @@
                   "success": false
                 },
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "properties": {
-                        "code": {
-                          "format": "int64",
-                          "type": "integer"
-                        },
-                        "field_errors": {
-                          "items": {
-                            "properties": {
-                              "field": {
-                                "type": "string"
-                              },
-                              "message": {
-                                "type": "string"
-                              },
-                              "value": {
-                                "type": "object"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "id": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "status_code": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "success": {
-                      "default": false,
-                      "example": false,
-                      "type": "boolean"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/APIErrorResponse"
                 }
               }
             },
@@ -5788,99 +5870,7 @@
                         "data": {
                           "properties": {
                             "calculation_breakdown": {
-                              "properties": {
-                                "bonus_details": {
-                                  "items": {
-                                    "properties": {
-                                      "bonus_amount": {
-                                        "format": "double",
-                                        "type": "number"
-                                      },
-                                      "bonus_rate": {
-                                        "format": "double",
-                                        "type": "number"
-                                      },
-                                      "financial_year": {
-                                        "type": "string"
-                                      },
-                                      "sum_assured": {
-                                        "format": "double",
-                                        "type": "number"
-                                      }
-                                    },
-                                    "type": "object"
-                                  },
-                                  "type": "array"
-                                },
-                                "calculation_date": {
-                                  "type": "string"
-                                },
-                                "deductions": {
-                                  "properties": {
-                                    "loan_interest": {
-                                      "format": "double",
-                                      "type": "number"
-                                    },
-                                    "loan_principal": {
-                                      "format": "double",
-                                      "type": "number"
-                                    },
-                                    "other_charges": {
-                                      "format": "double",
-                                      "type": "number"
-                                    },
-                                    "total_deductions": {
-                                      "format": "double",
-                                      "type": "number"
-                                    },
-                                    "total_loan": {
-                                      "format": "double",
-                                      "type": "number"
-                                    },
-                                    "unpaid_premiums": {
-                                      "format": "double",
-                                      "type": "number"
-                                    }
-                                  },
-                                  "type": "object"
-                                },
-                                "gross_surrender_value": {
-                                  "format": "double",
-                                  "type": "number"
-                                },
-                                "net_surrender_value": {
-                                  "format": "double",
-                                  "type": "number"
-                                },
-                                "paid_up_value": {
-                                  "format": "double",
-                                  "type": "number"
-                                },
-                                "policy_id": {
-                                  "type": "string"
-                                },
-                                "premiums_paid": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "sum_assured": {
-                                  "format": "double",
-                                  "type": "number"
-                                },
-                                "surrender_factor": {
-                                  "format": "double",
-                                  "type": "number"
-                                },
-                                "total_bonus": {
-                                  "format": "double",
-                                  "type": "number"
-                                },
-                                "total_premiums": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                }
-                              },
-                              "type": "object"
+                              "$ref": "#/components/schemas/CalculationBreakdownData"
                             },
                             "disbursement_options": {
                               "properties": {
@@ -6723,7 +6713,53 @@
                   "success": false
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/APIErrorResponse"
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "field_errors": {
+                          "items": {
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "success": {
+                      "default": false,
+                      "example": false,
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
                 }
               }
             },
@@ -7015,43 +7051,7 @@
                             },
                             "documents": {
                               "items": {
-                                "properties": {
-                                  "display_name": {
-                                    "type": "string"
-                                  },
-                                  "document_id": {
-                                    "type": "string"
-                                  },
-                                  "document_name": {
-                                    "type": "string"
-                                  },
-                                  "document_type": {
-                                    "type": "string"
-                                  },
-                                  "file_size_bytes": {
-                                    "format": "int64",
-                                    "type": "integer"
-                                  },
-                                  "rejection_reason": {
-                                    "type": "string"
-                                  },
-                                  "status": {
-                                    "type": "string"
-                                  },
-                                  "uploaded_date": {
-                                    "type": "string"
-                                  },
-                                  "verified": {
-                                    "type": "boolean"
-                                  },
-                                  "verified_at": {
-                                    "type": "string"
-                                  },
-                                  "verified_by": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/DocumentInfoData"
                               },
                               "type": "array"
                             },
@@ -8349,11 +8349,139 @@
                                   "type": "object"
                                 },
                                 "calculation_details": {
-                                  "$ref": "#/components/schemas/CalculationBreakdownData"
+                                  "properties": {
+                                    "bonus_details": {
+                                      "items": {
+                                        "properties": {
+                                          "bonus_amount": {
+                                            "format": "double",
+                                            "type": "number"
+                                          },
+                                          "bonus_rate": {
+                                            "format": "double",
+                                            "type": "number"
+                                          },
+                                          "financial_year": {
+                                            "type": "string"
+                                          },
+                                          "sum_assured": {
+                                            "format": "double",
+                                            "type": "number"
+                                          }
+                                        },
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    },
+                                    "calculation_date": {
+                                      "type": "string"
+                                    },
+                                    "deductions": {
+                                      "properties": {
+                                        "loan_interest": {
+                                          "format": "double",
+                                          "type": "number"
+                                        },
+                                        "loan_principal": {
+                                          "format": "double",
+                                          "type": "number"
+                                        },
+                                        "other_charges": {
+                                          "format": "double",
+                                          "type": "number"
+                                        },
+                                        "total_deductions": {
+                                          "format": "double",
+                                          "type": "number"
+                                        },
+                                        "total_loan": {
+                                          "format": "double",
+                                          "type": "number"
+                                        },
+                                        "unpaid_premiums": {
+                                          "format": "double",
+                                          "type": "number"
+                                        }
+                                      },
+                                      "type": "object"
+                                    },
+                                    "gross_surrender_value": {
+                                      "format": "double",
+                                      "type": "number"
+                                    },
+                                    "net_surrender_value": {
+                                      "format": "double",
+                                      "type": "number"
+                                    },
+                                    "paid_up_value": {
+                                      "format": "double",
+                                      "type": "number"
+                                    },
+                                    "policy_id": {
+                                      "type": "string"
+                                    },
+                                    "premiums_paid": {
+                                      "format": "int64",
+                                      "type": "integer"
+                                    },
+                                    "sum_assured": {
+                                      "format": "double",
+                                      "type": "number"
+                                    },
+                                    "surrender_factor": {
+                                      "format": "double",
+                                      "type": "number"
+                                    },
+                                    "total_bonus": {
+                                      "format": "double",
+                                      "type": "number"
+                                    },
+                                    "total_premiums": {
+                                      "format": "int64",
+                                      "type": "integer"
+                                    }
+                                  },
+                                  "type": "object"
                                 },
                                 "documents": {
                                   "items": {
-                                    "$ref": "#/components/schemas/DocumentInfoData"
+                                    "properties": {
+                                      "display_name": {
+                                        "type": "string"
+                                      },
+                                      "document_id": {
+                                        "type": "string"
+                                      },
+                                      "document_name": {
+                                        "type": "string"
+                                      },
+                                      "document_type": {
+                                        "type": "string"
+                                      },
+                                      "file_size_bytes": {
+                                        "format": "int64",
+                                        "type": "integer"
+                                      },
+                                      "rejection_reason": {
+                                        "type": "string"
+                                      },
+                                      "status": {
+                                        "type": "string"
+                                      },
+                                      "uploaded_date": {
+                                        "type": "string"
+                                      },
+                                      "verified": {
+                                        "type": "boolean"
+                                      },
+                                      "verified_at": {
+                                        "type": "string"
+                                      },
+                                      "verified_by": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "type": "object"
                                   },
                                   "type": "array"
                                 },
@@ -8638,7 +8766,105 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SubmitDERequest"
+                "properties": {
+                  "Account_details_proof": {
+                    "type": "boolean"
+                  },
+                  "Addressproof_insurant": {
+                    "type": "boolean"
+                  },
+                  "Addressproof_messenger": {
+                    "type": "boolean"
+                  },
+                  "Application": {
+                    "type": "boolean"
+                  },
+                  "Idproof_insurant": {
+                    "type": "boolean"
+                  },
+                  "Idproof_messenger": {
+                    "type": "boolean"
+                  },
+                  "Lrrb": {
+                    "type": "boolean"
+                  },
+                  "Others": {
+                    "type": "boolean"
+                  },
+                  "Pdo_certificate": {
+                    "type": "boolean"
+                  },
+                  "Policybond": {
+                    "type": "boolean"
+                  },
+                  "Prb": {
+                    "type": "boolean"
+                  },
+                  "accountholdername": {
+                    "type": "string"
+                  },
+                  "accountnumber": {
+                    "type": "string"
+                  },
+                  "accounttype": {
+                    "type": "string"
+                  },
+                  "bankname": {
+                    "type": "string"
+                  },
+                  "banktype": {
+                    "type": "string"
+                  },
+                  "branchname": {
+                    "type": "string"
+                  },
+                  "cpc_office_id": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "created_by": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "current_stage_name": {
+                    "type": "string"
+                  },
+                  "ifsccode": {
+                    "type": "string"
+                  },
+                  "ismicrvalidated": {
+                    "type": "boolean"
+                  },
+                  "micrcode": {
+                    "type": "string"
+                  },
+                  "modified_by": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "paymentmode": {
+                    "type": "string"
+                  },
+                  "policy_number": {
+                    "type": "string"
+                  },
+                  "remarks": {
+                    "type": "string"
+                  },
+                  "request_name": {
+                    "type": "string"
+                  },
+                  "surrender_request_channel": {
+                    "type": "string"
+                  },
+                  "surrender_request_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "surrender_request_id"
+                ],
+                "type": "object"
               }
             }
           },
@@ -8809,105 +9035,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "properties": {
-                  "Account_details_proof": {
-                    "type": "boolean"
-                  },
-                  "Addressproof_insurant": {
-                    "type": "boolean"
-                  },
-                  "Addressproof_messenger": {
-                    "type": "boolean"
-                  },
-                  "Application": {
-                    "type": "boolean"
-                  },
-                  "Idproof_insurant": {
-                    "type": "boolean"
-                  },
-                  "Idproof_messenger": {
-                    "type": "boolean"
-                  },
-                  "Lrrb": {
-                    "type": "boolean"
-                  },
-                  "Others": {
-                    "type": "boolean"
-                  },
-                  "Pdo_certificate": {
-                    "type": "boolean"
-                  },
-                  "Policybond": {
-                    "type": "boolean"
-                  },
-                  "Prb": {
-                    "type": "boolean"
-                  },
-                  "accountholdername": {
-                    "type": "string"
-                  },
-                  "accountnumber": {
-                    "type": "string"
-                  },
-                  "accounttype": {
-                    "type": "string"
-                  },
-                  "bankname": {
-                    "type": "string"
-                  },
-                  "banktype": {
-                    "type": "string"
-                  },
-                  "branchname": {
-                    "type": "string"
-                  },
-                  "cpc_office_id": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "created_by": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "current_stage_name": {
-                    "type": "string"
-                  },
-                  "ifsccode": {
-                    "type": "string"
-                  },
-                  "ismicrvalidated": {
-                    "type": "boolean"
-                  },
-                  "micrcode": {
-                    "type": "string"
-                  },
-                  "modified_by": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "paymentmode": {
-                    "type": "string"
-                  },
-                  "policy_number": {
-                    "type": "string"
-                  },
-                  "remarks": {
-                    "type": "string"
-                  },
-                  "request_name": {
-                    "type": "string"
-                  },
-                  "surrender_request_channel": {
-                    "type": "string"
-                  },
-                  "surrender_request_id": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "surrender_request_id"
-                ],
-                "type": "object"
+                "$ref": "#/components/schemas/SubmitDERequest"
               }
             }
           },

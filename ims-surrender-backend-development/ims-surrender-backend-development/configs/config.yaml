@@ -67,14 +67,14 @@ server:
     path: "/healthzz"   
   bodylimit: 2097152
   readbuffersize: 16384
-  addr: ":8080"
+  addr: ":8081"
   readtimeout: 10s
   writetimeout: 60s
   timeout: 40 ## Over all timeout for the request  
   cors:       
     alloworigins:
       - "http://localhost:3000"
-      - "http://localhost:8080"        
+      - "http://localhost:8081"        
     allowheaders:
       - "Authorization"
       - "Content-Type"
@@ -90,7 +90,7 @@ log:
   format: "json"
   output: "stdout"
 client: 
-  baseurl: "http://localhost:8080"
+  baseurl: "http://localhost:8081"
   smsurl:  "https://apiservices.cept.gov.in"
   #HrmsGet1: "https://dev.cept.gov.in/bepis/v1/lien-details/#1?diff-work-office=#2"
   # HrmsGet:https://dev.cept.gov.in/bepliprodmaster/v1/surrender/5001?age_at_entry=20&age_at_maturity=35

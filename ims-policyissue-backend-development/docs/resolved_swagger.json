@@ -787,14 +787,23 @@
       "BulkUploadResponse": {
         "properties": {
           "StatusCodeAndMessage": {
-            "$ref": "#/components/schemas/StatusCodeAndMessage"
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "status_code": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
           },
           "batch_id": {
             "format": "int64",
             "type": "integer"
           },
           "estimated_completion": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "file_name": {
@@ -819,7 +828,7 @@
             "type": "integer"
           },
           "completed_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "error_report": {
@@ -847,7 +856,7 @@
             "type": "array"
           },
           "started_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "status": {
@@ -991,7 +1000,46 @@
       "CustomerAddressOutput": {
         "properties": {
           "address": {
-            "$ref": "#/components/schemas/CustomerAddressResponseDTO"
+            "properties": {
+              "address_id": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "address_type": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "district": {
+                "type": "string"
+              },
+              "is_active": {
+                "type": "boolean"
+              },
+              "line1": {
+                "type": "string"
+              },
+              "line2": {
+                "type": "string"
+              },
+              "pin_code": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "taluka": {
+                "type": "string"
+              },
+              "village": {
+                "type": "string"
+              }
+            },
+            "type": "object"
           },
           "address_id": {
             "items": {
@@ -1002,46 +1050,7 @@
           },
           "addresses": {
             "items": {
-              "properties": {
-                "address_id": {
-                  "format": "int64",
-                  "type": "integer"
-                },
-                "address_type": {
-                  "type": "string"
-                },
-                "city": {
-                  "type": "string"
-                },
-                "country": {
-                  "type": "string"
-                },
-                "district": {
-                  "type": "string"
-                },
-                "is_active": {
-                  "type": "boolean"
-                },
-                "line1": {
-                  "type": "string"
-                },
-                "line2": {
-                  "type": "string"
-                },
-                "pin_code": {
-                  "type": "string"
-                },
-                "state": {
-                  "type": "string"
-                },
-                "taluka": {
-                  "type": "string"
-                },
-                "village": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/CustomerAddressResponseDTO"
             },
             "type": "array"
           },
@@ -1059,7 +1068,46 @@
           "CustomerAddressOutput": {
             "properties": {
               "address": {
-                "$ref": "#/components/schemas/CustomerAddressResponseDTO"
+                "properties": {
+                  "address_id": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "address_type": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "district": {
+                    "type": "string"
+                  },
+                  "is_active": {
+                    "type": "boolean"
+                  },
+                  "line1": {
+                    "type": "string"
+                  },
+                  "line2": {
+                    "type": "string"
+                  },
+                  "pin_code": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "taluka": {
+                    "type": "string"
+                  },
+                  "village": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
               "address_id": {
                 "items": {
@@ -1070,46 +1118,7 @@
               },
               "addresses": {
                 "items": {
-                  "properties": {
-                    "address_id": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "address_type": {
-                      "type": "string"
-                    },
-                    "city": {
-                      "type": "string"
-                    },
-                    "country": {
-                      "type": "string"
-                    },
-                    "district": {
-                      "type": "string"
-                    },
-                    "is_active": {
-                      "type": "boolean"
-                    },
-                    "line1": {
-                      "type": "string"
-                    },
-                    "line2": {
-                      "type": "string"
-                    },
-                    "pin_code": {
-                      "type": "string"
-                    },
-                    "state": {
-                      "type": "string"
-                    },
-                    "taluka": {
-                      "type": "string"
-                    },
-                    "village": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/CustomerAddressResponseDTO"
                 },
                 "type": "array"
               },
@@ -1189,7 +1198,7 @@
             "type": "string"
           },
           "CreatedAt": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "CustomerID": {
@@ -1209,7 +1218,7 @@
             "type": "boolean"
           },
           "UpdatedAt": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           }
         },
@@ -1270,49 +1279,49 @@
       "CustomerContactOutput": {
         "properties": {
           "contact": {
-            "properties": {
-              "ApprovedBy": {
-                "type": "string"
-              },
-              "ChangeReason": {
-                "type": "string"
-              },
-              "ContactType": {
-                "type": "string"
-              },
-              "ContactValue": {
-                "type": "string"
-              },
-              "CreatedAt": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
-                "type": "string"
-              },
-              "CustomerID": {
-                "type": "string"
-              },
-              "ID": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "IsActive": {
-                "type": "boolean"
-              },
-              "IsPrimary": {
-                "type": "boolean"
-              },
-              "IsVerified": {
-                "type": "boolean"
-              },
-              "UpdatedAt": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/CustomerContact"
           },
           "contacts": {
             "items": {
-              "$ref": "#/components/schemas/CustomerContact"
+              "properties": {
+                "ApprovedBy": {
+                  "type": "string"
+                },
+                "ChangeReason": {
+                  "type": "string"
+                },
+                "ContactType": {
+                  "type": "string"
+                },
+                "ContactValue": {
+                  "type": "string"
+                },
+                "CreatedAt": {
+                  "example": "2026-03-23T13:56:51.8814401+05:30",
+                  "type": "string"
+                },
+                "CustomerID": {
+                  "type": "string"
+                },
+                "ID": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "IsActive": {
+                  "type": "boolean"
+                },
+                "IsPrimary": {
+                  "type": "boolean"
+                },
+                "IsVerified": {
+                  "type": "boolean"
+                },
+                "UpdatedAt": {
+                  "example": "2026-03-23T13:56:51.8814401+05:30",
+                  "type": "string"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -1333,49 +1342,49 @@
           "data": {
             "properties": {
               "contact": {
-                "properties": {
-                  "ApprovedBy": {
-                    "type": "string"
-                  },
-                  "ChangeReason": {
-                    "type": "string"
-                  },
-                  "ContactType": {
-                    "type": "string"
-                  },
-                  "ContactValue": {
-                    "type": "string"
-                  },
-                  "CreatedAt": {
-                    "example": "2026-03-17T12:07:03.8864869+05:30",
-                    "type": "string"
-                  },
-                  "CustomerID": {
-                    "type": "string"
-                  },
-                  "ID": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "IsActive": {
-                    "type": "boolean"
-                  },
-                  "IsPrimary": {
-                    "type": "boolean"
-                  },
-                  "IsVerified": {
-                    "type": "boolean"
-                  },
-                  "UpdatedAt": {
-                    "example": "2026-03-17T12:07:03.8864869+05:30",
-                    "type": "string"
-                  }
-                },
-                "type": "object"
+                "$ref": "#/components/schemas/CustomerContact"
               },
               "contacts": {
                 "items": {
-                  "$ref": "#/components/schemas/CustomerContact"
+                  "properties": {
+                    "ApprovedBy": {
+                      "type": "string"
+                    },
+                    "ChangeReason": {
+                      "type": "string"
+                    },
+                    "ContactType": {
+                      "type": "string"
+                    },
+                    "ContactValue": {
+                      "type": "string"
+                    },
+                    "CreatedAt": {
+                      "example": "2026-03-23T13:56:51.8814401+05:30",
+                      "type": "string"
+                    },
+                    "CustomerID": {
+                      "type": "string"
+                    },
+                    "ID": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "IsActive": {
+                      "type": "boolean"
+                    },
+                    "IsPrimary": {
+                      "type": "boolean"
+                    },
+                    "IsVerified": {
+                      "type": "boolean"
+                    },
+                    "UpdatedAt": {
+                      "example": "2026-03-23T13:56:51.8814401+05:30",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -1676,28 +1685,7 @@
           },
           "dedup_warnings": {
             "items": {
-              "properties": {
-                "existing_customer_id": {
-                  "type": "string"
-                },
-                "existing_customer_number": {
-                  "type": "string"
-                },
-                "matched_fields": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "recommendation": {
-                  "type": "string"
-                },
-                "score": {
-                  "format": "int64",
-                  "type": "integer"
-                }
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/DedupMatch"
             },
             "type": "array"
           },
@@ -1717,7 +1705,28 @@
               },
               "matches": {
                 "items": {
-                  "$ref": "#/components/schemas/DedupMatch"
+                  "properties": {
+                    "existing_customer_id": {
+                      "type": "string"
+                    },
+                    "existing_customer_number": {
+                      "type": "string"
+                    },
+                    "matched_fields": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "recommendation": {
+                      "type": "string"
+                    },
+                    "score": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -2758,7 +2767,28 @@
           },
           "matches": {
             "items": {
-              "$ref": "#/components/schemas/DedupMatch"
+              "properties": {
+                "existing_customer_id": {
+                  "type": "string"
+                },
+                "existing_customer_number": {
+                  "type": "string"
+                },
+                "matched_fields": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "recommendation": {
+                  "type": "string"
+                },
+                "score": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -2801,7 +2831,7 @@
             "type": "string"
           },
           "upload_date": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           }
         },
@@ -2842,7 +2872,7 @@
                   "type": "string"
                 },
                 "upload_date": {
-                  "example": "2026-03-17T12:07:03.8864869+05:30",
+                  "example": "2026-03-23T13:56:51.8814401+05:30",
                   "type": "string"
                 }
               },
@@ -2934,7 +2964,7 @@
             "type": "boolean"
           },
           "uploaded_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           }
         },
@@ -3229,7 +3259,23 @@
             "type": "string"
           },
           "flc_period": {
-            "$ref": "#/components/schemas/FLCPeriodInfo"
+            "properties": {
+              "days_remaining": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "end_date": {
+                "type": "string"
+              },
+              "period_days": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "start_date": {
+                "type": "string"
+              }
+            },
+            "type": "object"
           },
           "policy_id": {
             "format": "int64",
@@ -3378,23 +3424,7 @@
             "type": "boolean"
           },
           "flc_period": {
-            "properties": {
-              "days_remaining": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "end_date": {
-                "type": "string"
-              },
-              "period_days": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "start_date": {
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/FLCPeriodInfo"
           },
           "policy_id": {
             "format": "int64",
@@ -3557,7 +3587,7 @@
                 "type": "integer"
               },
               "expires_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-23T13:56:51.8814401+05:30",
                 "type": "string"
               },
               "gst_amount": {
@@ -3588,7 +3618,7 @@
                 "type": "string"
               },
               "proposer_dob": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-23T13:56:51.8814401+05:30",
                 "type": "string"
               },
               "proposer_email": {
@@ -3827,19 +3857,7 @@
             "type": "integer"
           },
           "cacheZone": {
-            "properties": {
-              "isDST": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
-              },
-              "offset": {
-                "format": "int64",
-                "type": "integer"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/zone"
           },
           "extend": {
             "type": "string"
@@ -3871,7 +3889,19 @@
           },
           "zone": {
             "items": {
-              "$ref": "#/components/schemas/zone"
+              "properties": {
+                "isDST": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "offset": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           }
@@ -4267,7 +4297,7 @@
             "type": "integer"
           },
           "noted_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "noted_by": {
@@ -4288,7 +4318,7 @@
             "type": "string"
           },
           "resolved_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "resolved_by": {
@@ -4309,7 +4339,7 @@
             "type": "boolean"
           },
           "waived_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "waived_by": {
@@ -4340,7 +4370,7 @@
                 "type": "integer"
               },
               "noted_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-23T13:56:51.8814401+05:30",
                 "type": "string"
               },
               "noted_by": {
@@ -4361,7 +4391,7 @@
                 "type": "string"
               },
               "resolved_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-23T13:56:51.8814401+05:30",
                 "type": "string"
               },
               "resolved_by": {
@@ -4382,7 +4412,7 @@
                 "type": "boolean"
               },
               "waived_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
+                "example": "2026-03-23T13:56:51.8814401+05:30",
                 "type": "string"
               },
               "waived_by": {
@@ -4852,11 +4882,11 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "effective_date": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "last_updated": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "policy_id": {
@@ -5459,7 +5489,7 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "last_updated": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "proposal_id": {
@@ -5558,7 +5588,7 @@
                   "type": "string"
                 },
                 "timestamp": {
-                  "example": "2026-03-17T12:07:03.8864869+05:30",
+                  "example": "2026-03-23T13:56:51.8814401+05:30",
                   "type": "string"
                 },
                 "to_status": {
@@ -5807,14 +5837,76 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "calculation_basis": {
-            "$ref": "#/components/schemas/CalculationBasisResponse"
+            "properties": {
+              "gst_rate": {
+                "format": "double",
+                "type": "number"
+              },
+              "premium_table": {
+                "type": "string"
+              },
+              "sum_assd": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
           },
           "calculation_id": {
             "type": "string"
           },
           "calculations": {
             "items": {
-              "$ref": "#/components/schemas/QuoteCalculationItem"
+              "properties": {
+                "benefit_illustration": {
+                  "properties": {
+                    "death_benefit": {
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "indicative_bonus_rate": {
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "maturity_value_guaranteed": {
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "maturity_value_with_bonus": {
+                      "format": "double",
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "eligibility": {
+                  "properties": {
+                    "age_at_entry": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "is_eligible": {
+                      "type": "boolean"
+                    },
+                    "maturity_age": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reject_reason": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "premium_breakdown": {
+                  "$ref": "#/components/schemas/PremiumBreakdownResponse"
+                },
+                "sum_assured": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -5998,7 +6090,39 @@
             "type": "string"
           },
           "proposer": {
-            "$ref": "#/components/schemas/ProposerInfo"
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "date_of_birth": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "gender": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "mobile": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "state_code": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "date_of_birth",
+              "gender",
+              "mobile"
+            ],
+            "type": "object"
           },
           "send_email": {
             "type": "boolean"
@@ -6022,10 +6146,56 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "pdf_document": {
-            "$ref": "#/components/schemas/QuotePDFInfo"
+            "properties": {
+              "document_id": {
+                "type": "string"
+              },
+              "download_url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
           },
           "premium_breakdown": {
-            "$ref": "#/components/schemas/PremiumBreakdownResponse"
+            "properties": {
+              "base_premium": {
+                "format": "double",
+                "type": "number"
+              },
+              "cgst": {
+                "format": "double",
+                "type": "number"
+              },
+              "igst": {
+                "format": "double",
+                "type": "number"
+              },
+              "net_premium": {
+                "format": "double",
+                "type": "number"
+              },
+              "rebate": {
+                "format": "double",
+                "type": "number"
+              },
+              "sgst": {
+                "format": "double",
+                "type": "number"
+              },
+              "stamp_duty": {
+                "format": "double",
+                "type": "number"
+              },
+              "total_gst": {
+                "format": "double",
+                "type": "number"
+              },
+              "total_payable": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
           },
           "quote_id": {
             "type": "string"
@@ -6037,7 +6207,17 @@
             "type": "string"
           },
           "validity": {
-            "$ref": "#/components/schemas/QuoteValidityInfo"
+            "properties": {
+              "days_valid": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "expires_at": {
+                "example": "2026-03-23T13:56:51.8814401+05:30",
+                "type": "string"
+              }
+            },
+            "type": "object"
           },
           "workflow_state": {
             "$ref": "#/components/schemas/WorkflowStateResponse"
@@ -6067,7 +6247,7 @@
             "type": "integer"
           },
           "expires_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "gst_amount": {
@@ -6098,7 +6278,7 @@
             "type": "string"
           },
           "proposer_dob": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "proposer_email": {
@@ -6167,39 +6347,7 @@
             "type": "integer"
           },
           "proposer": {
-            "properties": {
-              "category": {
-                "type": "string"
-              },
-              "date_of_birth": {
-                "type": "string"
-              },
-              "email": {
-                "type": "string"
-              },
-              "gender": {
-                "type": "string"
-              },
-              "location": {
-                "type": "string"
-              },
-              "mobile": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "state_code": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "date_of_birth",
-              "gender",
-              "mobile"
-            ],
-            "type": "object"
+            "$ref": "#/components/schemas/ProposerInfo"
           },
           "send_email": {
             "type": "boolean"
@@ -6233,127 +6381,19 @@
             "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "calculation_basis": {
-            "properties": {
-              "gst_rate": {
-                "format": "double",
-                "type": "number"
-              },
-              "premium_table": {
-                "type": "string"
-              },
-              "sum_assd": {
-                "format": "double",
-                "type": "number"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/CalculationBasisResponse"
           },
           "calculations": {
             "items": {
-              "properties": {
-                "benefit_illustration": {
-                  "properties": {
-                    "death_benefit": {
-                      "format": "double",
-                      "type": "number"
-                    },
-                    "indicative_bonus_rate": {
-                      "format": "double",
-                      "type": "number"
-                    },
-                    "maturity_value_guaranteed": {
-                      "format": "double",
-                      "type": "number"
-                    },
-                    "maturity_value_with_bonus": {
-                      "format": "double",
-                      "type": "number"
-                    }
-                  },
-                  "type": "object"
-                },
-                "eligibility": {
-                  "properties": {
-                    "age_at_entry": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "is_eligible": {
-                      "type": "boolean"
-                    },
-                    "maturity_age": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "reject_reason": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "premium_breakdown": {
-                  "$ref": "#/components/schemas/PremiumBreakdownResponse"
-                },
-                "sum_assured": {
-                  "format": "int64",
-                  "type": "integer"
-                }
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/QuoteCalculationItem"
             },
             "type": "array"
           },
           "pdf_document": {
-            "properties": {
-              "document_id": {
-                "type": "string"
-              },
-              "download_url": {
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/QuotePDFInfo"
           },
           "premium_breakdown": {
-            "properties": {
-              "base_premium": {
-                "format": "double",
-                "type": "number"
-              },
-              "cgst": {
-                "format": "double",
-                "type": "number"
-              },
-              "igst": {
-                "format": "double",
-                "type": "number"
-              },
-              "net_premium": {
-                "format": "double",
-                "type": "number"
-              },
-              "rebate": {
-                "format": "double",
-                "type": "number"
-              },
-              "sgst": {
-                "format": "double",
-                "type": "number"
-              },
-              "stamp_duty": {
-                "format": "double",
-                "type": "number"
-              },
-              "total_gst": {
-                "format": "double",
-                "type": "number"
-              },
-              "total_payable": {
-                "format": "double",
-                "type": "number"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/PremiumBreakdownResponse"
           },
           "product_category": {
             "type": "string"
@@ -6368,34 +6408,10 @@
             "type": "string"
           },
           "validity": {
-            "properties": {
-              "days_valid": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "expires_at": {
-                "example": "2026-03-17T12:07:03.8864869+05:30",
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/QuoteValidityInfo"
           },
           "workflow_state": {
-            "properties": {
-              "current_step": {
-                "type": "string"
-              },
-              "metadata": {
-                "type": "object"
-              },
-              "next_step": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/WorkflowStateResponse"
           }
         },
         "type": "object"
@@ -6418,7 +6434,7 @@
             "type": "integer"
           },
           "expires_at": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           }
         },
@@ -6519,16 +6535,7 @@
       "StartDataEntryResponse": {
         "properties": {
           "StatusCodeAndMessage": {
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "status_code": {
-                "format": "int64",
-                "type": "integer"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
           },
           "assigned_at": {
             "type": "string"
@@ -6611,19 +6618,7 @@
                 "type": "integer"
               },
               "cacheZone": {
-                "properties": {
-                  "isDST": {
-                    "type": "boolean"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "offset": {
-                    "format": "int64",
-                    "type": "integer"
-                  }
-                },
-                "type": "object"
+                "$ref": "#/components/schemas/zone"
               },
               "extend": {
                 "type": "string"
@@ -6655,7 +6650,19 @@
               },
               "zone": {
                 "items": {
-                  "$ref": "#/components/schemas/zone"
+                  "properties": {
+                    "isDST": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "offset": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               }
@@ -6690,7 +6697,7 @@
             "type": "string"
           },
           "timestamp": {
-            "example": "2026-03-17T12:07:03.8864869+05:30",
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "to_status": {
@@ -6743,16 +6750,50 @@
       },
       "WorkflowStateResponse": {
         "properties": {
+          "StatusCodeAndMessage": {
+            "$ref": "#/components/schemas/StatusCodeAndMessage"
+          },
           "current_step": {
             "type": "string"
           },
-          "metadata": {
+          "last_activity": {
+            "example": "2026-03-23T13:56:51.8814401+05:30",
+            "type": "string"
+          },
+          "pending_signals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "progress": {
+            "properties": {
+              "completed_steps": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "percentage": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "total_steps": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
             "type": "object"
           },
-          "next_step": {
+          "start_time": {
+            "example": "2026-03-23T13:56:51.8814401+05:30",
             "type": "string"
           },
           "status": {
+            "type": "string"
+          },
+          "workflow_id": {
+            "type": "string"
+          },
+          "workflow_type": {
             "type": "string"
           }
         },
@@ -6928,7 +6969,7 @@
                           "type": "integer"
                         },
                         "completed_at": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         },
                         "error_report": {
@@ -6956,7 +6997,7 @@
                           "type": "array"
                         },
                         "started_at": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         },
                         "status": {
@@ -7189,14 +7230,23 @@
                     "data": {
                       "properties": {
                         "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                          "properties": {
+                            "message": {
+                              "type": "string"
+                            },
+                            "status_code": {
+                              "format": "int64",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
                         },
                         "batch_id": {
                           "format": "int64",
                           "type": "integer"
                         },
                         "estimated_completion": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         },
                         "file_name": {
@@ -8682,7 +8732,46 @@
                         "CustomerAddressOutput": {
                           "properties": {
                             "address": {
-                              "$ref": "#/components/schemas/CustomerAddressResponseDTO"
+                              "properties": {
+                                "address_id": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "address_type": {
+                                  "type": "string"
+                                },
+                                "city": {
+                                  "type": "string"
+                                },
+                                "country": {
+                                  "type": "string"
+                                },
+                                "district": {
+                                  "type": "string"
+                                },
+                                "is_active": {
+                                  "type": "boolean"
+                                },
+                                "line1": {
+                                  "type": "string"
+                                },
+                                "line2": {
+                                  "type": "string"
+                                },
+                                "pin_code": {
+                                  "type": "string"
+                                },
+                                "state": {
+                                  "type": "string"
+                                },
+                                "taluka": {
+                                  "type": "string"
+                                },
+                                "village": {
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
                             },
                             "address_id": {
                               "items": {
@@ -8693,46 +8782,7 @@
                             },
                             "addresses": {
                               "items": {
-                                "properties": {
-                                  "address_id": {
-                                    "format": "int64",
-                                    "type": "integer"
-                                  },
-                                  "address_type": {
-                                    "type": "string"
-                                  },
-                                  "city": {
-                                    "type": "string"
-                                  },
-                                  "country": {
-                                    "type": "string"
-                                  },
-                                  "district": {
-                                    "type": "string"
-                                  },
-                                  "is_active": {
-                                    "type": "boolean"
-                                  },
-                                  "line1": {
-                                    "type": "string"
-                                  },
-                                  "line2": {
-                                    "type": "string"
-                                  },
-                                  "pin_code": {
-                                    "type": "string"
-                                  },
-                                  "state": {
-                                    "type": "string"
-                                  },
-                                  "taluka": {
-                                    "type": "string"
-                                  },
-                                  "village": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/CustomerAddressResponseDTO"
                               },
                               "type": "array"
                             },
@@ -9005,49 +9055,49 @@
                         "data": {
                           "properties": {
                             "contact": {
-                              "properties": {
-                                "ApprovedBy": {
-                                  "type": "string"
-                                },
-                                "ChangeReason": {
-                                  "type": "string"
-                                },
-                                "ContactType": {
-                                  "type": "string"
-                                },
-                                "ContactValue": {
-                                  "type": "string"
-                                },
-                                "CreatedAt": {
-                                  "example": "2026-03-17T12:07:03.8864869+05:30",
-                                  "type": "string"
-                                },
-                                "CustomerID": {
-                                  "type": "string"
-                                },
-                                "ID": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "IsActive": {
-                                  "type": "boolean"
-                                },
-                                "IsPrimary": {
-                                  "type": "boolean"
-                                },
-                                "IsVerified": {
-                                  "type": "boolean"
-                                },
-                                "UpdatedAt": {
-                                  "example": "2026-03-17T12:07:03.8864869+05:30",
-                                  "type": "string"
-                                }
-                              },
-                              "type": "object"
+                              "$ref": "#/components/schemas/CustomerContact"
                             },
                             "contacts": {
                               "items": {
-                                "$ref": "#/components/schemas/CustomerContact"
+                                "properties": {
+                                  "ApprovedBy": {
+                                    "type": "string"
+                                  },
+                                  "ChangeReason": {
+                                    "type": "string"
+                                  },
+                                  "ContactType": {
+                                    "type": "string"
+                                  },
+                                  "ContactValue": {
+                                    "type": "string"
+                                  },
+                                  "CreatedAt": {
+                                    "example": "2026-03-23T13:56:51.8814401+05:30",
+                                    "type": "string"
+                                  },
+                                  "CustomerID": {
+                                    "type": "string"
+                                  },
+                                  "ID": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "IsActive": {
+                                    "type": "boolean"
+                                  },
+                                  "IsPrimary": {
+                                    "type": "boolean"
+                                  },
+                                  "IsVerified": {
+                                    "type": "boolean"
+                                  },
+                                  "UpdatedAt": {
+                                    "example": "2026-03-23T13:56:51.8814401+05:30",
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -9528,28 +9578,7 @@
                         },
                         "dedup_warnings": {
                           "items": {
-                            "properties": {
-                              "existing_customer_id": {
-                                "type": "string"
-                              },
-                              "existing_customer_number": {
-                                "type": "string"
-                              },
-                              "matched_fields": {
-                                "items": {
-                                  "type": "string"
-                                },
-                                "type": "array"
-                              },
-                              "recommendation": {
-                                "type": "string"
-                              },
-                              "score": {
-                                "format": "int64",
-                                "type": "integer"
-                              }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/DedupMatch"
                           },
                           "type": "array"
                         },
@@ -9773,7 +9802,28 @@
                             },
                             "matches": {
                               "items": {
-                                "$ref": "#/components/schemas/DedupMatch"
+                                "properties": {
+                                  "existing_customer_id": {
+                                    "type": "string"
+                                  },
+                                  "existing_customer_number": {
+                                    "type": "string"
+                                  },
+                                  "matched_fields": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "recommendation": {
+                                    "type": "string"
+                                  },
+                                  "score": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  }
+                                },
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -10825,29 +10875,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "items": {
-                          "items": {
-                            "properties": {
-                              "code": {
-                                "type": "string"
-                              },
-                              "description": {
-                                "type": "string"
-                              },
-                              "label": {
-                                "type": "string"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/LookupResponse"
                     },
                     "message": {
                       "example": "success",
@@ -11879,7 +11907,29 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/LookupResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "items": {
+                          "items": {
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -12657,7 +12707,23 @@
                           "type": "string"
                         },
                         "flc_period": {
-                          "$ref": "#/components/schemas/FLCPeriodInfo"
+                          "properties": {
+                            "days_remaining": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "end_date": {
+                              "type": "string"
+                            },
+                            "period_days": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "start_date": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
                         },
                         "policy_id": {
                           "format": "int64",
@@ -12882,23 +12948,7 @@
                           "type": "boolean"
                         },
                         "flc_period": {
-                          "properties": {
-                            "days_remaining": {
-                              "format": "int64",
-                              "type": "integer"
-                            },
-                            "end_date": {
-                              "type": "string"
-                            },
-                            "period_days": {
-                              "format": "int64",
-                              "type": "integer"
-                            },
-                            "start_date": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/FLCPeriodInfo"
                         },
                         "policy_id": {
                           "format": "int64",
@@ -13095,11 +13145,11 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "effective_date": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         },
                         "last_updated": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         },
                         "policy_id": {
@@ -13662,7 +13712,53 @@
                   "success": false
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/APIErrorResponse"
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "field_errors": {
+                          "items": {
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "success": {
+                      "default": false,
+                      "example": false,
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
                 }
               }
             },
@@ -15634,7 +15730,60 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/AuditLogsResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "audit_logs": {
+                          "items": {
+                            "properties": {
+                              "audit_id": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "change_reason": {
+                                "type": "string"
+                              },
+                              "change_type": {
+                                "type": "string"
+                              },
+                              "changed_at": {
+                                "type": "string"
+                              },
+                              "changed_by": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "entity_id": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "entity_type": {
+                                "type": "string"
+                              },
+                              "field_name": {
+                                "type": "string"
+                              },
+                              "metadata": {
+                                "type": "string"
+                              },
+                              "new_value": {
+                                "type": "string"
+                              },
+                              "old_value": {
+                                "type": "string"
+                              },
+                              "proposal_id": {
+                                "format": "int64",
+                                "type": "integer"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -15885,7 +16034,7 @@
                           "type": "boolean"
                         },
                         "uploaded_at": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         }
                       },
@@ -15940,53 +16089,7 @@
                   "success": false
                 },
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "properties": {
-                        "code": {
-                          "format": "int64",
-                          "type": "integer"
-                        },
-                        "field_errors": {
-                          "items": {
-                            "properties": {
-                              "field": {
-                                "type": "string"
-                              },
-                              "message": {
-                                "type": "string"
-                              },
-                              "value": {
-                                "type": "object"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "id": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "status_code": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "success": {
-                      "default": false,
-                      "example": false,
-                      "type": "boolean"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/APIErrorResponse"
                 }
               }
             },
@@ -16524,60 +16627,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "audit_logs": {
-                          "items": {
-                            "properties": {
-                              "audit_id": {
-                                "format": "int64",
-                                "type": "integer"
-                              },
-                              "change_reason": {
-                                "type": "string"
-                              },
-                              "change_type": {
-                                "type": "string"
-                              },
-                              "changed_at": {
-                                "type": "string"
-                              },
-                              "changed_by": {
-                                "format": "int64",
-                                "type": "integer"
-                              },
-                              "entity_id": {
-                                "format": "int64",
-                                "type": "integer"
-                              },
-                              "entity_type": {
-                                "type": "string"
-                              },
-                              "field_name": {
-                                "type": "string"
-                              },
-                              "metadata": {
-                                "type": "string"
-                              },
-                              "new_value": {
-                                "type": "string"
-                              },
-                              "old_value": {
-                                "type": "string"
-                              },
-                              "proposal_id": {
-                                "format": "int64",
-                                "type": "integer"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/AuditLogsResponse"
                     },
                     "message": {
                       "example": "success",
@@ -17546,7 +17596,7 @@
                               "type": "integer"
                             },
                             "noted_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-23T13:56:51.8814401+05:30",
                               "type": "string"
                             },
                             "noted_by": {
@@ -17567,7 +17617,7 @@
                               "type": "string"
                             },
                             "resolved_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-23T13:56:51.8814401+05:30",
                               "type": "string"
                             },
                             "resolved_by": {
@@ -17588,7 +17638,7 @@
                               "type": "boolean"
                             },
                             "waived_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-23T13:56:51.8814401+05:30",
                               "type": "string"
                             },
                             "waived_by": {
@@ -18659,7 +18709,7 @@
                                 "type": "string"
                               },
                               "upload_date": {
-                                "example": "2026-03-17T12:07:03.8864869+05:30",
+                                "example": "2026-03-23T13:56:51.8814401+05:30",
                                 "type": "string"
                               }
                             },
@@ -19643,18 +19693,7 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "properties": {
-                        "StatusCodeAndMessage": {
-                          "$ref": "#/components/schemas/StatusCodeAndMessage"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "updated_at": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
+                      "$ref": "#/components/schemas/SectionUpdateResponse"
                     },
                     "message": {
                       "example": "success",
@@ -20447,7 +20486,18 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/SectionUpdateResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",
@@ -20654,16 +20704,7 @@
                     "data": {
                       "properties": {
                         "StatusCodeAndMessage": {
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            },
-                            "status_code": {
-                              "format": "int64",
-                              "type": "integer"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "assigned_at": {
                           "type": "string"
@@ -20872,7 +20913,7 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "last_updated": {
-                          "example": "2026-03-17T12:07:03.8864869+05:30",
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
                           "type": "string"
                         },
                         "proposal_id": {
@@ -21519,7 +21560,7 @@
                                 "type": "string"
                               },
                               "timestamp": {
-                                "example": "2026-03-17T12:07:03.8864869+05:30",
+                                "example": "2026-03-23T13:56:51.8814401+05:30",
                                 "type": "string"
                               },
                               "to_status": {
@@ -21767,7 +21808,39 @@
                     "type": "string"
                   },
                   "proposer": {
-                    "$ref": "#/components/schemas/ProposerInfo"
+                    "properties": {
+                      "category": {
+                        "type": "string"
+                      },
+                      "date_of_birth": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "gender": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      },
+                      "mobile": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "state_code": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "date_of_birth",
+                      "gender",
+                      "mobile"
+                    ],
+                    "type": "object"
                   },
                   "send_email": {
                     "type": "boolean"
@@ -21795,10 +21868,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "StatusCodeAndMessage": {
-                    "message": "string",
-                    "status_code": 0
-                  },
+                  "StatusCodeAndMessage": null,
                   "pdf_document": {
                     "document_id": "string",
                     "download_url": "string"
@@ -21822,10 +21892,24 @@
                     "expires_at": "string"
                   },
                   "workflow_state": {
+                    "StatusCodeAndMessage": {
+                      "message": "string",
+                      "status_code": 0
+                    },
                     "current_step": "string",
-                    "metadata": {},
-                    "next_step": "string",
-                    "status": "string"
+                    "last_activity": "string",
+                    "pending_signals": [
+                      "string"
+                    ],
+                    "progress": {
+                      "completed_steps": 0,
+                      "percentage": 0,
+                      "total_steps": 0
+                    },
+                    "start_time": "string",
+                    "status": "string",
+                    "workflow_id": "string",
+                    "workflow_type": "string"
                   }
                 },
                 "schema": {
@@ -21836,10 +21920,56 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "pdf_document": {
-                          "$ref": "#/components/schemas/QuotePDFInfo"
+                          "properties": {
+                            "document_id": {
+                              "type": "string"
+                            },
+                            "download_url": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
                         },
                         "premium_breakdown": {
-                          "$ref": "#/components/schemas/PremiumBreakdownResponse"
+                          "properties": {
+                            "base_premium": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "cgst": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "igst": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "net_premium": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "rebate": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "sgst": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "stamp_duty": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "total_gst": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "total_payable": {
+                              "format": "double",
+                              "type": "number"
+                            }
+                          },
+                          "type": "object"
                         },
                         "quote_id": {
                           "type": "string"
@@ -21851,7 +21981,17 @@
                           "type": "string"
                         },
                         "validity": {
-                          "$ref": "#/components/schemas/QuoteValidityInfo"
+                          "properties": {
+                            "days_valid": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "expires_at": {
+                              "example": "2026-03-23T13:56:51.8814401+05:30",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
                         },
                         "workflow_state": {
                           "$ref": "#/components/schemas/WorkflowStateResponse"
@@ -22113,10 +22253,21 @@
                     }
                   ],
                   "workflow_state": {
+                    "StatusCodeAndMessage": null,
                     "current_step": "string",
-                    "metadata": {},
-                    "next_step": "string",
-                    "status": "string"
+                    "last_activity": "string",
+                    "pending_signals": [
+                      "string"
+                    ],
+                    "progress": {
+                      "completed_steps": 0,
+                      "percentage": 0,
+                      "total_steps": 0
+                    },
+                    "start_time": "string",
+                    "status": "string",
+                    "workflow_id": "string",
+                    "workflow_type": "string"
                   }
                 },
                 "schema": {
@@ -22127,14 +22278,76 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "calculation_basis": {
-                          "$ref": "#/components/schemas/CalculationBasisResponse"
+                          "properties": {
+                            "gst_rate": {
+                              "format": "double",
+                              "type": "number"
+                            },
+                            "premium_table": {
+                              "type": "string"
+                            },
+                            "sum_assd": {
+                              "format": "double",
+                              "type": "number"
+                            }
+                          },
+                          "type": "object"
                         },
                         "calculation_id": {
                           "type": "string"
                         },
                         "calculations": {
                           "items": {
-                            "$ref": "#/components/schemas/QuoteCalculationItem"
+                            "properties": {
+                              "benefit_illustration": {
+                                "properties": {
+                                  "death_benefit": {
+                                    "format": "double",
+                                    "type": "number"
+                                  },
+                                  "indicative_bonus_rate": {
+                                    "format": "double",
+                                    "type": "number"
+                                  },
+                                  "maturity_value_guaranteed": {
+                                    "format": "double",
+                                    "type": "number"
+                                  },
+                                  "maturity_value_with_bonus": {
+                                    "format": "double",
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "eligibility": {
+                                "properties": {
+                                  "age_at_entry": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "is_eligible": {
+                                    "type": "boolean"
+                                  },
+                                  "maturity_age": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "reject_reason": {
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "premium_breakdown": {
+                                "$ref": "#/components/schemas/PremiumBreakdownResponse"
+                              },
+                              "sum_assured": {
+                                "format": "int64",
+                                "type": "integer"
+                              }
+                            },
+                            "type": "object"
                           },
                           "type": "array"
                         },
@@ -22336,39 +22549,7 @@
                     "type": "integer"
                   },
                   "proposer": {
-                    "properties": {
-                      "category": {
-                        "type": "string"
-                      },
-                      "date_of_birth": {
-                        "type": "string"
-                      },
-                      "email": {
-                        "type": "string"
-                      },
-                      "gender": {
-                        "type": "string"
-                      },
-                      "location": {
-                        "type": "string"
-                      },
-                      "mobile": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "state_code": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "name",
-                      "date_of_birth",
-                      "gender",
-                      "mobile"
-                    ],
-                    "type": "object"
+                    "$ref": "#/components/schemas/ProposerInfo"
                   },
                   "send_email": {
                     "type": "boolean"
@@ -22406,10 +22587,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "StatusCodeAndMessage": {
-                    "message": "string",
-                    "status_code": 0
-                  },
+                  "StatusCodeAndMessage": null,
                   "calculation_basis": {
                     "gst_rate": 0,
                     "premium_table": "string",
@@ -22429,7 +22607,17 @@
                         "maturity_age": null,
                         "reject_reason": null
                       },
-                      "premium_breakdown": null,
+                      "premium_breakdown": {
+                        "base_premium": null,
+                        "cgst": null,
+                        "igst": null,
+                        "net_premium": null,
+                        "rebate": null,
+                        "sgst": null,
+                        "stamp_duty": null,
+                        "total_gst": null,
+                        "total_payable": null
+                      },
                       "sum_assured": 0
                     }
                   ],
@@ -22437,17 +22625,7 @@
                     "document_id": "string",
                     "download_url": "string"
                   },
-                  "premium_breakdown": {
-                    "base_premium": 0,
-                    "cgst": 0,
-                    "igst": 0,
-                    "net_premium": 0,
-                    "rebate": 0,
-                    "sgst": 0,
-                    "stamp_duty": 0,
-                    "total_gst": 0,
-                    "total_payable": 0
-                  },
+                  "premium_breakdown": null,
                   "product_category": "string",
                   "quote_id": "string",
                   "quote_ref_number": "string",
@@ -22457,10 +22635,24 @@
                     "expires_at": "string"
                   },
                   "workflow_state": {
+                    "StatusCodeAndMessage": {
+                      "message": "string",
+                      "status_code": 0
+                    },
                     "current_step": "string",
-                    "metadata": {},
-                    "next_step": "string",
-                    "status": "string"
+                    "last_activity": "string",
+                    "pending_signals": [
+                      "string"
+                    ],
+                    "progress": {
+                      "completed_steps": 0,
+                      "percentage": 0,
+                      "total_steps": 0
+                    },
+                    "start_time": "string",
+                    "status": "string",
+                    "workflow_id": "string",
+                    "workflow_type": "string"
                   }
                 },
                 "schema": {
@@ -22471,127 +22663,19 @@
                           "$ref": "#/components/schemas/StatusCodeAndMessage"
                         },
                         "calculation_basis": {
-                          "properties": {
-                            "gst_rate": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "premium_table": {
-                              "type": "string"
-                            },
-                            "sum_assd": {
-                              "format": "double",
-                              "type": "number"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/CalculationBasisResponse"
                         },
                         "calculations": {
                           "items": {
-                            "properties": {
-                              "benefit_illustration": {
-                                "properties": {
-                                  "death_benefit": {
-                                    "format": "double",
-                                    "type": "number"
-                                  },
-                                  "indicative_bonus_rate": {
-                                    "format": "double",
-                                    "type": "number"
-                                  },
-                                  "maturity_value_guaranteed": {
-                                    "format": "double",
-                                    "type": "number"
-                                  },
-                                  "maturity_value_with_bonus": {
-                                    "format": "double",
-                                    "type": "number"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "eligibility": {
-                                "properties": {
-                                  "age_at_entry": {
-                                    "format": "int64",
-                                    "type": "integer"
-                                  },
-                                  "is_eligible": {
-                                    "type": "boolean"
-                                  },
-                                  "maturity_age": {
-                                    "format": "int64",
-                                    "type": "integer"
-                                  },
-                                  "reject_reason": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "premium_breakdown": {
-                                "$ref": "#/components/schemas/PremiumBreakdownResponse"
-                              },
-                              "sum_assured": {
-                                "format": "int64",
-                                "type": "integer"
-                              }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/QuoteCalculationItem"
                           },
                           "type": "array"
                         },
                         "pdf_document": {
-                          "properties": {
-                            "document_id": {
-                              "type": "string"
-                            },
-                            "download_url": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/QuotePDFInfo"
                         },
                         "premium_breakdown": {
-                          "properties": {
-                            "base_premium": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "cgst": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "igst": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "net_premium": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "rebate": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "sgst": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "stamp_duty": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "total_gst": {
-                              "format": "double",
-                              "type": "number"
-                            },
-                            "total_payable": {
-                              "format": "double",
-                              "type": "number"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/PremiumBreakdownResponse"
                         },
                         "product_category": {
                           "type": "string"
@@ -22606,34 +22690,10 @@
                           "type": "string"
                         },
                         "validity": {
-                          "properties": {
-                            "days_valid": {
-                              "format": "int64",
-                              "type": "integer"
-                            },
-                            "expires_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/QuoteValidityInfo"
                         },
                         "workflow_state": {
-                          "properties": {
-                            "current_step": {
-                              "type": "string"
-                            },
-                            "metadata": {
-                              "type": "object"
-                            },
-                            "next_step": {
-                              "type": "string"
-                            },
-                            "status": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "object"
+                          "$ref": "#/components/schemas/WorkflowStateResponse"
                         }
                       },
                       "type": "object"
@@ -23067,7 +23127,7 @@
                               "type": "integer"
                             },
                             "expires_at": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-23T13:56:51.8814401+05:30",
                               "type": "string"
                             },
                             "gst_amount": {
@@ -23098,7 +23158,7 @@
                               "type": "string"
                             },
                             "proposer_dob": {
-                              "example": "2026-03-17T12:07:03.8864869+05:30",
+                              "example": "2026-03-23T13:56:51.8814401+05:30",
                               "type": "string"
                             },
                             "proposer_email": {
@@ -25508,15 +25568,77 @@
             "content": {
               "application/json": {
                 "example": {
+                  "StatusCodeAndMessage": {
+                    "message": "string",
+                    "status_code": 0
+                  },
                   "current_step": "string",
-                  "metadata": {},
-                  "next_step": "string",
-                  "status": "string"
+                  "last_activity": "string",
+                  "pending_signals": [
+                    "string"
+                  ],
+                  "progress": {
+                    "completed_steps": 0,
+                    "percentage": 0,
+                    "total_steps": 0
+                  },
+                  "start_time": "string",
+                  "status": "string",
+                  "workflow_id": "string",
+                  "workflow_type": "string"
                 },
                 "schema": {
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/WorkflowStateResponse"
+                      "properties": {
+                        "StatusCodeAndMessage": {
+                          "$ref": "#/components/schemas/StatusCodeAndMessage"
+                        },
+                        "current_step": {
+                          "type": "string"
+                        },
+                        "last_activity": {
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
+                          "type": "string"
+                        },
+                        "pending_signals": {
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "progress": {
+                          "properties": {
+                            "completed_steps": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "percentage": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "total_steps": {
+                              "format": "int64",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "start_time": {
+                          "example": "2026-03-23T13:56:51.8814401+05:30",
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "workflow_id": {
+                          "type": "string"
+                        },
+                        "workflow_type": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
                     },
                     "message": {
                       "example": "success",

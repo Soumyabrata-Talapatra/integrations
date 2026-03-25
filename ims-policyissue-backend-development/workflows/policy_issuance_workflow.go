@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
@@ -17,6 +18,7 @@ const (
 	SignalMedicalResult    = "medical-result"
 	SignalCPCResubmit      = "cpc-resubmit"
 	SignalSubmitForQC      = "submit-for-qc"
+	// TODO: Add SignalDeathNotification for BR-POL-026 (Death During Proposal Processing)
 )
 
 type SubmitForQCSignal struct {
@@ -115,6 +117,12 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 	// Suppress unused variable warnings - these will be used when activities are implemented
 	_ = shortActivityOpts
 	_ = externalCallOpts
+
+	// TODO: Add death notification signal handling for BR-POL-026 (Death During Proposal Processing)
+	// If death occurs during proposal processing, need to:
+	// 1. Update status to CANCELLED_DEATH
+	// 2. Trigger full premium refund via claims microservice
+	// 3. Trigger commission reversal if commission was paid
 
 	// Step 1: Validate Proposal
 	currentStatus = "VALIDATING"
@@ -239,7 +247,7 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 			}
 			logger.Info("QC approved")
 
-			qcDone = true  
+			qcDone = true
 
 		case "RETURNED":
 
@@ -319,6 +327,9 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 			result.Status = "QC_REJECTED"
 			logger.Info("Proposal rejected by QC")
 
+			// TODO: If premium was paid, trigger refund via claims microservice
+			// TODO: Send rejection notification to customer
+
 			return result, nil
 		}
 
@@ -367,6 +378,10 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 			_ = workflow.ExecuteActivity(shortActivityOpts, "UpdateProposalStatusActivity", medRejectInput).Get(ctx, nil)
 
 			result.Status = "MEDICAL_REJECTED"
+			
+			// TODO: If premium was paid, trigger refund via claims microservice (minus medical fee)
+			// TODO: Send medical rejection notification to customer
+
 			return result, fmt.Errorf("medical examination rejected: %s", medicalSignal.RejectionReason)
 		}
 
@@ -425,6 +440,10 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 		_ = workflow.ExecuteActivity(shortActivityOpts, "UpdateProposalStatusActivity", approverRejectInput).Get(ctx, nil)
 
 		result.Status = "REJECTED"
+		
+		// TODO: If premium was paid, trigger refund via claims microservice
+		// TODO: Send approver rejection notification to customer
+
 		return result, fmt.Errorf("proposal rejected by approver")
 	}
 
@@ -524,9 +543,63 @@ func PolicyIssuanceWorkflow(ctx workflow.Context, input PolicyIssuanceInput) (*P
 
 	// Step 10: Signal PM service to start lifecycle workflow
 	logger.Info("Step 10: Signalling PM lifecycle for issued policy")
+
+	// Calculate dates for PM signal
+	policyIssueDate := workflow.Now(ctx)
+	policyCommencementDate := input.ProposalDate
+
+	// Generate UUIDs for policy audit cross-reference and request tracking
+
+	requestUUID := uuid.New().String()
+
+	// Calculate modal premium based on payment frequency
+	modalPremium := premiumResult.TotalPayable
+	annualPremiumEquivalent := premiumResult.TotalPayable
+
+	// TODO: Implement proper modal premium calculation based on payment frequency
+	// For now, assume TotalPayable is the modal premium for the selected frequency
+	// and AnnualPremiumEquivalent needs to be calculated
+	switch input.PremiumPaymentFrequency {
+	case domain.FrequencyMonthly:
+		annualPremiumEquivalent = premiumResult.TotalPayable * 12
+	case domain.FrequencyQuarterly:
+		annualPremiumEquivalent = premiumResult.TotalPayable * 4
+	case domain.FrequencyHalfYearly:
+		annualPremiumEquivalent = premiumResult.TotalPayable * 2
+	case domain.FrequencyYearly:
+		annualPremiumEquivalent = premiumResult.TotalPayable
+	}
+
 	pmSignalInput := activities.StartPMLifecycleInput{
 		PolicyNumber: policyNumberResult.PolicyNumber,
-		PolicyType:   string(input.PolicyType),
+
+		RequestID:               requestUUID,
+		PolicyType:              string(input.PolicyType),
+		ProductType:             string(input.PolicyType), // ProductType should be same as PolicyType (PLI/RPLI)
+		ProposalID:              input.ProposalID,
+		ProposalNumber:          input.ProposalNumber,
+		CustomerID:              input.CustomerID,
+		ProductCode:             input.ProductCode,
+		SumAssured:              input.SumAssured,
+		PolicyTerm:              input.PolicyTerm,
+		AgeAtEntry:              input.AgeAtEntry,
+		Gender:                  input.Gender,
+		PremiumPaymentFrequency: string(input.PremiumPaymentFrequency),
+		AgeProofType:            input.AgeProofType,
+		InsuredState:            input.InsuredState,
+		ProposalDate:            input.ProposalDate,
+		PolicyIssueDate:         policyIssueDate,
+		PolicyCommencementDate:  policyCommencementDate,
+		// Premium data from calculation
+		BasePremium:             premiumResult.BasePremium,
+		GSTAmount:               premiumResult.GSTAmount,
+		TotalPremium:            premiumResult.TotalPayable,
+		ModalPremium:            modalPremium,
+		AnnualPremiumEquivalent: annualPremiumEquivalent,
+		AdditionalPremium:       0, // TODO: Calculate if there are additional premiums
+		// Note: FirstPremiumDate, DeclarationDate, ReceiptDate, IndexingDate would need to be fetched from DB
+		// For now, we use ProposalDate as a fallback for FirstPremiumDate
+		FirstPremiumDate: input.ProposalDate,
 	}
 	if err := workflow.ExecuteActivity(externalCallOpts, "StartPMLifecycleActivity", pmSignalInput).Get(ctx, nil); err != nil {
 		// PM signal failure must not block the issuance result — the reconciliation

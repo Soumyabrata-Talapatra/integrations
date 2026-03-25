@@ -76,7 +76,8 @@ func getFLCPeriod(flcDays int) time.Duration {
 	if flcDays <= 0 {
 		flcDays = 15 // safe default [§10.1.6]
 	}
-	return time.Duration(flcDays) * 24 * time.Hour
+	//return time.Duration(flcDays) * 24 * time.Hour
+	return time.Second
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -559,6 +560,7 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 		sel.AddReceive(policyCreatedCh, func(c workflow.ReceiveChannel, _ bool) {
 			var sig PolicyCreatedSignal
 			c.Receive(ctx, &sig)
+			state.CurrentStatus = "FREE_LOOK_ACTIVE"
 			handlePolicyCreated(ctx, &state, sig)
 		})
 
@@ -828,7 +830,7 @@ func handlePolicyCreated(ctx workflow.Context, state *PolicyLifecycleState, sig 
 	CurrentStatusKey := temporal.NewSearchAttributeKeyKeyword("CurrentStatus")
 	ProductTypeKey := temporal.NewSearchAttributeKeyKeyword("ProductType")
 	BillingMethodKey := temporal.NewSearchAttributeKeyKeyword("BillingMethod")
-	IssueDateKey := temporal.NewSearchAttributeKeyTime("IssueDate")
+	IssueDateKey := temporal.NewSearchAttributeKeyTime("IssuedDate")
 	if _, seen := state.ProcessedSignalIDs[sig.RequestID]; seen {
 		return
 	}
