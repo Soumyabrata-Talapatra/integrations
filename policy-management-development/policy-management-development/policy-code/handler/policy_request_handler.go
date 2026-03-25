@@ -605,7 +605,7 @@ func (h *PolicyRequestHandler) SubmitLoanRepayment(sctx *serverRoute.Context, re
 // [FR-PM-001] [BR-PM-013] [BR-PM-030]
 func (h *PolicyRequestHandler) SubmitRevivalRequest(sctx *serverRoute.Context, req revivalReq) (*resp.RequestAcceptedResponse, error) {
 	payload, _ := json.Marshal(req.SubmitRevivalRequest.Payload)
-	fmt.Println("hereerrerererererer")
+	
 	return h.submitRequest(
 		sctx.Ctx,
 		req.PolicyNumber,
