@@ -54,6 +54,9 @@ type GenericRequestPayload struct {
 // STEP 2: Financial Request Submission DTOs (11 endpoints)
 // All go to PolicyLifecycleWorkflow via Temporal signal
 // ============================================================================
+type PolicynoReq struct {
+	PolicyNo string `uri:"policy_number" validate:"required"`
+}
 
 // SubmitSurrenderRequest — POST /policies/{pn}/requests/surrender
 // State Gate: BR-PM-011 — Allowed: ACTIVE, VL, IL, AL, PAID_UP

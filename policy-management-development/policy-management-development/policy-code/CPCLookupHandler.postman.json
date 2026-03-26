@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "Policy Management - Lookup APIs",
+    "_postman_id": "0f0d7a2e-8c77-4b89-9f9e-lookup-cpc",
+    "description": "Static lookup APIs for Policy Management service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Request Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/lookups/request-types",
+          "host": ["{{baseUrl}}"],
+          "path": ["lookups", "request-types"]
+        }
+      }
+    },
+    {
+      "name": "Get Source Channels",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/lookups/source-channels",
+          "host": ["{{baseUrl}}"],
+          "path": ["lookups", "source-channels"]
+        }
+      }
+    },
+    {
+      "name": "Get Disbursement Methods",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/lookups/disbursement-methods",
+          "host": ["{{baseUrl}}"],
+          "path": ["lookups", "disbursement-methods"]
+        }
+      }
+    },
+    {
+      "name": "Get NFR Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/lookups/nfr-types",
+          "host": ["{{baseUrl}}"],
+          "path": ["lookups", "nfr-types"]
+        }
+      }
+    },
+    {
+      "name": "Get Lifecycle States",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/lookups/lifecycle-states",
+          "host": ["{{baseUrl}}"],
+          "path": ["lookups", "lifecycle-states"]
+        }
+      }
+    },
+    {
+      "name": "Get Products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/lookups/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["lookups", "products"]
+        }
+      }
+    }
+  ]
+}

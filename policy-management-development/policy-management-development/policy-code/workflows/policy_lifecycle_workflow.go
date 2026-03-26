@@ -1126,9 +1126,9 @@ func handleFinancialRequest(ctx workflow.Context, state *PolicyLifecycleState, s
 		RequestType:      sig.RequestType,
 		RequestPayload:   requestPayload,
 		TimeoutAt:        timeout,
-		PMWorkflowID:     state.Metadata.WorkflowID, // plw-{policyNumber}
 		MaturityDate:     state.MaturityDate,
 		ProductCode:      state.ProductCode,
+		PMWorkflowID: state.Metadata.WorkflowID, // plw-{policyNumber}
 	}
 	workflow.ExecuteChildWorkflow(childWFCtx(ctx, taskQueue, childID), wfType, childInput)
 

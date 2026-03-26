@@ -1,0 +1,123 @@
+{
+  "info": {
+    "name": "Policy Management - Request Lifecycle APIs",
+    "_postman_id": "9c8b0e6e-request-lifecycle",
+    "description": "APIs for listing, retrieving, withdrawing service requests and CPC inbox",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/v1"
+    },
+    {
+      "key": "policyNumber",
+      "value": "PLI00001"
+    },
+    {
+      "key": "requestId",
+      "value": "1001"
+    }
+  ],
+  "item": [
+    {
+      "name": "List Policy Requests",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/requests?skip=0&limit=10",
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "requests"
+          ],
+          "query": [
+            { "key": "skip", "value": "0" },
+            { "key": "limit", "value": "10" },
+            { "key": "status", "value": "", "disabled": true },
+            { "key": "request_type", "value": "", "disabled": true },
+            { "key": "source_channel", "value": "", "disabled": true },
+            { "key": "date_from", "value": "", "disabled": true },
+            { "key": "date_to", "value": "", "disabled": true },
+            { "key": "sort_by", "value": "", "disabled": true }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Request Detail",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/requests/{{requestId}}",
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "requests",
+            "{{requestId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Withdraw Request",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/requests/{{requestId}}/withdraw",
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "requests",
+            "{{requestId}}",
+            "withdraw"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"Customer cancelled request\",\n  \"withdrawn_by\": 101\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Pending Requests (CPC Inbox)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/requests/pending?skip=0&limit=20",
+          "path": [
+            "requests",
+            "pending"
+          ],
+          "query": [
+            { "key": "skip", "value": "0" },
+            { "key": "limit", "value": "20" },
+            { "key": "status", "value": "", "disabled": true },
+            { "key": "request_type", "value": "", "disabled": true },
+            { "key": "sort_by", "value": "", "disabled": true }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Pending Summary (CPC Dashboard)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/requests/pending/summary",
+          "path": [
+            "requests",
+            "pending",
+            "summary"
+          ]
+        }
+      }
+    }
+  ]
+}

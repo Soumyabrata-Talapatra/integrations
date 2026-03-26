@@ -19,12 +19,19 @@ import (
 // will be nil in terminal-snapshot fallback (Tier 2 — DB only tracks flags not IDs).
 type Encumbrances struct {
 	HasActiveLoan   bool    `json:"has_active_loan"`
-	LoanID          *int64  `json:"loan_id,omitempty"`          // BIGINT from loan service; nil if no active loan
+	LoanID          *int64  `json:"loan_id,omitempty"` // BIGINT from loan service; nil if no active loan
 	LoanOutstanding float64 `json:"loan_outstanding,omitempty"`
-	AssignmentType  string  `json:"assignment_type"`            // NONE|ABSOLUTE|CONDITIONAL
-	AssigneeID      *int64  `json:"assignee_id,omitempty"`      // BIGINT from NFS service; nil if not assigned
+	AssignmentType  string  `json:"assignment_type"`       // NONE|ABSOLUTE|CONDITIONAL
+	AssigneeID      *int64  `json:"assignee_id,omitempty"` // BIGINT from NFS service; nil if not assigned
 	AMLHold         bool    `json:"aml_hold"`
 	DisputeFlag     bool    `json:"dispute_flag"`
+}
+
+type GetDEPendingResponse struct {
+	StatusCode int    `json:"statusCode"`
+	Success    bool   `json:"success"`
+	Message    string `json:"message"`
+	Data       any    `json:"data"`
 }
 
 // NewEncumbrances builds Encumbrances from a domain.Policy (Tier-2 terminal snapshot path).
@@ -44,15 +51,15 @@ func NewEncumbrances(p domain.Policy) Encumbrances {
 
 // PolicyStatusData is the data payload for a policy status response.
 type PolicyStatusData struct {
-	PolicyID         int64        `json:"policy_id"`                  // Gap-2: internal BIGINT for callers
-	PolicyNumber     string       `json:"policy_number"`
-	LifecycleStatus  string       `json:"lifecycle_status"`
-	PreviousStatus   *string      `json:"previous_status,omitempty"`
-	Encumbrances     Encumbrances `json:"encumbrances"`
-	DisplayStatus    string       `json:"display_status"`
-	EffectiveFrom    string       `json:"effective_from"`
-	Version          int64        `json:"version"`
-	UpdatedAt        string       `json:"updated_at"`
+	PolicyID        int64        `json:"policy_id"` // Gap-2: internal BIGINT for callers
+	PolicyNumber    string       `json:"policy_number"`
+	LifecycleStatus string       `json:"lifecycle_status"`
+	PreviousStatus  *string      `json:"previous_status,omitempty"`
+	Encumbrances    Encumbrances `json:"encumbrances"`
+	DisplayStatus   string       `json:"display_status"`
+	EffectiveFrom   string       `json:"effective_from"`
+	Version         int64        `json:"version"`
+	UpdatedAt       string       `json:"updated_at"`
 }
 
 // NewPolicyStatusData builds PolicyStatusData from a domain.Policy.
@@ -82,7 +89,7 @@ type PolicyStatusResponse struct {
 
 // PolicySummaryData is the full policy summary payload.
 type PolicySummaryData struct {
-	PolicyID           int64        `json:"policy_id"`                  // Gap-2: internal BIGINT for callers
+	PolicyID           int64        `json:"policy_id"` // Gap-2: internal BIGINT for callers
 	PolicyNumber       string       `json:"policy_number"`
 	CustomerID         int64        `json:"customer_id"`
 	ProductCode        string       `json:"product_code"`
@@ -146,13 +153,13 @@ type PolicySummaryResponse struct {
 
 // PolicyTransition is a single state transition in the history.
 type PolicyTransition struct {
-	ID                  int64   `json:"id"`
-	FromStatus          *string `json:"from_status,omitempty"`
-	ToStatus            string  `json:"to_status"`
-	TransitionReason    string  `json:"transition_reason"`
-	TriggeredByService  string  `json:"triggered_by_service"`
-	RequestID           *int64  `json:"request_id,omitempty"`
-	EffectiveDate       string  `json:"effective_date"`
+	ID                 int64   `json:"id"`
+	FromStatus         *string `json:"from_status,omitempty"`
+	ToStatus           string  `json:"to_status"`
+	TransitionReason   string  `json:"transition_reason"`
+	TriggeredByService string  `json:"triggered_by_service"`
+	RequestID          *int64  `json:"request_id,omitempty"`
+	EffectiveDate      string  `json:"effective_date"`
 }
 
 // NewPolicyTransition converts a domain.PolicyStatusHistory to a response DTO.
@@ -187,14 +194,14 @@ type PolicyHistoryResponse struct {
 
 // StateGateData is the state gate check result payload.
 type StateGateData struct {
-	PolicyNumber             string       `json:"policy_number"`
-	RequestType              string       `json:"request_type"`
-	StateGatePassed          bool         `json:"state_gate_passed"`
-	CurrentStatus            string       `json:"current_status"`
-	AllowedStatuses          []string     `json:"allowed_statuses"`
-	Encumbrances             Encumbrances `json:"encumbrances"`
-	HasPendingFinancialLock  bool         `json:"has_pending_financial_lock"`
-	RejectionReason          *string      `json:"rejection_reason,omitempty"`
+	PolicyNumber            string       `json:"policy_number"`
+	RequestType             string       `json:"request_type"`
+	StateGatePassed         bool         `json:"state_gate_passed"`
+	CurrentStatus           string       `json:"current_status"`
+	AllowedStatuses         []string     `json:"allowed_statuses"`
+	Encumbrances            Encumbrances `json:"encumbrances"`
+	HasPendingFinancialLock bool         `json:"has_pending_financial_lock"`
+	RejectionReason         *string      `json:"rejection_reason,omitempty"`
 }
 
 // StateGateResponse — GET /api/v1/policies/{pn}/state-gate/{type}

@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"policy-management/handler/response"
 	"sync"
 
 	pgx "github.com/jackc/pgx/v5"
@@ -59,10 +60,10 @@ const (
 // loan_id and assignee_id are BIGINT IDs from external services (loan-svc, nfs-svc).
 type wfEncumbrances struct {
 	HasActiveLoan   bool    `json:"has_active_loan"`
-	LoanID          *int64  `json:"loan_id,omitempty"`         // BIGINT from loan service; nil if no active loan
+	LoanID          *int64  `json:"loan_id,omitempty"` // BIGINT from loan service; nil if no active loan
 	LoanOutstanding float64 `json:"loan_outstanding,omitempty"`
-	AssignmentType  string  `json:"assignment_type"`           // NONE | ABSOLUTE | CONDITIONAL
-	AssigneeID      *int64  `json:"assignee_id,omitempty"`     // BIGINT from NFS service; nil if not assigned
+	AssignmentType  string  `json:"assignment_type"`       // NONE | ABSOLUTE | CONDITIONAL
+	AssigneeID      *int64  `json:"assignee_id,omitempty"` // BIGINT from NFS service; nil if not assigned
 	AMLHold         bool    `json:"aml_hold"`
 	DisputeFlag     bool    `json:"dispute_flag"`
 }
@@ -90,7 +91,7 @@ type wfPolicyState struct {
 	CurrentPremium     float64  `json:"current_premium"`
 	PremiumMode        string   `json:"premium_mode"`
 	BillingMethod      string   `json:"billing_method"`
-	IssueDate          string   `json:"issue_date"`   // "2006-01-02"
+	IssueDate          string   `json:"issue_date"` // "2006-01-02"
 	MaturityDate       *string  `json:"maturity_date,omitempty"`
 	PaidToDate         string   `json:"paid_to_date"` // "2006-01-02"
 	NextPremiumDueDate *string  `json:"next_premium_due_date,omitempty"`
@@ -149,6 +150,8 @@ func (h *PolicyQueryHandler) Routes() []serverRoute.Route {
 			Name("Get Batch Status"),
 		serverRoute.GET("/policies/dashboard/metrics", h.GetDashboardMetrics).
 			Name("Get Dashboard Metrics"),
+		serverRoute.GET("/policies/:policy_number", h.GetPolicyDetails).
+			Name("Get Policy Details"),
 	}
 }
 
@@ -770,4 +773,28 @@ func (h *PolicyQueryHandler) convertPolicyToWFState(policy *domain.Policy) *wfPo
 		AgentID:        policy.AgentID,
 		PaidUpValue:    policy.PaidUpValue,
 	}
+}
+
+func (h *PolicyQueryHandler) GetPolicyDetails(sctx *serverRoute.Context, req PolicynoReq) (interface{}, error) {
+	ctx := sctx.Ctx
+
+	details, err := h.policyRepo.GetPolicyDetailsRepo(ctx, req.PolicyNo)
+
+	if err != nil {
+		log.Error(sctx.Ctx, "SR not found in handler %s", err)
+
+		return response.GetDEPendingResponse{
+			StatusCode: 200,
+			Success:    true,
+			Message:    "Policy Details not found..",
+			Data:       details,
+		}, nil
+	}
+	return response.GetDEPendingResponse{
+		StatusCode: 200,
+		Success:    true,
+		Message:    "Policy Details fetched successfully",
+		Data:       details,
+	}, nil
+
 }

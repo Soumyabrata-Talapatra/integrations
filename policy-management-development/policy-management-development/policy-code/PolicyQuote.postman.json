@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "Policy Management - Quote APIs",
+    "_postman_id": "3f4c91f0-quote-apis",
+    "description": "Synchronous quote proxy APIs for surrender, loan, and conversion quotes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/v1"
+    },
+    {
+      "key": "policyNumber",
+      "value": "PLI00001"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Surrender Quote",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/quotes/surrender",
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "quotes",
+            "surrender"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"as_of_date\": \"2026-03-15\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Loan Quote",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/quotes/loan",
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "quotes",
+            "loan"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"as_of_date\": \"2026-03-15\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Conversion Quote",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/policies/{{policyNumber}}/quotes/conversion",
+          "path": [
+            "policies",
+            "{{policyNumber}}",
+            "quotes",
+            "conversion"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"target_product_code\": \"EA\",\n  \"as_of_date\": \"2026-03-15\"\n}"
+        }
+      }
+    }
+  ]
+}

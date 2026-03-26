@@ -24,7 +24,9 @@ var ErrPolicyVersionConflict = errors.New("policy version conflict: concurrent m
 //
 // Constraint C7: All SQL uses the policy_mgmt. schema prefix.
 // Constraint 8: Two-Tier Query — handlers call QueryWorkflow first; this repo
-//               serves Tier-2 (terminal fallback) and batch scan queries.
+//
+//	serves Tier-2 (terminal fallback) and batch scan queries.
+//
 // [FR-PM-001, FR-PM-002, FR-PM-011..FR-PM-015]
 type PolicyRepository struct {
 	db  *dblib.DB
@@ -514,8 +516,12 @@ func (r *PolicyRepository) GetPolicyStatusHistory(
 
 	// Query 1: total count.
 	countQuery := base.Columns("COUNT(*) AS count")
-	var total struct{ Count int64 `db:"count"` }
-	dblib.QueueReturnRow(batch, countQuery, pgx.RowToStructByNameLax[struct{ Count int64 `db:"count"` }], &total)
+	var total struct {
+		Count int64 `db:"count"`
+	}
+	dblib.QueueReturnRow(batch, countQuery, pgx.RowToStructByNameLax[struct {
+		Count int64 `db:"count"`
+	}], &total)
 
 	// Query 2: paginated history rows, newest first.
 	dataQuery := base.Columns(historyColumns...).
@@ -612,4 +618,21 @@ func (r *PolicyRepository) GetDashboardMetrics(ctx context.Context) (*domain.Das
 		RequestsToday:           todayCount.Count,
 		RequestsPending:         pendingCount.Count,
 	}, nil
+}
+func (r *PolicyRepository) GetPolicyDetailsRepo(ctx context.Context, policyNumber string) (*domain.Policy, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.cfg.GetDuration("db.QueryTimeoutLow"))
+	defer cancel()
+
+	query := dblib.Psql.Select(policyColumns...).
+		From(policyTable).
+		Where(sq.Eq{"policy_number": policyNumber})
+
+	p, err := dblib.SelectOne(ctx, r.db, query, pgx.RowToStructByNameLax[domain.Policy])
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, pgx.ErrNoRows // ERR-PM-003: Policy not found
+		}
+		return nil, fmt.Errorf("GetPolicyByNumber %q: %w", policyNumber, err)
+	}
+	return &p, nil
 }
