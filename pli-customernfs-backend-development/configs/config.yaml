@@ -1,0 +1,177 @@
+# Agent Profile Management API - Base Configuration
+  # This file contains default configuration values
+  # Environment-specific overrides should be in config.{env}.yaml
+
+  # Application name
+  appname: "ims-policynfs"
+
+  trace:
+    enabled: false
+    processor: 
+      type: "otlp-grpc"
+      options:
+        host: "localhost:4317"
+    sampler:
+      type: always-on
+      options: 
+        ratio: 0.1
+  swagger:
+    generation:
+      mode: "build"
+
+  cache:
+    redisserver: localhost:6379
+    redispassword: 
+    redisdbindex: 1
+    redisexpirationtime: 20m
+    lccapacity: 10000
+    lcnumshards: 20
+    lcttl: 2m 
+    lcevictionpercentage: 10
+    lcminrefreshdelay: 15m
+    lcmaxrefreshdelay: 30m
+    lcretrybasedelay: 1s
+    lcbatchsize: 10
+    lcbatchbuffertimeout: 30s
+    isredisenabled: false
+    islocalcacheenabled: true
+
+  db: 
+    # username: "postgres" 
+    # password: "Cept@123" 
+    # host: "localhost"
+    # port: "5432" 
+    # database: "training"
+    # schema: "public" 
+    username: "pliagent_rw_user"
+    password: "DoPrw@123"
+    host: 172.28.13.162
+    port: "5432"
+    database: "pliagentdb"
+    schema: "pliagent"
+
+    # Connection pool settings
+    maxconns: 20
+    minconns: 2
+    maxconnlifetime: 30
+    maxconnidletime: 10
+    healthcheckperiod: 5
+
+    # Connection pool settings
+    QueryTimeoutLow: 2s
+    QueryTimeoutMed: 5s
+    QueryTimeoutHigh: 10s
+
+  # Application info (for Swagger)
+  info:
+    name: "PLI NFS"
+    version: "1.0.0"
+    description: "PLI NFS"
+    title: "PLI NFS API"
+    terms: "https://example.com/terms"
+    email: "support@agent-commission.gov.in"
+
+  # Temporal Workflow Engine Configuration
+  temporal:
+    host: "localhost"
+    port: "7233"
+    namespace: "default"
+    taskqueue: "agent-commission"
+
+  # Worker configuration
+    # worker:
+    #   max_concurrent_workflow: 100        # Max concurrent workflow executions
+    #   max_concurrent_activities: 200      # Max concurrent activity executions
+    #   max_concurrent_local_activities: 50 # Max concurrent local activity executions
+    #   max_pollers: 2                      # Number of pollers for task queue
+    
+  metrics:
+    expose: true
+    buckets: 
+    collect: 
+      build: true
+      go: true
+      process: true  
+      routes: true
+
+  server: 
+    debug:
+      stats:
+        expose: true
+        path: "/debug/statsviz"
+      pprof:
+        expose: true
+        path: "/debug/pprof"
+    dashboard:
+      Enabled: true
+    healthcheck:
+      expose: true
+      path: "/health"   
+    bodylimit: 5242880  # 5MB
+    readbuffersize: 16384
+    addr: ":8080"
+    readtimeout: 15s
+    writetimeout: 120s
+    timeout: 60
+    cors:       
+      alloworigins:
+        - "http://localhost:3000"
+        - "http://localhost:8080"        
+      allowheaders:
+        - "Authorization"
+        - "Content-Type"
+        - "X-Request-Id"
+      allowmethods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "DELETE"
+        - "PATCH"
+        - "OPTIONS"  
+
+  log:
+    level: "info"
+    format: "json"
+    output: "stdout"
+
+  client: 
+    baseurl: "http://localhost:8080"
+
+  # External Service URLs (for future integration)
+  external:
+    hrms:
+      baseurl: "http://localhost:9001"
+      timeout: 10s
+    pfms:
+      baseurl: "http://localhost:9002"
+      timeout: 30s
+    policy:
+      baseurl: "http://localhost:9003"
+      timeout: 10s
+    accounting:
+      baseurl: "http://localhost:9004"
+      timeout: 15s
+    notification:
+      email:
+        baseurl: "https://apiservices.cept.gov.in"
+        timeout: 5s
+      sms:
+        baseurl: "https://apiservices.cept.gov.in"
+        timeout: 5s
+
+  # Commission Processing Configuration
+  commission:
+    batch:
+      size: 1000  # Process 1000 records per batch
+      sla_hours: 6  # Commission batch SLA: 6 hours
+    trial_approval:
+      sla_days: 7  # Trial statement approval SLA: 7 days
+    disbursement:
+      sla_days: 10  # Disbursement SLA: 10 working days
+    
+  # License Management Configuration
+  license:
+    renewal:
+      sla_days: 3  # License renewal processing SLA: 3 working days
+    reminders:
+      days: [30, 15, 7, 0]  # Send reminders at T-30, T-15, T-7, T-0 days

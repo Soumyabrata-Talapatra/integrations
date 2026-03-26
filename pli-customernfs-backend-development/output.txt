@@ -1,0 +1,4 @@
+{"level":"info","service":"agent-commission","version":"1.0.0","time":"2026-03-14T22:21:25+05:30","caller":"C:/Users/ACER/go/pkg/mod/gitlab.cept.gov.in/it-2.0-common/n-api-bootstrapper@v0.0.18/bootstrapper.go:363","message":"DB trace is enabled!!"}
+2026/03/14 22:21:25 INFO  No logger configured for temporal client. Created default one.
+v3Doc has been successfully stored in v3Doc.json
+Swagger post-processing completed: resolved_swagger.json created

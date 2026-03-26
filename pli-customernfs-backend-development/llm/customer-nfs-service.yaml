@@ -1,0 +1,3339 @@
+openapi: 3.0.3
+
+info:
+  title: Customer NFS Service API
+  version: 1.0.0
+  description: |
+    # Customer NFS (Non-Financial Service) — Postal Life Insurance API
+
+    **Module**: Customer NFS Service  
+    **Version**: 1.0.0  
+    **Date**: March 2026  
+    **Status**: Draft  
+    **Technology Stack**: Golang, Temporal.io, PostgreSQL, Kafka, React
+
+    ## Overview
+
+    The Customer NFS Service is a dedicated microservice responsible for orchestrating
+    non-financial service requests that modify **customer master data** for Postal Life
+    Insurance (PLI) and Rural Postal Life Insurance (RPLI). It owns the workflow lifecycle
+    (request creation, document collection, approval routing, execution) and delegates
+    actual data mutation to Customer Core Service and Customer Profile Service via Temporal workflows.
+
+    **In Scope**: Address Change (Aadhaar + Manual), Name Change (Aadhaar + Manual),
+    Service Request Lifecycle, Missing Document Collection, Request Withdrawal, Audit Trail.
+
+    **Out of Scope**: Agent Change, Nominee Change, Duplicate Policy Bond, Refund of Premium.
+
+    ---
+
+    ## API Inventory Summary
+
+    | Category | Count | API IDs |
+    |----------|-------|---------|
+    | **Address Change (Core Journey)** | 4 | CORE-001 to CORE-004 |
+    | **Name Change (Core Journey)** | 4 | CORE-005 to CORE-008 |
+    | **Service Request Management** | 2 | CORE-009, CORE-010 |
+    | **Lookup / Reference** | 8 | LU-001 to LU-008 |
+    | **Validation** | 3 | VA-001 to VA-003 |
+    | **Status & Tracking** | 5 | ST-001 to ST-005 |
+    | **Document Management** | 5 | DM-001 to DM-005 |
+    | **CPC Operations** | 6 | CPC-001 to CPC-006 |
+    | **Total Unique APIs** | **37** | |
+
+    ---
+
+    ## Authentication & Channels
+
+    - **Customer-facing APIs** — Bearer JWT (issued by PLI Identity Service)
+    - **CPC Staff APIs** — Bearer JWT with CPC role claims
+    - **Internal/System** — API Key header `X-Internal-Api-Key`
+
+    **Supported Channels**: Portal, Mobile, PostOffice, CallCenter, AgentPortal
+
+    ---
+
+    ## Temporal Workflows
+
+    | Workflow | ID | Duration | Task Queue |
+    |----------|----|----------|------------|
+    | Address Change — Aadhaar | WF-NFS-001 | < 15 seconds | customer-nfs-tq |
+    | Address Change — Manual | WF-NFS-002 | 15–30 days | customer-nfs-tq |
+    | Name Change — Aadhaar | WF-NFS-003 | < 15 seconds | customer-nfs-tq |
+    | Name Change — Manual | WF-NFS-004 | 15–30 days | customer-nfs-tq |
+    | NFS Request Withdrawal | WF-NFS-005 | < 5 days | customer-nfs-tq |
+
+    ---
+
+    ## Key Business Rules Referenced
+
+    - **BR-NFS-001**: Aadhaar-based address change completes immediately (< 15 s)
+    - **BR-NFS-002**: Manual address change requires CPC approval (15–30 business days)
+    - **BR-NFS-007**: Aadhaar-based name change completes immediately (< 15 s)
+    - **BR-NFS-008**: Manual name change requires legal documents + CPC approval
+    - **BR-NFS-011**: Ticket format `NFS-{TYPE}-{YYYYMMDD}-{SEQ6}`
+    - **BR-NFS-012**: 8 statuses, 17 valid transitions
+    - **BR-NFS-013**: Withdrawal allowed for CREATED / PENDING_DOCUMENTS / PENDING_APPROVAL
+    - **BR-NFS-014**: Secure upload link max 3 attempts, 7-day expiry each
+    - **BR-NFS-015**: Aadhaar auto-approval restricted to Portal and Mobile channels only
+    - **BR-NFS-016**: Audit log is INSERT-only, 10-year retention
+
+    ---
+
+    ## Events Published
+
+    | Event | Trigger |
+    |-------|---------|
+    | `nfr.request.created` | Service request created |
+    | `nfr.request.completed` | Request reaches COMPLETED |
+    | `nfr.request.rejected` | CPC rejects request |
+    | `nfr.request.withdrawn` | Customer withdraws request |
+    | `nfr.missing_doc.requested` | CPC requests missing documents |
+    | `nfr.sla.breached` | SLA deadline exceeded |
+    | `customer.address.updated` | Address change completed |
+    | `customer.name.updated` | Name change completed |
+
+  contact:
+    name: Customer Management Team — PLI
+    email: customer-mgmt@pli.gov.in
+  license:
+    name: Internal — Government of India (PLI)
+    url: https://www.indiapost.gov.in/pli
+
+servers:
+  - url: https://api.pli.gov.in/customer-nfs/v1
+    description: Production
+  - url: https://uat-api.pli.gov.in/customer-nfs/v1
+    description: UAT
+  - url: https://dev-api.pli.gov.in/customer-nfs/v1
+    description: Development
+  - url: http://localhost:8080/api/v1
+    description: Local Development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Address Change
+    description: |
+      **APIs**: CORE-001 to CORE-004 (4 endpoints)  
+      Address change workflows — Aadhaar-based (immediate < 15 s) and Manual document upload
+      (15–30 day CPC approval). Covers FR-NFS-001, FR-NFS-002, FR-NFS-003.
+      Workflows: WF-NFS-001 (Aadhaar), WF-NFS-002 (Manual).
+
+  - name: Name Change
+    description: |
+      **APIs**: CORE-005 to CORE-008 (4 endpoints)  
+      Name change workflows — Aadhaar-based (immediate) and Manual upload with legal documents.
+      Covers FR-NFS-004, FR-NFS-005. DOB is immutable (BR-NFS-010).
+      Workflows: WF-NFS-003 (Aadhaar), WF-NFS-004 (Manual).
+
+  - name: Service Request Management
+    description: |
+      **APIs**: CORE-009, CORE-010 (2 endpoints)  
+      Request withdrawal (FR-NFS-007, WF-NFS-005) and missing document collection
+      sub-workflow (FR-NFS-009). Withdrawal eligibility per BR-NFS-013.
+      Missing document link management per BR-NFS-014.
+
+  - name: Lookup & Reference
+    description: |
+      **APIs**: LU-001 to LU-008 (8 endpoints)  
+      Master data lookups — states, pincodes, address types, salutations, document types,
+      offices, channels, status reasons. Used for validation and UI dropdowns.
+
+  - name: Validation
+    description: |
+      **APIs**: VA-001 to VA-003 (3 endpoints)  
+      Pre-submission validation — address (VR-NFS-001 to VR-NFS-005, BR-NFS-006),
+      name (VR-NFS-006 to VR-NFS-008, BR-NFS-010), and duplicate request check
+      (VR-NFS-015, BR-NFS-012).
+
+  - name: Status & Tracking
+    description: |
+      **APIs**: ST-001 to ST-005 (5 endpoints)  
+      Request status retrieval, timeline history, acknowledgment receipt download,
+      customer request list, and document list. Supports FR-NFS-006 SLA tracking.
+
+  - name: Document Management
+    description: |
+      **APIs**: DM-001 to DM-005 (5 endpoints)  
+      Document upload, metadata retrieval, download, deletion, and secure link upload.
+      Covers FR-NFS-009, VR-NFS-009/010, ERR-NFS-SR-008 to SR-010.
+      Max 5 MB, PDF/JPEG/PNG only.
+
+  - name: CPC Operations
+    description: |
+      **APIs**: CPC-001 to CPC-006 (6 endpoints)  
+      CPC work queue, statistics, assignment, rejection, send-back, and SLA dashboard.
+      Covers FR-NFS-011, FR-NFS-002, FR-NFS-005. Signals Temporal workflows for approval decisions.
+
+paths:
+
+  # ============================================================
+  # ADDRESS CHANGE — CORE JOURNEY (CORE-001 to CORE-004)
+  # ============================================================
+
+  /nfs/address-change/initiate:
+    post:
+      operationId: initiateAddressChange
+      tags: [Address Change]
+      summary: "CORE-001 — Initiate Address Change Request"
+      description: |
+        Creates a new address change service request for a customer. Supports both
+        **Aadhaar-based** (immediate) and **Manual** (document upload + CPC approval) paths.
+
+        **Functional Requirements**: FR-NFS-001 (Aadhaar), FR-NFS-002 (Manual), FR-NFS-003 (Role),
+        FR-NFS-006 (Lifecycle), FR-NFS-010 (Multi-channel), FR-NFS-012 (Notification)
+
+        **Business Rules**:
+        - BR-NFS-001: `auth_method=AADHAAR` → immediate completion, no human approval
+        - BR-NFS-002: `auth_method=MANUAL` → PENDING_APPROVAL, 15–30 day SLA
+        - BR-NFS-005: Only `address_update_for=INSURED` handled; PROPOSER/ASSIGNEE/TRUSTEE → Policy Service
+        - BR-NFS-006: Pincode must match selected state
+        - BR-NFS-011: Ticket number generated as `NFS-ANC-{YYYYMMDD}-{SEQ6}`
+        - BR-NFS-015: `auth_method=AADHAAR` only allowed from Portal and Mobile channels
+
+        **Validation Rules**: VR-NFS-001 (pincode), VR-NFS-002 (state), VR-NFS-003 (address_line1),
+        VR-NFS-004 (city), VR-NFS-005 (district), VR-NFS-011 (auth_method), VR-NFS-012 (channel),
+        VR-NFS-013 (address_update_for), VR-NFS-015 (duplicate check)
+
+        **Workflows**: WF-NFS-001 (Aadhaar path), WF-NFS-002 (Manual path)
+
+        **State Transition**: `null → CREATED`
+
+        **Events Published**: `nfr.request.created`
+
+        **Audit**: Creates CREATED audit log entry (BR-NFS-016)
+
+        **SLA**:
+        - Aadhaar path: < 15 seconds (IMMEDIATE SLA)
+        - Manual path: 15 business days (Regional Office) / 30 business days (Circle HQ)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiateAddressChangeRequest'
+            examples:
+              aadhaar_path:
+                summary: Aadhaar-based address change (Portal)
+                value:
+                  customer_id: "cust_a1b2c3d4"
+                  policy_number: "POL-0000123456"
+                  auth_method: "AADHAAR"
+                  address_update_for: "INSURED"
+                  address_type: "COMMUNICATION"
+                  channel: "Portal"
+              manual_path:
+                summary: Manual document upload (with new address)
+                value:
+                  customer_id: "cust_a1b2c3d4"
+                  policy_number: "POL-0000123456"
+                  auth_method: "MANUAL"
+                  address_update_for: "INSURED"
+                  address_type: "COMMUNICATION"
+                  new_address:
+                    address_line1: "456, New Avenue"
+                    address_line2: "Sector 15"
+                    city: "Gurugram"
+                    district: "Gurugram"
+                    state: "Haryana"
+                    pincode: "122001"
+                  channel: "Portal"
+      responses:
+        '200':
+          description: Address change request initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiateAddressChangeResponse'
+        '400':
+          description: |
+            Validation errors — ERR-NFS-ANC-003 (pincode-state mismatch), ERR-NFS-ANC-005 (invalid
+            auth_method for channel), ERR-NFS-ANC-011 (non-insured role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                pincode_state_mismatch:
+                  value: { code: "ERR-NFS-ANC-003", message: "Pincode does not match selected state", retryable: false }
+                invalid_channel_for_aadhaar:
+                  value: { code: "ERR-NFS-ANC-005", message: "Aadhaar auto-approval not available from PostOffice. Use MANUAL method.", retryable: false }
+                wrong_role:
+                  value: { code: "ERR-NFS-ANC-011", message: "Address change for PROPOSER is handled by Policy Service.", retryable: false }
+        '404':
+          description: ERR-NFS-ANC-001 (Customer not found) or ERR-NFS-ANC-002 (Policy not found/inactive)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: ERR-NFS-SR-001 — Duplicate pending request exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ERR-NFS-SR-001"
+                message: "Pending request exists: NFS-ANC-20260303-000005. Complete or withdraw it first."
+                retryable: false
+
+  /nfs/address-change/{request_id}/verify-otp:
+    post:
+      operationId: verifyAddressChangeOtp
+      tags: [Address Change]
+      summary: "CORE-002 — Verify Aadhaar OTP and Complete Address Change"
+      description: |
+        Submits the Aadhaar OTP for verification. On success, KYC Service returns address
+        data from UIDAI which is applied immediately, completing the request without human approval.
+
+        **Functional Requirements**: FR-NFS-001 (Aadhaar address change)
+
+        **Business Rules**:
+        - BR-NFS-001: OTP verified → status immediately set to COMPLETED
+        - BR-NFS-003: If address_type=COMMUNICATION, event published to all downstream services
+        - BR-NFS-004: Address versioning — old address deactivated, new version created (never overwrite)
+
+        **Validation Rules**: VR-NFS-001 (pincode from Aadhaar), VR-NFS-002 (state from Aadhaar)
+
+        **Workflows**: WF-NFS-001 — Signal `otp_submitted` sent to running Temporal workflow.
+        Workflow calls `AadhaarOTPVerifyActivity` → `UpdateAddressActivity` → `CreateAuditLogActivity`
+        → `PublishEventsActivity`
+
+        **State Transition**: `CREATED → COMPLETED`
+
+        **Events Published**: `customer.address.updated`, `nfr.request.completed`
+
+        **Error Handling**:
+        - 3 OTP failures → ERR-NFS-ANC-008, fallback URL to manual path provided
+        - OTP expired (10 min) → ERR-NFS-ANC-007
+        - KYC Service unavailable → ERR-NFS-ANC-012 (retry with backoff)
+        - Address update failed → ERR-NFS-ANC-013 with compensation workflow triggered
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+            example:
+              otp_code: "123456"
+              txn_id: "txn_xyz789"
+      responses:
+        '200':
+          description: OTP verified successfully, address updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressChangeCompletedResponse'
+        '422':
+          description: |
+            OTP verification errors — ERR-NFS-ANC-006 (OTP failed, retryable), 
+            ERR-NFS-ANC-007 (OTP expired)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpErrorResponse'
+        '429':
+          description: ERR-NFS-ANC-008 — OTP retry limit exceeded (3 attempts), fallback to manual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ERR-NFS-ANC-008"
+                message: "Maximum OTP attempts exceeded. Converting to manual document upload."
+                retryable: false
+                fallback_url: "/nfs/address-change/initiate"
+        '503':
+          description: ERR-NFS-ANC-012 — KYC Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: ERR-NFS-SR-003 — Service request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/address-change/{request_id}/submit:
+    post:
+      operationId: submitAddressChangeManual
+      tags: [Address Change]
+      summary: "CORE-003 — Submit Manual Address Change for CPC Approval"
+      description: |
+        Finalises the manual address change request submission after documents are uploaded.
+        Moves the request to PENDING_APPROVAL and assigns it to the CPC pool at the customer's
+        servicing office.
+
+        **Functional Requirements**: FR-NFS-002 (Manual approval workflow), FR-NFS-006 (Lifecycle)
+
+        **Business Rules**:
+        - BR-NFS-002: Status set to PENDING_APPROVAL, assigned to CPC, SLA clock starts
+        - BR-NFS-012: Valid transition CREATED → PENDING_APPROVAL
+
+        **Validation Rules**: VR-NFS-009 (file size), VR-NFS-010 (mime type)
+
+        **Workflows**: WF-NFS-002 — Workflow transitions to wait for `approval_decision` signal
+
+        **State Transition**: `CREATED → PENDING_APPROVAL`
+
+        **Events Published**: `nfr.request.created` (with SLA tracking)
+
+        **SLA**: 15 business days (Regional Office) / 30 business days (Circle HQ)
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitForApprovalRequest'
+            example:
+              declaration: true
+              uploaded_documents: ["doc_001", "doc_002"]
+      responses:
+        '200':
+          description: Request submitted for CPC approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitForApprovalResponse'
+        '400':
+          description: ERR-NFS-ANC-004 — Missing required documents (Address Proof is mandatory)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: ERR-NFS-SR-003 — Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/address-change/{request_id}/approve:
+    post:
+      operationId: approveAddressChange
+      tags: [Address Change]
+      summary: "CORE-004 — CPC Approve / Reject Address Change"
+      description: |
+        CPC staff submits their decision on a manual address change request.
+        Supports APPROVE, REJECT, and SEND_BACK decisions.
+
+        **Functional Requirements**: FR-NFS-002, FR-NFS-006, FR-NFS-008, FR-NFS-011
+
+        **Business Rules**:
+        - BR-NFS-002: CPC approval required for manual path
+        - BR-NFS-003: On APPROVE → communication address propagated to all downstream
+        - BR-NFS-004: Address versioning — new version created, old version deactivated
+        - BR-NFS-012: Valid transitions: IN_PROGRESS → COMPLETED / REJECTED / PENDING_DOCUMENTS
+        - BR-NFS-016: Audit log created INSERT-only (action_type = APPROVED / REJECTED)
+
+        **Workflows**: WF-NFS-002 — Signal `approval_decision` (APPROVE/REJECT/SEND_BACK) sent to
+        running Temporal workflow. On APPROVE: `UpdateAddressActivity` called on Customer Profile Service.
+
+        **State Transitions**:
+        - `IN_PROGRESS → COMPLETED` (APPROVE)
+        - `IN_PROGRESS → REJECTED` (REJECT) — rejection_reason mandatory per ERR-NFS-SR-005
+        - `IN_PROGRESS → PENDING_DOCUMENTS` (SEND_BACK)
+
+        **Events Published**:
+        - APPROVE: `customer.address.updated`, `nfr.request.completed`
+        - REJECT: `nfr.request.rejected`
+        - SEND_BACK: `nfr.missing_doc.requested`
+
+        **Access Control**: CPC role required. Assigned user or supervisory CPC only (ERR-NFS-SR-004).
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalDecisionRequest'
+            examples:
+              approve:
+                summary: Approve address change
+                value:
+                  decision: "APPROVE"
+                  remarks: "All documents verified. Address update approved."
+              reject:
+                summary: Reject address change
+                value:
+                  decision: "REJECT"
+                  rejection_reason: "Address proof is expired. Please submit a valid document."
+              send_back:
+                summary: Send back for missing documents
+                value:
+                  decision: "SEND_BACK"
+                  missing_documents: ["RENTAL_AGREEMENT"]
+                  remarks: "Rental agreement missing for rented address."
+      responses:
+        '200':
+          description: Decision recorded and workflow progressed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalDecisionResponse'
+        '403':
+          description: ERR-NFS-SR-004 — Not authorized (wrong CPC user or customer role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: ERR-NFS-SR-005 — Rejection reason missing when decision=REJECT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================
+  # NAME CHANGE — CORE JOURNEY (CORE-005 to CORE-008)
+  # ============================================================
+
+  /nfs/name-change/initiate:
+    post:
+      operationId: initiateNameChange
+      tags: [Name Change]
+      summary: "CORE-005 — Initiate Name Change Request"
+      description: |
+        Creates a new name change service request. Supports Aadhaar-based (immediate, UIDAI
+        authoritative) and Manual (legal document upload + CPC approval, 15–30 days) paths.
+
+        **Functional Requirements**: FR-NFS-004 (Aadhaar), FR-NFS-005 (Manual), FR-NFS-006 (Lifecycle),
+        FR-NFS-010 (Multi-channel), FR-NFS-012 (Notification)
+
+        **Business Rules**:
+        - BR-NFS-007: `auth_method=AADHAAR` → immediate, UIDAI name becomes authoritative
+        - BR-NFS-008: `auth_method=MANUAL` → at least ONE legal document required (Gazette/Newspaper/Form)
+        - BR-NFS-010: DOB is immutable — name change MUST NOT include `date_of_birth` field
+        - BR-NFS-011: Ticket number format `NFS-ANC-{YYYYMMDD}-{SEQ6}`
+        - BR-NFS-015: Aadhaar auto-approval only from Portal and Mobile channels
+
+        **Validation Rules**: VR-NFS-006 (first_name), VR-NFS-007 (last_name), VR-NFS-008 (salutation),
+        VR-NFS-011 (auth_method), VR-NFS-012 (channel), VR-NFS-014 (DOB must NOT be present),
+        VR-NFS-015 (duplicate check)
+
+        **Workflows**: WF-NFS-003 (Aadhaar), WF-NFS-004 (Manual)
+
+        **State Transition**: `null → CREATED`
+
+        **Events Published**: `nfr.request.created`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiateNameChangeRequest'
+            examples:
+              aadhaar_path:
+                summary: Aadhaar-based name change
+                value:
+                  customer_id: "cust_a1b2c3d4"
+                  policy_number: "POL-0000123456"
+                  auth_method: "AADHAAR"
+                  channel: "Portal"
+              manual_path:
+                summary: Manual document upload name change
+                value:
+                  customer_id: "cust_a1b2c3d4"
+                  policy_number: "POL-0000123456"
+                  auth_method: "MANUAL"
+                  new_name:
+                    salutation: "Mrs"
+                    first_name: "Priya"
+                    middle_name: null
+                    last_name: "Kumar"
+                  channel: "Portal"
+      responses:
+        '200':
+          description: Name change request initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiateNameChangeResponse'
+        '400':
+          description: |
+            ERR-NFS-ANC-005 (invalid auth_method for channel), ERR-NFS-ANC-009 (invalid name characters),
+            ERR-NFS-ANC-010 (DOB modification attempted — VR-NFS-014)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: ERR-NFS-ANC-010 — DOB field present in request (immutable per BR-NFS-010)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ERR-NFS-ANC-010"
+                message: "DOB cannot be modified via name change. Requires separate Directorate approval."
+                retryable: false
+        '404':
+          description: ERR-NFS-ANC-001 (Customer not found) or ERR-NFS-ANC-002 (Policy not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: ERR-NFS-SR-001 — Duplicate pending name change request exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/name-change/{request_id}/verify-otp:
+    post:
+      operationId: verifyNameChangeOtp
+      tags: [Name Change]
+      summary: "CORE-006 — Verify Aadhaar OTP and Complete Name Change"
+      description: |
+        Submits the Aadhaar OTP to verify identity. On success, name from UIDAI becomes
+        the authoritative name and is applied immediately.
+
+        **Functional Requirements**: FR-NFS-004 (Aadhaar name change)
+
+        **Business Rules**:
+        - BR-NFS-007: OTP verified → status immediately set to COMPLETED
+        - BR-NFS-009: On completion, `customer.name.updated` event published with `policies_affected` count
+        - BR-NFS-010: DOB remains immutable — only name fields updated
+
+        **Workflows**: WF-NFS-003 — Signal `otp_submitted` sent to Temporal workflow.
+        Workflow calls `AadhaarOTPVerifyActivity` → `UpdateIdentityActivity` (Customer Core Service)
+        → `CreateAuditLogActivity` → `PublishEventsActivity`
+
+        **State Transition**: `CREATED → COMPLETED`
+
+        **Events Published**: `customer.name.updated` (with `policies_affected` count), `nfr.request.completed`
+
+        **Downstream Impact**: Policy Service consumes `customer.name.updated` and updates ALL linked policy records.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: OTP verified, name updated across all linked policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NameChangeCompletedResponse'
+        '422':
+          description: ERR-NFS-ANC-006 (OTP failed), ERR-NFS-ANC-007 (OTP expired)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpErrorResponse'
+        '429':
+          description: ERR-NFS-ANC-008 — OTP retry limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: ERR-NFS-ANC-012 — KYC Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/name-change/{request_id}/submit:
+    post:
+      operationId: submitNameChangeManual
+      tags: [Name Change]
+      summary: "CORE-007 — Submit Manual Name Change for CPC Approval"
+      description: |
+        Finalises manual name change after legal documents are uploaded. Moves request
+        to PENDING_APPROVAL state.
+
+        **Functional Requirements**: FR-NFS-005 (Manual name change), FR-NFS-006 (Lifecycle)
+
+        **Business Rules**:
+        - BR-NFS-008: At least ONE legal document required:
+          Gazette Notification OR Newspaper Notification OR Name Change Application Form
+        - BR-NFS-012: Valid transition CREATED → PENDING_APPROVAL
+
+        **Validation Rules**: VR-NFS-009 (file size ≤ 5 MB), VR-NFS-010 (PDF/JPEG/PNG only)
+
+        **Workflows**: WF-NFS-004 — Workflow transitions to await `approval_decision` signal
+
+        **State Transition**: `CREATED → PENDING_APPROVAL`
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitForApprovalRequest'
+            example:
+              declaration: true
+              uploaded_documents: ["doc_003"]
+      responses:
+        '200':
+          description: Name change submitted for CPC approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitForApprovalResponse'
+        '400':
+          description: ERR-NFS-ANC-004 — No legal document uploaded (BR-NFS-008)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/name-change/{request_id}/approve:
+    post:
+      operationId: approveNameChange
+      tags: [Name Change]
+      summary: "CORE-008 — CPC Approve / Reject Name Change"
+      description: |
+        CPC staff records their decision on a manual name change request.
+        On APPROVE: Customer Core Service updated with new name; event propagates to all policies.
+
+        **Functional Requirements**: FR-NFS-005, FR-NFS-006, FR-NFS-008, FR-NFS-011
+
+        **Business Rules**:
+        - BR-NFS-008: CPC verifies legal document authenticity
+        - BR-NFS-009: On APPROVE — `customer.name.updated` published, Policy Service updates all policies
+        - BR-NFS-010: DOB immutable — only name fields changed by `UpdateIdentityActivity`
+        - BR-NFS-012: State transitions IN_PROGRESS → COMPLETED / REJECTED / PENDING_DOCUMENTS
+        - BR-NFS-016: Audit record created for all decisions
+
+        **Workflows**: WF-NFS-004 — Signal `approval_decision` sent. On APPROVE: calls
+        `UpdateIdentityActivity` on Customer Core Service (customer-tq task queue).
+
+        **Events Published**:
+        - APPROVE: `customer.name.updated` (with `policies_affected`), `nfr.request.completed`
+        - REJECT: `nfr.request.rejected`
+
+        **Access Control**: CPC role required (ERR-NFS-SR-004)
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalDecisionRequest'
+      responses:
+        '200':
+          description: Name change decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalDecisionResponse'
+        '403':
+          description: ERR-NFS-SR-004 — Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: ERR-NFS-SR-005 — Missing rejection reason
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================
+  # SERVICE REQUEST MANAGEMENT (CORE-009, CORE-010)
+  # ============================================================
+
+  /nfs/requests/{request_id}/withdraw:
+    post:
+      operationId: withdrawRequest
+      tags: [Service Request Management]
+      summary: "CORE-009 — Withdraw Customer NFS Request"
+      description: |
+        Customer-initiated request cancellation. Allowed only for specific statuses.
+        Auto-approved if no partial processing occurred; requires CPC manual approval otherwise.
+
+        **Functional Requirements**: FR-NFS-007 (Withdrawal), FR-NFS-008 (Audit)
+
+        **Business Rules**:
+        - BR-NFS-013: Withdrawal allowed ONLY for status ∈ {CREATED, PENDING_DOCUMENTS, PENDING_APPROVAL}
+          NOT allowed for IN_PROGRESS, COMPLETED, REJECTED, WITHDRAWN, DOCUMENTS_EXPIRED
+        - BR-NFS-013: If `partial_processing_flag=TRUE` → manual CPC approval required
+        - BR-NFS-016: Audit record created (action_type=WITHDRAWN)
+
+        **Workflows**: WF-NFS-005 — Calls `CheckWithdrawalEligibilityActivity`, then either
+        auto-approves or routes to CPC. On success: `CancelPendingActivitiesActivity` cancels
+        missing doc links and removes from CPC queue.
+
+        **State Transition**: `CREATED/PENDING_DOCUMENTS/PENDING_APPROVAL → WITHDRAWN`
+
+        **Events Published**: `nfr.request.withdrawn`
+
+        **Note**: Inconsistency in source docs — FR-NFS-007 lists only PENDING_DOCUMENTS and
+        PENDING_APPROVAL as eligible, but BR-NFS-013 includes CREATED. Implementation follows
+        BR-NFS-013 (includes CREATED as eligible for withdrawal).
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+            example:
+              withdrawal_reason: "Changed mind — no longer needed"
+              requested_by: "cust_a1b2c3d4"
+      responses:
+        '200':
+          description: Request withdrawn (auto or manual approval)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalResponse'
+              examples:
+                auto_approved:
+                  summary: Auto-approved withdrawal (no partial processing)
+                  value:
+                    request_id: "req_abc123"
+                    ticket_number: "NFS-ANC-20260304-000001"
+                    status: "WITHDRAWN"
+                    withdrawal_type: "AUTO"
+                    withdrawn_at: "2026-03-04T11:00:00Z"
+                    events_published: ["nfr.request.withdrawn"]
+                pending_cpc:
+                  summary: Pending CPC approval (partial processing)
+                  value:
+                    request_id: "req_abc123"
+                    status: "PENDING_WITHDRAWAL_APPROVAL"
+                    withdrawal_type: "MANUAL"
+                    message: "Withdrawal request submitted. Awaiting CPC approval."
+        '409':
+          description: ERR-NFS-SR-002 — Status not eligible for withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ERR-NFS-SR-002"
+                message: "Cannot withdraw: request is IN_PROGRESS. Withdrawal not allowed."
+                retryable: false
+        '404':
+          description: ERR-NFS-SR-003 — Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/requests/{request_id}/request-documents:
+    post:
+      operationId: requestMissingDocuments
+      tags: [Service Request Management]
+      summary: "CORE-010 — CPC Request Missing Documents from Customer"
+      description: |
+        CPC user identifies missing or rejected documents and triggers the missing document
+        sub-workflow. A time-limited secure upload link is generated and sent to the customer.
+
+        **Functional Requirements**: FR-NFS-009 (Missing document sub-workflow)
+
+        **Business Rules**:
+        - BR-NFS-014: Secure link expires after 7 days (configurable)
+        - BR-NFS-014: Maximum 3 link generations per request; after 3 attempts → DOCUMENTS_EXPIRED
+        - BR-NFS-012: Status transitions: IN_PROGRESS → PENDING_DOCUMENTS
+
+        **Workflows**: WF-NFS-002 / WF-NFS-004 — Signal `send_back` triggers
+        `GenerateMissingDocLinkActivity`. Workflow waits for `docs_received` signal
+        (timeout: 21 days). On receipt: status → PENDING_APPROVAL.
+
+        **State Transition**: `IN_PROGRESS → PENDING_DOCUMENTS`
+
+        **Events Published**: `nfr.missing_doc.requested`
+
+        **Notification**: Customer notified via SMS + Email + WhatsApp with secure upload link.
+
+        **Auto-close**: After 3 expired links → `DOCUMENTS_EXPIRED` (terminal state)
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestMissingDocumentsRequest'
+            example:
+              missing_documents: ["RENTAL_AGREEMENT"]
+              message_to_customer: "Please upload signed rental agreement."
+              requested_by: "cpc_user_001"
+      responses:
+        '200':
+          description: Missing document request created, secure link generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissingDocumentsResponse'
+        '429':
+          description: ERR-NFS-SR-007 — Max 3 missing doc link attempts reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ERR-NFS-SR-007"
+                message: "Maximum missing document link attempts (3) reached. Request auto-closed."
+                retryable: false
+
+  # ============================================================
+  # LOOKUP / REFERENCE (LU-001 to LU-008)
+  # ============================================================
+
+  /lookup/states:
+    get:
+      operationId: getStates
+      tags: [Lookup & Reference]
+      summary: "LU-001 — Get List of Indian States and Union Territories"
+      description: |
+        Returns all valid Indian states and Union Territories for address form dropdowns.
+        Used in UJ-NFS-001, UJ-NFS-002 to validate VR-NFS-002 (state field).
+
+        **Validation Rules**: VR-NFS-002 — state must be from this master list
+        **Business Rules**: BR-NFS-006 — pincode-state correlation requires valid state
+      parameters:
+        - name: active_only
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Return only active states
+      responses:
+        '200':
+          description: List of states
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatesListResponse'
+
+  /lookup/pincode/{pincode}/validate:
+    get:
+      operationId: validatePincode
+      tags: [Lookup & Reference]
+      summary: "LU-002 — Validate Pincode and Get City/District"
+      description: |
+        Validates a 6-digit Indian pincode and returns the auto-filled city,
+        district, and state. If the pincode doesn't match the provided state, returns error.
+
+        **Validation Rules**: VR-NFS-001 — pincode must be 6 digits and match state
+        **Business Rules**: BR-NFS-006 — pincode prefix must match state
+        **Error Codes**: ERR-NFS-ANC-003
+      parameters:
+        - name: pincode
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{6}$'
+          description: 6-digit Indian pincode
+        - name: state
+          in: query
+          schema:
+            type: string
+          description: State to validate against (optional — if provided, validates match)
+      responses:
+        '200':
+          description: Pincode valid, returns city/district/state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PincodeValidationResponse'
+        '400':
+          description: ERR-NFS-ANC-003 — Pincode-state mismatch or invalid pincode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /lookup/address-types:
+    get:
+      operationId: getAddressTypes
+      tags: [Lookup & Reference]
+      summary: "LU-003 — Get Address Type Enum Values"
+      description: |
+        Returns allowed address type values. Used in address change form dropdowns.
+        **Validation**: address_type must be one of: COMMUNICATION, PERMANENT, OFFICIAL
+      responses:
+        '200':
+          description: Address types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnumListResponse'
+              example:
+                values:
+                  - value: "COMMUNICATION"
+                    label: "Communication Address"
+                    description: "Default address for all correspondence"
+                  - value: "PERMANENT"
+                    label: "Permanent Address"
+                    description: "Permanent home address"
+                  - value: "OFFICIAL"
+                    label: "Official Address"
+                    description: "Office/work address"
+
+  /lookup/salutations:
+    get:
+      operationId: getSalutations
+      tags: [Lookup & Reference]
+      summary: "LU-004 — Get Salutation Enum Values"
+      description: |
+        Returns allowed salutation values for name change forms.
+        **Validation Rules**: VR-NFS-008 — salutation must be from this list
+      responses:
+        '200':
+          description: Salutations list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnumListResponse'
+              example:
+                values:
+                  - { value: "Mr", label: "Mr." }
+                  - { value: "Mrs", label: "Mrs." }
+                  - { value: "Ms", label: "Ms." }
+                  - { value: "Shri", label: "Shri" }
+                  - { value: "Smt", label: "Smt." }
+                  - { value: "Dr", label: "Dr." }
+
+  /lookup/document-types/{request_type}:
+    get:
+      operationId: getDocumentTypes
+      tags: [Lookup & Reference]
+      summary: "LU-005 — Get Required Document Types for a Request Type"
+      description: |
+        Returns required and optional document types for a given NFS request type.
+        Used to populate document upload sections.
+
+        **Business Rules**:
+        - BR-NFS-002: Address change mandatory: ADDRESS_PROOF; optional: RENTAL_AGREEMENT, APPLICATION_FORM
+        - BR-NFS-008: Name change at least ONE of: GAZETTE_NOTIFICATION, NEWSPAPER_NOTIFICATION, NAME_CHANGE_FORM
+      parameters:
+        - name: request_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [ADDRESS_CHANGE, NAME_CHANGE]
+      responses:
+        '200':
+          description: Document types for the request type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentTypesResponse'
+
+  /lookup/offices:
+    get:
+      operationId: getOffices
+      tags: [Lookup & Reference]
+      summary: "LU-006 — Get Post Offices and CPC Offices"
+      description: |
+        Returns list of CPC offices and Post Offices for form selection and CPC assignment logic.
+        Used to assign NFS requests to CPC pool at customer's servicing office.
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [CPC, POST_OFFICE, ALL]
+            default: ALL
+        - name: circle_code
+          in: query
+          schema:
+            type: string
+          description: Filter by postal circle
+      responses:
+        '200':
+          description: Office list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficeListResponse'
+
+  /lookup/channels:
+    get:
+      operationId: getChannels
+      tags: [Lookup & Reference]
+      summary: "LU-007 — Get Channel Enum Values"
+      description: |
+        Returns allowed channel values for the `channel` field in NFS requests.
+        **Validation Rules**: VR-NFS-012 — channel must be from this list
+        **Business Rules**: BR-NFS-015 — Aadhaar auto-approval only for Portal and Mobile channels
+      responses:
+        '200':
+          description: Channels list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnumListResponse'
+              example:
+                values:
+                  - { value: "Portal", label: "Customer Portal", aadhaar_enabled: true }
+                  - { value: "Mobile", label: "Mobile App", aadhaar_enabled: true }
+                  - { value: "PostOffice", label: "Post Office Counter (RICT)", aadhaar_enabled: false }
+                  - { value: "CallCenter", label: "Call Center", aadhaar_enabled: false }
+                  - { value: "AgentPortal", label: "Agent Portal", aadhaar_enabled: false }
+
+  /lookup/status-reasons:
+    get:
+      operationId: getStatusReasons
+      tags: [Lookup & Reference]
+      summary: "LU-008 — Get Rejection / Withdrawal Reason Codes"
+      description: |
+        Returns pre-defined reason codes for rejection, withdrawal, and send-back actions.
+        Rejection reason is mandatory per ERR-NFS-SR-005.
+      parameters:
+        - name: action_type
+          in: query
+          schema:
+            type: string
+            enum: [REJECT, WITHDRAW, SEND_BACK]
+      responses:
+        '200':
+          description: Reason codes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnumListResponse'
+
+  # ============================================================
+  # VALIDATION (VA-001 to VA-003)
+  # ============================================================
+
+  /nfs/validate/address:
+    post:
+      operationId: validateAddress
+      tags: [Validation]
+      summary: "VA-001 — Pre-validate Address Before Submission"
+      description: |
+        Validates all address fields before submitting an address change request.
+        Called client-side for real-time validation feedback.
+
+        **Validation Rules Applied**:
+        - VR-NFS-001: Pincode must be 6 digits and match state
+        - VR-NFS-002: State must be valid Indian state
+        - VR-NFS-003: address_line1 not empty, max 200 chars
+        - VR-NFS-004: city not empty, max 100 chars
+        - VR-NFS-005: district not empty, max 100 chars
+
+        **Business Rules**: BR-NFS-006 (pincode-state validation)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressValidationRequest'
+      responses:
+        '200':
+          description: Validation result with field-level errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResultResponse'
+
+  /nfs/validate/name:
+    post:
+      operationId: validateName
+      tags: [Validation]
+      summary: "VA-002 — Pre-validate Name Fields Before Submission"
+      description: |
+        Validates name fields before submitting a name change request.
+
+        **Validation Rules Applied**:
+        - VR-NFS-006: first_name — not empty, alphabets + spaces only, max 100 chars
+        - VR-NFS-007: last_name — not empty, alphabets + spaces only, max 100 chars
+        - VR-NFS-008: salutation — must be from enum {Mr, Mrs, Ms, Shri, Smt, Dr}
+        - VR-NFS-014: date_of_birth must NOT be present (BR-NFS-010 — DOB immutable)
+
+        **Error Codes**: ERR-NFS-ANC-009 (invalid name chars), ERR-NFS-ANC-010 (DOB present)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NameValidationRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResultResponse'
+
+  /nfs/validate/duplicate-check/{customer_id}/{request_type}:
+    get:
+      operationId: checkDuplicateRequest
+      tags: [Validation]
+      summary: "VA-003 — Check for Duplicate Pending Request"
+      description: |
+        Checks if a customer already has a pending NFS request of the same type.
+        If yes, returns the existing ticket number.
+
+        **Validation Rules**: VR-NFS-015 — No active pending request of same type allowed
+
+        **Business Rules**: BR-NFS-012 — Pending statuses checked:
+        CREATED, PENDING_DOCUMENTS, PENDING_APPROVAL, IN_PROGRESS
+
+        **Error Codes**: ERR-NFS-SR-001 (if duplicate found)
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: request_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [ADDRESS_CHANGE, NAME_CHANGE]
+      responses:
+        '200':
+          description: Duplicate check result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateCheckResponse'
+              examples:
+                no_duplicate:
+                  value: { has_pending: false, can_proceed: true }
+                duplicate_found:
+                  value:
+                    has_pending: true
+                    can_proceed: false
+                    existing_ticket: "NFS-ANC-20260303-000005"
+                    existing_request_id: "req_abc123"
+                    status: "PENDING_APPROVAL"
+                    error_code: "ERR-NFS-SR-001"
+
+  # ============================================================
+  # STATUS & TRACKING (ST-001 to ST-005)
+  # ============================================================
+
+  /nfs/requests/{request_id}:
+    get:
+      operationId: getRequestDetail
+      tags: [Status & Tracking]
+      summary: "ST-001 — Get Service Request Detail"
+      description: |
+        Returns complete details of a service request including current status, workflow state,
+        SLA tracking, and recent audit entries.
+
+        **Functional Requirements**: FR-NFS-006 (request lifecycle visibility)
+
+        **Business Rules**: BR-NFS-012 (current status), BR-NFS-011 (ticket number)
+
+        **Data Entities**: E-NFS-001 (service request), E-NFS-002/003 (change details)
+
+        **Access Control**: Customer can view their own requests; CPC can view office-assigned requests.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - name: include_documents
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include uploaded document list
+        - name: include_audit
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include recent audit trail entries
+      responses:
+        '200':
+          description: Request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequestDetail'
+        '404':
+          description: ERR-NFS-SR-003 — Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: ERR-NFS-SR-004 — Not authorized to view this request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/requests/{request_id}/timeline:
+    get:
+      operationId: getRequestTimeline
+      tags: [Status & Tracking]
+      summary: "ST-002 — Get Request Status Timeline / History"
+      description: |
+        Returns chronological history of all status transitions and actions taken on
+        a service request. Data sourced from NFS Audit Log (E-NFS-006).
+
+        **Functional Requirements**: FR-NFS-008 (Audit trail)
+
+        **Business Rules**: BR-NFS-016 — Audit log is INSERT-only, immutable
+
+        **Data Entity**: E-NFS-006 (NFS Audit Log) — partitioned yearly, 10-year retention
+
+        **Integration**: INT-NFS-010 — Analytics Service consumes all NFS events
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Timeline of request actions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestTimelineResponse'
+        '404':
+          description: ERR-NFS-SR-003 — Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/requests/{request_id}/receipt:
+    get:
+      operationId: downloadAcknowledgmentReceipt
+      tags: [Status & Tracking]
+      summary: "ST-003 — Download Acknowledgment Receipt (PDF)"
+      description: |
+        Downloads the acknowledgment receipt PDF generated at the time of request creation.
+        Receipt includes ticket number, request type, old/new data, and timestamp.
+
+        **Functional Requirements**: FR-NFS-006 (Acknowledgment receipt), FR-NFS-012 (Notification)
+
+        **Business Rules**: BR-NFS-011 — Ticket number included in receipt
+
+        **Workflow**: `GenerateAckReceiptActivity` called after COMPLETED state
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: PDF receipt download
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: ERR-NFS-SR-003 — Request or receipt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/customers/{customer_id}/requests:
+    get:
+      operationId: getCustomerRequests
+      tags: [Status & Tracking]
+      summary: "ST-004 — List All NFS Requests for a Customer"
+      description: |
+        Returns paginated list of all NFS service requests for a customer with filtering options.
+
+        **Functional Requirements**: FR-NFS-006, FR-NFS-007
+
+        **Business Rules**: BR-NFS-012 — All 8 statuses returned
+
+        **Data Entity**: E-NFS-001
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: request_type
+          in: query
+          schema:
+            type: string
+            enum: [ADDRESS_CHANGE, NAME_CHANGE]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [CREATED, PENDING_DOCUMENTS, PENDING_APPROVAL, IN_PROGRESS, COMPLETED, REJECTED, WITHDRAWN, DOCUMENTS_EXPIRED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: List of service requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerRequestsListResponse'
+
+  /nfs/requests/{request_id}/documents:
+    get:
+      operationId: getRequestDocuments
+      tags: [Status & Tracking]
+      summary: "ST-005 — List Uploaded Documents for a Request"
+      description: |
+        Returns list of documents uploaded for a service request with verification status.
+
+        **Functional Requirements**: FR-NFS-009, FR-NFS-011
+
+        **Data Entity**: E-NFS-004 (NFS Document Upload)
+
+        **Document Statuses**: PENDING (awaiting CPC review), VERIFIED, REJECTED (with reason)
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Document list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentListResponse'
+
+  # ============================================================
+  # DOCUMENT MANAGEMENT (DM-001 to DM-005)
+  # ============================================================
+
+  /nfs/documents/upload:
+    post:
+      operationId: uploadDocument
+      tags: [Document Management]
+      summary: "DM-001 — Upload Document for NFS Request"
+      description: |
+        Uploads a supporting document for an address change or name change request.
+        Documents stored in Document Management Service (DMS).
+
+        **Functional Requirements**: FR-NFS-002 (address change docs), FR-NFS-005 (name change docs),
+        FR-NFS-009 (missing doc collection)
+
+        **Validation Rules**:
+        - VR-NFS-009: Max 5 MB per file
+        - VR-NFS-010: Only PDF, JPEG, PNG allowed
+
+        **Integration**: INT-NFS-004 — Document Management Service (REST API)
+
+        **Allowed Document Types**:
+        - Address Change: ADDRESS_PROOF (mandatory), RENTAL_AGREEMENT, APPLICATION_FORM
+        - Name Change: GAZETTE_NOTIFICATION, NEWSPAPER_NOTIFICATION, NAME_CHANGE_FORM
+
+        **Error Codes**: ERR-NFS-SR-008 (file too large), ERR-NFS-SR-009 (unsupported type),
+        ERR-NFS-SR-010 (DMS unavailable)
+
+        **Security**: Virus scanning mandatory before storage (per document constraints section)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentUploadRequest'
+      responses:
+        '200':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+        '400':
+          description: |
+            ERR-NFS-SR-008 (file too large — max 5 MB) or
+            ERR-NFS-SR-009 (unsupported file type — use PDF/JPEG/PNG)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: ERR-NFS-SR-010 — Document Management Service unavailable (retryable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/documents/{document_id}:
+    get:
+      operationId: getDocumentMetadata
+      tags: [Document Management]
+      summary: "DM-002 — Get Document Metadata"
+      description: |
+        Returns metadata for a specific uploaded document including verification status.
+        **Data Entity**: E-NFS-004 (NFS Document Upload)
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadata'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteDocument
+      tags: [Document Management]
+      summary: "DM-004 — Delete Document (Before Submission Only)"
+      description: |
+        Deletes an uploaded document. Only allowed before the request is submitted
+        (status = CREATED). Once submitted, documents cannot be deleted.
+
+        **Business Rules**: BR-NFS-012 — Deletion only allowed when status = CREATED
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted: { type: boolean }
+                  document_id: { type: string }
+        '409':
+          description: Cannot delete — request already submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/documents/{document_id}/download:
+    get:
+      operationId: downloadDocument
+      tags: [Document Management]
+      summary: "DM-003 — Download Document File"
+      description: |
+        Downloads the actual document file. Available to the customer who uploaded it
+        and the assigned CPC user.
+
+        **Integration**: INT-NFS-004 — Document Management Service
+        **Access Control**: Customer (own requests) or CPC (assigned requests only)
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/secure-upload/{token}:
+    post:
+      operationId: uploadViaSecureLink
+      tags: [Document Management]
+      summary: "DM-005 — Upload Document via Secure Link (Customer Self-service)"
+      description: |
+        Allows customer to upload missing documents using a time-limited secure token link
+        sent via SMS/Email. No authentication required — link itself is the credential.
+
+        **Functional Requirements**: FR-NFS-009 (Missing document sub-workflow)
+
+        **Business Rules**:
+        - BR-NFS-014: Link expires after 7 days (configurable), max 3 link generations per request
+        - BR-NFS-014: After 3 expired links → request auto-transitions to DOCUMENTS_EXPIRED
+
+        **Data Entity**: E-NFS-005 (NFS Missing Document Request)
+
+        **State Transition** (on success): `PENDING_DOCUMENTS → PENDING_APPROVAL`
+
+        **Events Published**: `docs_received` signal sent to waiting Temporal workflow.
+        Notification to CPC user triggered.
+
+        **Error Codes**: ERR-NFS-SR-006 (link expired), ERR-NFS-SR-008 (file too large),
+        ERR-NFS-SR-009 (unsupported type)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Time-limited secure upload token from missing document request
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SecureUploadRequest'
+      responses:
+        '200':
+          description: Document uploaded, CPC notified, request moved to PENDING_APPROVAL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecureUploadResponse'
+        '410':
+          description: ERR-NFS-SR-006 — Secure upload link expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: "ERR-NFS-SR-006"
+                message: "Upload link has expired. Please contact your Post Office for a new link."
+
+  # ============================================================
+  # CPC OPERATIONS (CPC-001 to CPC-006)
+  # ============================================================
+
+  /nfs/cpc/queue:
+    get:
+      operationId: getCpcWorkQueue
+      tags: [CPC Operations]
+      summary: "CPC-001 — Get CPC Work Queue"
+      description: |
+        Returns paginated list of pending NFS requests assigned to the CPC user's office.
+        Supports filtering by type, status, SLA status, and date range.
+
+        **Functional Requirements**: FR-NFS-011 (CPC Work Queue and Dashboard)
+
+        **Business Rules**:
+        - BR-NFS-002: Manual address change assigned to CPC pool at servicing office
+        - BR-NFS-012: Shows requests in PENDING_APPROVAL and IN_PROGRESS statuses
+
+        **Access Control**: CPC role required (ERR-NFS-SR-004)
+
+        **SLA Indicators**:
+        - GREEN: > 5 business days remaining
+        - AMBER: 1–5 business days remaining
+        - RED: SLA breached (`nfr.sla.breached` event published)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING_APPROVAL, IN_PROGRESS, ALL]
+            default: ALL
+        - name: request_type
+          in: query
+          schema:
+            type: string
+            enum: [ADDRESS_CHANGE, NAME_CHANGE, ALL]
+            default: ALL
+        - name: sla_status
+          in: query
+          schema:
+            type: string
+            enum: [GREEN, AMBER, RED, ALL]
+            default: ALL
+        - name: assigned_to_me
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: CPC work queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpcQueueResponse'
+
+  /nfs/cpc/queue/stats:
+    get:
+      operationId: getCpcQueueStats
+      tags: [CPC Operations]
+      summary: "CPC-002 — Get CPC Queue Statistics"
+      description: |
+        Returns aggregate statistics for the CPC work queue — counts by status, type, and SLA status.
+        Used for dashboard summary widgets.
+
+        **Functional Requirements**: FR-NFS-011 (Dashboard)
+      parameters:
+        - name: office_code
+          in: query
+          schema:
+            type: string
+          description: Filter stats by office (supervisor view)
+      responses:
+        '200':
+          description: Queue statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpcQueueStatsResponse'
+
+  /nfs/requests/{request_id}/assign:
+    post:
+      operationId: assignRequest
+      tags: [CPC Operations]
+      summary: "CPC-003 — Assign NFS Request to CPC User"
+      description: |
+        Assigns or reassigns a NFS request to a specific CPC user. Default assignment is
+        round-robin to the CPC pool at the customer's servicing office.
+
+        **Functional Requirements**: FR-NFS-011 (Work queue management)
+
+        **Business Rules**: BR-NFS-002 — CPC assignment based on customer's servicing office
+
+        **Audit**: Assignment action logged (action_type = ASSIGNED)
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assigned_to]
+              properties:
+                assigned_to:
+                  type: string
+                  format: uuid
+                  description: CPC user ID to assign to
+                reason:
+                  type: string
+                  description: Reason for reassignment
+      responses:
+        '200':
+          description: Request assigned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request_id: { type: string }
+                  assigned_to: { type: string }
+                  assigned_at: { type: string, format: date-time }
+        '403':
+          description: ERR-NFS-SR-004 — Insufficient authorization for assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/requests/{request_id}/reject:
+    post:
+      operationId: rejectRequest
+      tags: [CPC Operations]
+      summary: "CPC-004 — CPC Reject NFS Request"
+      description: |
+        CPC user rejects the NFS request with a mandatory reason.
+        This is equivalent to calling the approve endpoints with decision=REJECT but
+        provided as a dedicated endpoint for clarity in CPC workflows.
+
+        **Functional Requirements**: FR-NFS-002 (address change), FR-NFS-005 (name change)
+
+        **Business Rules**:
+        - BR-NFS-012: IN_PROGRESS → REJECTED (terminal state)
+        - BR-NFS-016: Audit record created
+
+        **Validation**: rejection_reason is MANDATORY — ERR-NFS-SR-005
+
+        **State Transition**: `IN_PROGRESS → REJECTED`
+
+        **Events Published**: `nfr.request.rejected`
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rejection_reason]
+              properties:
+                rejection_reason:
+                  type: string
+                  description: "Mandatory reason for rejection (ERR-NFS-SR-005 if missing)"
+                  minLength: 10
+                  maxLength: 500
+                rejection_reason_code:
+                  type: string
+                  description: Predefined reason code from LU-008
+      responses:
+        '200':
+          description: Request rejected, customer notified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectionResponse'
+        '422':
+          description: ERR-NFS-SR-005 — Missing rejection reason
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/requests/{request_id}/send-back:
+    post:
+      operationId: sendBackRequest
+      tags: [CPC Operations]
+      summary: "CPC-005 — CPC Send Back for Missing / Corrected Documents"
+      description: |
+        CPC user identifies specific missing documents and triggers the missing document
+        sub-workflow. Customer receives a secure upload link.
+        (Note: This is an alias for CORE-010 / `request-documents` with SEND_BACK semantics.)
+
+        **Functional Requirements**: FR-NFS-009 (Missing document sub-workflow), FR-NFS-011
+
+        **Business Rules**:
+        - BR-NFS-014: Secure link generated (7-day expiry, max 3 attempts)
+        - BR-NFS-012: IN_PROGRESS → PENDING_DOCUMENTS
+
+        **State Transition**: `IN_PROGRESS → PENDING_DOCUMENTS`
+
+        **Events Published**: `nfr.missing_doc.requested`
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestMissingDocumentsRequest'
+      responses:
+        '200':
+          description: Send-back recorded, secure link generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissingDocumentsResponse'
+        '429':
+          description: ERR-NFS-SR-007 — Max link attempts reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /nfs/cpc/sla-dashboard:
+    get:
+      operationId: getSlaDashboard
+      tags: [CPC Operations]
+      summary: "CPC-006 — SLA Breach Alert Dashboard"
+      description: |
+        Returns requests approaching or in breach of SLA deadlines.
+        Used for supervisor monitoring and escalation management.
+
+        **Functional Requirements**: FR-NFS-011 (SLA monitoring)
+
+        **Business Rules**:
+        - BR-NFS-002: 15 business day SLA (Regional Office), 30 business day SLA (Circle HQ)
+        - BR-NFS-012: Escalation triggered for PENDING_APPROVAL requests approaching deadline
+
+        **Events**: `nfr.sla.breached` published when deadline exceeded
+
+        **Integration**: INT-NFS-009 — Notification Service receives SLA breach events
+      parameters:
+        - name: office_code
+          in: query
+          schema:
+            type: string
+        - name: sla_status
+          in: query
+          schema:
+            type: string
+            enum: [AMBER, RED, ALL]
+            default: ALL
+          description: AMBER = 1–5 days remaining, RED = breached
+      responses:
+        '200':
+          description: SLA dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlaDashboardResponse'
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT issued by PLI Identity Service. Contains user_id, role, office_code claims.
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Internal-Api-Key
+      description: For internal service-to-service communication
+
+  parameters:
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: NFS Service Request UUID
+    DocumentId:
+      name: document_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Document UUID
+
+  schemas:
+
+    # ─── Enums & Shared ───────────────────────────────────────
+
+    AuthMethod:
+      type: string
+      enum: [AADHAAR, MANUAL]
+      description: "BR-NFS-001/007 (AADHAAR=immediate), BR-NFS-002/008 (MANUAL=CPC approval)"
+
+    RequestStatus:
+      type: string
+      enum:
+        - CREATED
+        - PENDING_DOCUMENTS
+        - PENDING_APPROVAL
+        - IN_PROGRESS
+        - COMPLETED
+        - REJECTED
+        - WITHDRAWN
+        - DOCUMENTS_EXPIRED
+      description: |
+        BR-NFS-012: 8 statuses with 17 valid state transitions.
+        Terminal states (no further transitions): COMPLETED, REJECTED, WITHDRAWN, DOCUMENTS_EXPIRED.
+        CREATED→COMPLETED: Aadhaar OTP path only.
+
+    Channel:
+      type: string
+      enum: [Portal, Mobile, PostOffice, CallCenter, AgentPortal]
+      description: "BR-NFS-015: Aadhaar auto-approval only from Portal and Mobile channels"
+
+    RequestType:
+      type: string
+      enum: [ADDRESS_CHANGE, NAME_CHANGE]
+
+    AddressUpdateFor:
+      type: string
+      enum: [INSURED, PROPOSER, ASSIGNEE, TRUSTEE]
+      description: "BR-NFS-005: Only INSURED processed by Customer NFS. Others delegated to Policy Service."
+
+    AddressType:
+      type: string
+      enum: [COMMUNICATION, PERMANENT, OFFICIAL]
+      description: "BR-NFS-003: COMMUNICATION address propagates to all downstream services"
+
+    Salutation:
+      type: string
+      enum: [Mr, Mrs, Ms, Shri, Smt, Dr]
+      description: "VR-NFS-008: Must be one of these values"
+
+    ApprovalDecision:
+      type: string
+      enum: [APPROVE, REJECT, SEND_BACK]
+
+    # ─── Address Schema ────────────────────────────────────────
+
+    AddressData:
+      type: object
+      description: "Data entity E-NFS-002. VR-NFS-001 to VR-NFS-005, BR-NFS-006 applied."
+      required:
+        - address_line1
+        - city
+        - district
+        - state
+        - pincode
+      properties:
+        address_line1:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: "VR-NFS-003: Not empty, max 200 chars"
+        address_line2:
+          type: string
+          maxLength: 200
+        village:
+          type: string
+          maxLength: 100
+        taluka:
+          type: string
+          maxLength: 100
+        city:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: "VR-NFS-004: Not empty, max 100 chars"
+        district:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: "VR-NFS-005: Not empty, max 100 chars"
+        state:
+          type: string
+          description: "VR-NFS-002: Must be a valid Indian state"
+        pincode:
+          type: string
+          pattern: '^\d{6}$'
+          description: "VR-NFS-001: 6 digits. BR-NFS-006: Must match selected state prefix"
+
+    NameData:
+      type: object
+      description: "Data entity E-NFS-003. VR-NFS-006/007/008 applied."
+      required:
+        - salutation
+        - first_name
+        - last_name
+      properties:
+        salutation:
+          $ref: '#/components/schemas/Salutation'
+        first_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          pattern: '^[a-zA-Z\s]+$'
+          description: "VR-NFS-006: Alpha and spaces only, 2–100 chars"
+        middle_name:
+          type: string
+          maxLength: 100
+          pattern: '^[a-zA-Z\s]*$'
+          nullable: true
+        last_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          pattern: '^[a-zA-Z\s]+$'
+          description: "VR-NFS-007: Alpha and spaces only, 2–100 chars"
+
+    # ─── Ticket / Workflow State ───────────────────────────────
+
+    WorkflowState:
+      type: object
+      description: Real-time workflow progress for frontend state management
+      properties:
+        current_step:
+          type: string
+          description: Current workflow step identifier
+        next_step:
+          type: string
+          description: Next expected workflow step
+        allowed_actions:
+          type: array
+          items:
+            type: string
+          description: Actions the current user is allowed to perform
+        progress_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    SlaTracking:
+      type: object
+      properties:
+        sla_type:
+          type: string
+          enum: [IMMEDIATE, 15_BUSINESS_DAYS, 30_BUSINESS_DAYS]
+        started_at:
+          type: string
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        sla_status:
+          type: string
+          enum: [GREEN, AMBER, RED, COMPLETED]
+        business_remaining_days:
+          type: integer
+          nullable: true
+        within_sla:
+          type: boolean
+          nullable: true
+
+    # ─── Address Change Requests & Responses ──────────────────
+
+    InitiateAddressChangeRequest:
+      type: object
+      required:
+        - customer_id
+        - policy_number
+        - auth_method
+        - address_update_for
+        - address_type
+        - channel
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          description: "E-NFS-001: FK to customer. ERR-NFS-ANC-001 if not found."
+        policy_number:
+          type: string
+          description: "ERR-NFS-ANC-002 if not found or inactive"
+        auth_method:
+          $ref: '#/components/schemas/AuthMethod'
+        address_update_for:
+          $ref: '#/components/schemas/AddressUpdateFor'
+        address_type:
+          $ref: '#/components/schemas/AddressType'
+        channel:
+          $ref: '#/components/schemas/Channel'
+        new_address:
+          $ref: '#/components/schemas/AddressData'
+          description: "Required for auth_method=MANUAL. Optional for AADHAAR (address fetched from UIDAI)."
+        office_code:
+          type: string
+          description: "Required for PostOffice channel. FK to offices master."
+
+    InitiateAddressChangeResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+          pattern: '^NFS-ANC-\d{8}-\d{6}$'
+          description: "BR-NFS-011: Format NFS-ANC-{YYYYMMDD}-{SEQ6}. Example: NFS-ANC-20260304-000001"
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        auth_method:
+          $ref: '#/components/schemas/AuthMethod'
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        aadhaar_verification:
+          type: object
+          nullable: true
+          description: "Present only if auth_method=AADHAAR"
+          properties:
+            txn_id:
+              type: string
+              description: KYC transaction ID for OTP verification
+            mobile_masked:
+              type: string
+              description: Masked Aadhaar-linked mobile number
+            otp_valid_for_seconds:
+              type: integer
+              default: 600
+            retry_count:
+              type: integer
+            max_retries:
+              type: integer
+              default: 3
+        required_documents:
+          type: array
+          nullable: true
+          description: "Present only if auth_method=MANUAL"
+          items:
+            $ref: '#/components/schemas/RequiredDocumentInfo'
+        sla_tracking:
+          $ref: '#/components/schemas/SlaTracking'
+        created_at:
+          type: string
+          format: date-time
+
+    VerifyOtpRequest:
+      type: object
+      required:
+        - otp_code
+        - txn_id
+      properties:
+        otp_code:
+          type: string
+          pattern: '^\d{6}$'
+          description: 6-digit OTP received on Aadhaar-linked mobile
+        txn_id:
+          type: string
+          description: Transaction ID from KYC Service (returned in initiate response)
+
+    AddressChangeCompletedResponse:
+      type: object
+      description: Response after successful Aadhaar OTP verification and address update
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        status:
+          type: string
+          enum: [COMPLETED]
+        auth_method:
+          type: string
+          enum: [AADHAAR]
+        address_change:
+          type: object
+          properties:
+            old_address:
+              $ref: '#/components/schemas/AddressData'
+            new_address:
+              $ref: '#/components/schemas/AddressData'
+            address_update_for:
+              $ref: '#/components/schemas/AddressUpdateFor'
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        events_published:
+          type: array
+          items:
+            type: string
+          example: ["customer.address.updated", "nfr.request.completed"]
+          description: "INT-NFS-006 (Policy), INT-NFS-007 (Claims), INT-NFS-008 (Billing) consume customer.address.updated"
+        sla_tracking:
+          $ref: '#/components/schemas/SlaTracking'
+        acknowledgment_receipt:
+          $ref: '#/components/schemas/AcknowledgmentReceipt'
+        notifications:
+          $ref: '#/components/schemas/NotificationStatus'
+        completed_at:
+          type: string
+          format: date-time
+        processing_time_seconds:
+          type: integer
+          description: "SLA: must be < 15 seconds for Aadhaar path"
+
+    SubmitForApprovalRequest:
+      type: object
+      required:
+        - declaration
+        - uploaded_documents
+      properties:
+        declaration:
+          type: boolean
+          description: Customer confirms documents are genuine
+        uploaded_documents:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of document IDs uploaded via DM-001
+          minItems: 1
+
+    SubmitForApprovalResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        status:
+          type: string
+          enum: [PENDING_APPROVAL]
+        assigned_to:
+          type: object
+          properties:
+            office_code:
+              type: string
+            office_name:
+              type: string
+            pool:
+              type: string
+            assigned_at:
+              type: string
+              format: date-time
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        sla_tracking:
+          $ref: '#/components/schemas/SlaTracking'
+
+    ApprovalDecisionRequest:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          $ref: '#/components/schemas/ApprovalDecision'
+        remarks:
+          type: string
+          maxLength: 1000
+        rejection_reason:
+          type: string
+          minLength: 10
+          maxLength: 500
+          description: "Required if decision=REJECT (ERR-NFS-SR-005 if missing)"
+        missing_documents:
+          type: array
+          items:
+            type: string
+          description: "Required if decision=SEND_BACK"
+        verified_by:
+          type: string
+          format: uuid
+          description: CPC user performing the action
+
+    ApprovalDecisionResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        decision:
+          $ref: '#/components/schemas/ApprovalDecision'
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        address_updated:
+          type: object
+          nullable: true
+          description: Present only if decision=APPROVE
+          properties:
+            old_address:
+              $ref: '#/components/schemas/AddressData'
+            new_address:
+              $ref: '#/components/schemas/AddressData'
+        events_published:
+          type: array
+          items:
+            type: string
+        sla_tracking:
+          $ref: '#/components/schemas/SlaTracking'
+        notifications:
+          $ref: '#/components/schemas/NotificationStatus'
+
+    # ─── Name Change Requests & Responses ─────────────────────
+
+    InitiateNameChangeRequest:
+      type: object
+      required:
+        - customer_id
+        - policy_number
+        - auth_method
+        - channel
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        policy_number:
+          type: string
+        auth_method:
+          $ref: '#/components/schemas/AuthMethod'
+        channel:
+          $ref: '#/components/schemas/Channel'
+        new_name:
+          $ref: '#/components/schemas/NameData'
+          description: "Required for auth_method=MANUAL. For AADHAAR fetched from UIDAI."
+        office_code:
+          type: string
+          nullable: true
+      description: |
+        BR-NFS-010: date_of_birth MUST NOT be present in this request.
+        VR-NFS-014 rejects any request containing DOB field.
+
+    InitiateNameChangeResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+          pattern: '^NFS-ANC-\d{8}-\d{6}$'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        auth_method:
+          $ref: '#/components/schemas/AuthMethod'
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        aadhaar_verification:
+          type: object
+          nullable: true
+          properties:
+            txn_id:
+              type: string
+            mobile_masked:
+              type: string
+            otp_valid_for_seconds:
+              type: integer
+        required_documents:
+          type: array
+          nullable: true
+          description: "Present for auth_method=MANUAL. At least ONE required (BR-NFS-008)"
+          items:
+            $ref: '#/components/schemas/RequiredDocumentInfo'
+        validation_note:
+          type: string
+          nullable: true
+          example: "At least ONE legal document required (Gazette OR Newspaper OR Form)"
+        sla_tracking:
+          $ref: '#/components/schemas/SlaTracking'
+
+    NameChangeCompletedResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        status:
+          type: string
+          enum: [COMPLETED]
+        name_change:
+          type: object
+          properties:
+            old_name:
+              $ref: '#/components/schemas/NameData'
+            new_name:
+              $ref: '#/components/schemas/NameData'
+            policies_affected:
+              type: integer
+              description: "BR-NFS-009: Count of policies updated via customer.name.updated event"
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        events_published:
+          type: array
+          items:
+            type: string
+          example: ["customer.name.updated", "nfr.request.completed"]
+        acknowledgment_receipt:
+          $ref: '#/components/schemas/AcknowledgmentReceipt'
+        notifications:
+          $ref: '#/components/schemas/NotificationStatus'
+        completed_at:
+          type: string
+          format: date-time
+        processing_time_seconds:
+          type: integer
+
+    # ─── Service Request Management ───────────────────────────
+
+    WithdrawalRequest:
+      type: object
+      required:
+        - withdrawal_reason
+        - requested_by
+      properties:
+        withdrawal_reason:
+          type: string
+          minLength: 5
+          maxLength: 500
+        requested_by:
+          type: string
+          format: uuid
+          description: Customer ID or CPC user ID
+
+    WithdrawalResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        status:
+          type: string
+          enum: [WITHDRAWN, PENDING_WITHDRAWAL_APPROVAL]
+        withdrawal_type:
+          type: string
+          enum: [AUTO, MANUAL]
+          description: |
+            AUTO: no partial processing, immediate withdrawal.
+            MANUAL: partial processing detected, requires CPC approval (WF-NFS-005).
+        withdrawn_at:
+          type: string
+          format: date-time
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        events_published:
+          type: array
+          items:
+            type: string
+        audit_logged:
+          type: boolean
+
+    RequestMissingDocumentsRequest:
+      type: object
+      required:
+        - missing_documents
+        - requested_by
+      properties:
+        missing_documents:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Document types that are missing or need re-submission
+        message_to_customer:
+          type: string
+          maxLength: 500
+          description: Optional message to send to customer with the secure link
+        requested_by:
+          type: string
+          format: uuid
+          description: CPC user ID
+
+    MissingDocumentsResponse:
+      type: object
+      description: "Data entity E-NFS-005"
+      properties:
+        missing_doc_id:
+          type: string
+          format: uuid
+        secure_link:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+              description: "BR-NFS-014: Time-limited secure URL sent to customer"
+            expires_at:
+              type: string
+              format: date-time
+            valid_for_days:
+              type: integer
+              default: 7
+        link_generation_count:
+          type: integer
+          description: "BR-NFS-014: Current count. Max 3 before DOCUMENTS_EXPIRED."
+        max_attempts:
+          type: integer
+          default: 3
+        customer_notified:
+          type: boolean
+        notification_channels:
+          type: array
+          items:
+            type: string
+          example: ["SMS", "Email", "WhatsApp"]
+
+    # ─── Document Management ───────────────────────────────────
+
+    RequiredDocumentInfo:
+      type: object
+      properties:
+        doc_type:
+          type: string
+        mandatory:
+          type: boolean
+        priority:
+          type: string
+          enum: [HIGH, MEDIUM, LOW]
+        description:
+          type: string
+        examples:
+          type: array
+          items:
+            type: string
+          nullable: true
+        note:
+          type: string
+          nullable: true
+
+    DocumentUploadRequest:
+      type: object
+      required:
+        - file
+        - request_id
+        - document_type
+        - uploaded_by
+        - upload_channel
+      properties:
+        file:
+          type: string
+          format: binary
+          description: "VR-NFS-009: Max 5 MB. VR-NFS-010: PDF, JPEG, PNG only"
+        request_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+          description: "From LU-005: ADDRESS_PROOF, RENTAL_AGREEMENT, APPLICATION_FORM, GAZETTE_NOTIFICATION, NEWSPAPER_NOTIFICATION, NAME_CHANGE_FORM"
+        uploaded_by:
+          type: string
+          format: uuid
+        upload_channel:
+          type: string
+          enum: [Portal, Mobile, PostOffice, SecureLink]
+
+    DocumentUploadResponse:
+      type: object
+      description: "Data entity E-NFS-004"
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+        file_name:
+          type: string
+        file_size_bytes:
+          type: integer
+        mime_type:
+          type: string
+        verification_status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED]
+          default: PENDING
+        uploaded_at:
+          type: string
+          format: date-time
+        workflow_state:
+          type: object
+          properties:
+            current_step:
+              type: string
+            uploaded_documents:
+              type: array
+              items:
+                type: string
+            next_step:
+              type: string
+            allowed_actions:
+              type: array
+              items:
+                type: string
+
+    DocumentMetadata:
+      type: object
+      description: "Data entity E-NFS-004"
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+        file_name:
+          type: string
+        file_size_bytes:
+          type: integer
+        mime_type:
+          type: string
+          enum: [application/pdf, image/jpeg, image/png]
+        uploaded_by:
+          type: string
+          format: uuid
+        upload_channel:
+          type: string
+        verification_status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED]
+        verified_by:
+          type: string
+          format: uuid
+          nullable: true
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        rejection_reason:
+          type: string
+          nullable: true
+        uploaded_at:
+          type: string
+          format: date-time
+
+    SecureUploadRequest:
+      type: object
+      required:
+        - file
+        - document_type
+      properties:
+        file:
+          type: string
+          format: binary
+        document_type:
+          type: string
+
+    SecureUploadResponse:
+      type: object
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          description: New request status after document receipt
+        cpc_notified:
+          type: boolean
+        message:
+          type: string
+          example: "Document received. Your request is now under review."
+
+    DocumentListResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentMetadata'
+        total:
+          type: integer
+
+    # ─── Status & Tracking ────────────────────────────────────
+
+    ServiceRequestDetail:
+      type: object
+      description: "Data entity E-NFS-001 with E-NFS-002/003 details"
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+          description: "BR-NFS-011: NFS-{TYPE}-{YYYYMMDD}-{SEQ6}"
+        customer_id:
+          type: string
+          format: uuid
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        auth_method:
+          $ref: '#/components/schemas/AuthMethod'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        channel:
+          $ref: '#/components/schemas/Channel'
+        office_code:
+          type: string
+          nullable: true
+        initiated_by:
+          type: string
+          format: uuid
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+        rejection_reason:
+          type: string
+          nullable: true
+        sla_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        policy_number:
+          type: string
+          nullable: true
+        address_change_detail:
+          type: object
+          nullable: true
+          description: "E-NFS-002: Present if request_type=ADDRESS_CHANGE"
+          properties:
+            address_update_for:
+              $ref: '#/components/schemas/AddressUpdateFor'
+            address_type:
+              $ref: '#/components/schemas/AddressType'
+            old_address:
+              $ref: '#/components/schemas/AddressData'
+            new_address:
+              $ref: '#/components/schemas/AddressData'
+        name_change_detail:
+          type: object
+          nullable: true
+          description: "E-NFS-003: Present if request_type=NAME_CHANGE"
+          properties:
+            old_name:
+              $ref: '#/components/schemas/NameData'
+            new_name:
+              $ref: '#/components/schemas/NameData'
+            policies_affected:
+              type: integer
+              nullable: true
+        workflow_state:
+          $ref: '#/components/schemas/WorkflowState'
+        sla_tracking:
+          $ref: '#/components/schemas/SlaTracking'
+        documents:
+          type: array
+          nullable: true
+          description: "Present if include_documents=true"
+          items:
+            $ref: '#/components/schemas/DocumentMetadata'
+        recent_audit:
+          type: array
+          nullable: true
+          description: "Present if include_audit=true. E-NFS-006. BR-NFS-016: INSERT-only."
+          items:
+            $ref: '#/components/schemas/AuditEntry'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    RequestTimelineResponse:
+      type: object
+      description: "E-NFS-006 — immutable audit log timeline. BR-NFS-016: 10-year retention."
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEntry'
+
+    AuditEntry:
+      type: object
+      description: "E-NFS-006. BR-NFS-016: INSERT-only. No UPDATE or DELETE permitted."
+      properties:
+        audit_id:
+          type: string
+          format: uuid
+        action_type:
+          type: string
+          enum:
+            - CREATED
+            - STATUS_CHANGE
+            - DOCUMENT_UPLOAD
+            - DOCUMENT_VERIFIED
+            - ASSIGNED
+            - APPROVED
+            - REJECTED
+            - WITHDRAWN
+            - COMMENT_ADDED
+            - MISSING_DOC_REQUESTED
+            - ADDRESS_UPDATED
+            - NAME_UPDATED
+        old_value:
+          type: object
+          nullable: true
+          description: JSON snapshot of previous state
+        new_value:
+          type: object
+          nullable: true
+          description: JSON snapshot of new state
+        performed_by:
+          type: string
+          format: uuid
+        performed_at:
+          type: string
+          format: date-time
+          description: UTC timestamp
+        ip_address:
+          type: string
+          nullable: true
+        channel:
+          $ref: '#/components/schemas/Channel'
+        office_code:
+          type: string
+          nullable: true
+        remarks:
+          type: string
+          nullable: true
+
+    CustomerRequestsListResponse:
+      type: object
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        requests:
+          type: array
+          items:
+            type: object
+            properties:
+              request_id:
+                type: string
+                format: uuid
+              ticket_number:
+                type: string
+              request_type:
+                $ref: '#/components/schemas/RequestType'
+              status:
+                $ref: '#/components/schemas/RequestStatus'
+              auth_method:
+                $ref: '#/components/schemas/AuthMethod'
+              channel:
+                $ref: '#/components/schemas/Channel'
+              created_at:
+                type: string
+                format: date-time
+              sla_tracking:
+                $ref: '#/components/schemas/SlaTracking'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    # ─── CPC Operations ────────────────────────────────────────
+
+    CpcQueueResponse:
+      type: object
+      properties:
+        queue:
+          type: array
+          items:
+            type: object
+            properties:
+              request_id:
+                type: string
+                format: uuid
+              ticket_number:
+                type: string
+              customer_id:
+                type: string
+                format: uuid
+              request_type:
+                $ref: '#/components/schemas/RequestType'
+              status:
+                $ref: '#/components/schemas/RequestStatus'
+              assigned_to:
+                type: string
+                format: uuid
+                nullable: true
+              office_code:
+                type: string
+              sla_tracking:
+                $ref: '#/components/schemas/SlaTracking'
+              document_count:
+                type: integer
+              created_at:
+                type: string
+                format: date-time
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    CpcQueueStatsResponse:
+      type: object
+      properties:
+        total_pending:
+          type: integer
+        by_status:
+          type: object
+          additionalProperties:
+            type: integer
+        by_request_type:
+          type: object
+          additionalProperties:
+            type: integer
+        by_sla_status:
+          type: object
+          properties:
+            green:
+              type: integer
+            amber:
+              type: integer
+            red:
+              type: integer
+        oldest_request_days:
+          type: integer
+        office_code:
+          type: string
+          nullable: true
+
+    RejectionResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        status:
+          type: string
+          enum: [REJECTED]
+        rejection_reason:
+          type: string
+        rejected_by:
+          type: string
+          format: uuid
+        rejected_at:
+          type: string
+          format: date-time
+        events_published:
+          type: array
+          items:
+            type: string
+          example: ["nfr.request.rejected"]
+        notifications:
+          $ref: '#/components/schemas/NotificationStatus'
+
+    SlaDashboardResponse:
+      type: object
+      properties:
+        amber_requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlaAlertItem'
+        red_requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlaAlertItem'
+        summary:
+          type: object
+          properties:
+            total_amber:
+              type: integer
+            total_red:
+              type: integer
+            escalated_count:
+              type: integer
+
+    SlaAlertItem:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        ticket_number:
+          type: string
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        office_code:
+          type: string
+        sla_deadline:
+          type: string
+          format: date-time
+        days_overdue:
+          type: integer
+          nullable: true
+        sla_status:
+          type: string
+          enum: [AMBER, RED]
+
+    # ─── Lookup Responses ──────────────────────────────────────
+
+    StatesListResponse:
+      type: object
+      properties:
+        states:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              name:
+                type: string
+              pincode_prefixes:
+                type: array
+                items:
+                  type: string
+                description: "BR-NFS-006: Valid pincode prefixes for this state"
+
+    PincodeValidationResponse:
+      type: object
+      properties:
+        pincode:
+          type: string
+        valid:
+          type: boolean
+        city:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        state:
+          type: string
+          nullable: true
+        state_matches:
+          type: boolean
+          nullable: true
+          description: Present only if state was provided in query
+
+    EnumListResponse:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+              label:
+                type: string
+              description:
+                type: string
+                nullable: true
+              metadata:
+                type: object
+                additionalProperties: true
+                nullable: true
+
+    DocumentTypesResponse:
+      type: object
+      properties:
+        request_type:
+          $ref: '#/components/schemas/RequestType'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequiredDocumentInfo'
+        minimum_required:
+          type: integer
+          description: "BR-NFS-002: Address=1 (ADDRESS_PROOF mandatory). BR-NFS-008: Name=1 (any legal doc)"
+        validation_note:
+          type: string
+
+    OfficeListResponse:
+      type: object
+      properties:
+        offices:
+          type: array
+          items:
+            type: object
+            properties:
+              office_code:
+                type: string
+              office_name:
+                type: string
+              type:
+                type: string
+                enum: [CPC, POST_OFFICE]
+              circle_code:
+                type: string
+              address:
+                type: string
+
+    # ─── Validation Responses ──────────────────────────────────
+
+    AddressValidationRequest:
+      allOf:
+        - $ref: '#/components/schemas/AddressData'
+
+    NameValidationRequest:
+      type: object
+      properties:
+        salutation:
+          $ref: '#/components/schemas/Salutation'
+        first_name:
+          type: string
+        middle_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+      description: "DO NOT include date_of_birth — VR-NFS-014 will reject it (BR-NFS-010)"
+
+    ValidationResultResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        field_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              error_code:
+                type: string
+              message:
+                type: string
+
+    DuplicateCheckResponse:
+      type: object
+      properties:
+        has_pending:
+          type: boolean
+        can_proceed:
+          type: boolean
+        existing_ticket:
+          type: string
+          nullable: true
+        existing_request_id:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        error_code:
+          type: string
+          nullable: true
+          enum: [ERR-NFS-SR-001]
+
+    # ─── Shared / Utility ─────────────────────────────────────
+
+    AcknowledgmentReceipt:
+      type: object
+      properties:
+        receipt_id:
+          type: string
+        download_url:
+          type: string
+          format: uri
+        valid_for_days:
+          type: integer
+          default: 30
+
+    NotificationStatus:
+      type: object
+      description: "FR-NFS-012, INT-NFS-005 — Notification Service (Event-driven via Kafka)"
+      properties:
+        sms_sent:
+          type: boolean
+        email_sent:
+          type: boolean
+        whatsapp_sent:
+          type: boolean
+          nullable: true
+        channels:
+          type: array
+          items:
+            type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_records:
+          type: integer
+        total_pages:
+          type: integer
+
+    OtpErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: [ERR-NFS-ANC-006, ERR-NFS-ANC-007]
+        message:
+          type: string
+        retry_count:
+          type: integer
+          nullable: true
+        max_retries:
+          type: integer
+          nullable: true
+          default: 3
+        can_retry:
+          type: boolean
+        fallback_url:
+          type: string
+          nullable: true
+          description: "Present for ERR-NFS-ANC-008 — URL to manual upload path"
+
+    ErrorResponse:
+      type: object
+      description: |
+        Standard error response. Error codes reference:
+        
+        **Address/Name Change Errors (ERR-NFS-ANC-xxx)**:
+        - ERR-NFS-ANC-001 (404): Customer not found
+        - ERR-NFS-ANC-002 (404): Policy not found or inactive
+        - ERR-NFS-ANC-003 (400): Pincode-state mismatch — VR-NFS-001, BR-NFS-006
+        - ERR-NFS-ANC-004 (400): Missing required documents
+        - ERR-NFS-ANC-005 (400): Aadhaar auto-approval not available for this channel — BR-NFS-015
+        - ERR-NFS-ANC-006 (422): Aadhaar OTP verification failed (retryable, max 3)
+        - ERR-NFS-ANC-007 (422): Aadhaar OTP expired (10 min)
+        - ERR-NFS-ANC-008 (429): OTP retry limit exceeded — switch to manual
+        - ERR-NFS-ANC-009 (400): Name contains invalid characters — VR-NFS-006/007
+        - ERR-NFS-ANC-010 (403): DOB modification attempted — BR-NFS-010, VR-NFS-014
+        - ERR-NFS-ANC-011 (400): Address role not in customer boundary — BR-NFS-005
+        - ERR-NFS-ANC-012 (503): KYC Service unavailable — INT-NFS-003
+        - ERR-NFS-ANC-013 (500): Customer Core/Profile update failed — INT-NFS-001/002
+
+        **Service Request Errors (ERR-NFS-SR-xxx)**:
+        - ERR-NFS-SR-001 (409): Duplicate pending request — VR-NFS-015
+        - ERR-NFS-SR-002 (409): Cannot withdraw — status not eligible — BR-NFS-013
+        - ERR-NFS-SR-003 (404): Service request not found
+        - ERR-NFS-SR-004 (403): Not authorized — wrong CPC user / customer
+        - ERR-NFS-SR-005 (422): Missing rejection reason — required for REJECT decision
+        - ERR-NFS-SR-006 (410): Secure upload link expired — BR-NFS-014
+        - ERR-NFS-SR-007 (429): Max missing doc link attempts (3) reached — BR-NFS-014
+        - ERR-NFS-SR-008 (400): File too large — VR-NFS-009 (max 5 MB)
+        - ERR-NFS-SR-009 (400): Unsupported file type — VR-NFS-010 (PDF/JPEG/PNG only)
+        - ERR-NFS-SR-010 (503): Document Management Service unavailable — INT-NFS-004
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: "Error code, e.g., ERR-NFS-ANC-003"
+        message:
+          type: string
+          description: Human-readable error message
+        retryable:
+          type: boolean
+          description: Whether the client can retry the request
+        field:
+          type: string
+          nullable: true
+          description: Field causing the error (for validation errors)
+        fallback_url:
+          type: string
+          nullable: true
+          description: Alternative action URL (e.g., for OTP retry exceeded)
+        existing_ticket:
+          type: string
+          nullable: true
+          description: "For ERR-NFS-SR-001: existing duplicate ticket number"
+
+# ────────────────────────────────────────────────────────────────
+# END OF SPECIFICATION
+# Total APIs: 37
+# Spec Version: 1.0.0
+# Last Updated: March 2026
+# ────────────────────────────────────────────────────────────────
