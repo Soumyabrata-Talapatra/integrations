@@ -103,7 +103,7 @@ func (h *EmailChangeHandler) InitiateEmailChange(
 		Notes:         strPtr("Email change request created"),
 	}
 
-	if err := h.srRepo.CreateServiceRequest(sctx.Ctx, &sr, &audit); err != nil {
+	if err := h.srRepo.Create(sctx.Ctx, &sr, &audit); err != nil {
 		log.Error(sctx.Ctx, "InitiateEmailChange: failed to create service request: %v", err)
 		return nil, err
 	}

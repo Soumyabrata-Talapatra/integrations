@@ -103,7 +103,7 @@ func (h *MobileChangeHandler) InitiateMobileChange(
 		Notes:         strPtr("Mobile change request created"),
 	}
 
-	if err := h.srRepo.CreateServiceRequest(sctx.Ctx, &sr, &audit); err != nil {
+	if err := h.srRepo.Create(sctx.Ctx, &sr, &audit); err != nil {
 		log.Error(sctx.Ctx, "InitiateMobileChange: failed to create service request: %v", err)
 		return nil, err
 	}

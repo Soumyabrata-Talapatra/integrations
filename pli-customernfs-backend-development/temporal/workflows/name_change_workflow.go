@@ -176,7 +176,7 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 	if err := workflow.ExecuteActivity(actCtx, act.UpdateNameData,
 		activities.UpdateAddressDataInput{
 			RequestID: input.RequestID,
-			UpdatedBy: input.CustomerID,
+			UpdatedBy: input.InitiatedBy,
 		},
 	).Get(ctx, nil); err != nil {
 		return err

@@ -243,6 +243,82 @@ func (r *ServiceRequestRepository) CreateWithAddressDetail(
 }
 
 // ---------------------------------------------------------------------------
+// Create creates service_request + audit_log in a single batched transaction.
+// Used for mobile/email change requests where detail is added later in workflow.
+//
+// BATCH: 2 INSERTs in one pgx TX batch.
+// FR-NFS-006, FR-NFS-007, BR-NFS-016
+// ---------------------------------------------------------------------------
+func (r *ServiceRequestRepository) Create(
+	ctx context.Context,
+	sr *domain.ServiceRequest,
+	audit *domain.AuditLog,
+) error {
+	timeout := r.cfg.GetDuration("db.QueryTimeoutMed")
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	return r.db.WithTx(ctx, func(tx pgx.Tx) error {
+		batch := &pgx.Batch{}
+
+		// 1. INSERT service_request
+		srSQL, srArgs, err := dblib.Psql.Insert("nfs.service_request").
+			Columns(
+				"request_id", "ticket_number", "customer_id", "policy_number",
+				"request_type", "auth_method", "status", "channel", "office_code",
+				"initiated_by", "sla_deadline", "created_by", "metadata",
+			).
+			Values(
+				sr.RequestID, sr.TicketNumber, sr.CustomerID, sr.PolicyNumber,
+				sr.RequestType, sr.AuthMethod, sr.Status, sr.Channel, sr.OfficeCode,
+				sr.InitiatedBy, sr.SLADeadline, sr.CreatedBy, nil,
+			).
+			Suffix("RETURNING request_id, ticket_number, status, created_at, version").
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("build service_request insert: %w", err)
+		}
+		batch.Queue(srSQL, srArgs...)
+
+		// 2. INSERT audit_log (BR-NFS-016 — every operation must be audited)
+		auditSQL, auditArgs, err := dblib.Psql.Insert("nfs.audit_log").
+			Columns(
+				"audit_id", "request_id", "action_type", "new_value",
+				"performed_by", "channel", "office_code",
+			).
+			Values(
+				audit.AuditID, audit.RequestID, audit.ActionType, audit.NewValueJSON,
+				audit.PerformedByID, audit.Channel, audit.OfficeCode,
+			).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("build audit_log insert: %w", err)
+		}
+		batch.Queue(auditSQL, auditArgs...)
+
+		// Send both inserts in one network round-trip
+		br := tx.SendBatch(ctx, batch)
+
+		// Result 1: service_request
+		if err := br.QueryRow().Scan(
+			&sr.RequestID, &sr.TicketNumber, &sr.Status, &sr.CreatedAt, &sr.Version,
+		); err != nil {
+			br.Close()
+			return fmt.Errorf("scan service_request result: %w", err)
+		}
+
+		// Result 2: audit_log (exec-only, check RowsAffected)
+		if _, err := br.Exec(); err != nil {
+			br.Close()
+			return fmt.Errorf("exec audit_log insert: %w", err)
+		}
+		br.Close()
+
+		return nil
+	})
+}
+
+// ---------------------------------------------------------------------------
 // CreateWithNameDetail creates service_request + name_change_detail +
 // audit_log in a single batched transaction.
 //

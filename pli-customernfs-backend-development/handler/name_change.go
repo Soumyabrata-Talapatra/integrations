@@ -236,10 +236,6 @@ func (h *NameChangeHandler) SubmitNameChange(
 	sctx *serverRoute.Context,
 	req SubmitNameChangeRequest,
 ) (*resp.NameSubmitResponse, error) {
-	if err := req.Validate(); err != nil {
-		log.Error(sctx.Ctx, "SubmitNameChange: validation failed: %v", err)
-		return nil, err
-	}
 
 	sr, err := h.srRepo.GetByID(sctx.Ctx, req.RequestID)
 	if err != nil {
