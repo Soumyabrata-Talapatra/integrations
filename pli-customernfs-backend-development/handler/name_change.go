@@ -10,6 +10,7 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -97,7 +98,7 @@ func (h *NameChangeHandler) InitiateNameChange(
 		return nil, err
 	}
 	if isDuplicate {
-		log.Error(sctx.Ctx, "InitiateNameChange: duplicate pending request %s for customer %s", existingTicket, req.CustomerID)
+		log.Error(sctx.Ctx, "InitiateNameChange: duplicate pending request %s for customer %d", existingTicket, req.CustomerID)
 		return nil, &apierrors.AppError{Code: 409, Message: fmt.Sprintf("pending name change request exists: %s. Complete or withdraw it first", existingTicket)}
 	}
 
@@ -112,18 +113,19 @@ func (h *NameChangeHandler) InitiateNameChange(
 
 	sr, nameDetail := req.ToDomain(ticketNumber, domain.SLADeadline{})
 	sr.RequestID = requestID
-	sr.InitiatedBy = req.CustomerID
-	sr.CreatedBy = req.CustomerID
+	customerIDStr := strconv.FormatInt(req.CustomerID, 10)
+	sr.InitiatedBy = customerIDStr
+	sr.CreatedBy = customerIDStr
 	nameDetail.RequestID = requestID
 	nameDetail.DetailID = uuid.New().String()
-	nameDetail.CreatedBy = req.CustomerID
+	nameDetail.CreatedBy = customerIDStr
 
 	audit := domain.AuditLog{
 		AuditID:       uuid.New().String(),
 		RequestID:     sr.RequestID,
 		ActionType:    "CREATED",
 		NewValueJSON:  fmt.Sprintf(`{"ticket_number":"%s","auth_method":"%s","channel":"%s"}`, ticketNumber, req.AuthMethod, req.Channel),
-		PerformedByID: req.CustomerID,
+		PerformedByID: customerIDStr,
 		IPAddress:     nil,
 		Notes:         strPtr("Name change request initiated"),
 	}
@@ -146,7 +148,7 @@ func (h *NameChangeHandler) InitiateNameChange(
 		AuthMethod:   req.AuthMethod,
 		Channel:      req.Channel,
 		OfficeCode:   strDeref(req.OfficeCode),
-		InitiatedBy:  req.CustomerID,
+		InitiatedBy:  customerIDStr,
 		SLADays:      slaDays,
 	}
 

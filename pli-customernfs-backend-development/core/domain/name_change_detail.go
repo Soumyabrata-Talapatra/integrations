@@ -61,7 +61,7 @@ type NameChangeDetail struct {
 // See: repo/postgres/name_change.go CreateNameVersion()
 type NameVersionHistory struct {
 	VersionID     string     `json:"version_id" db:"version_id"`
-	CustomerID    string     `json:"customer_id" db:"customer_id"`
+	CustomerID    int64      `json:"customer_id" db:"customer_id"`
 	RequestID     *string    `json:"request_id,omitempty" db:"request_id"`
 	Salutation    *string    `json:"salutation,omitempty" db:"salutation"`
 	FirstName     string     `json:"first_name" db:"first_name"`

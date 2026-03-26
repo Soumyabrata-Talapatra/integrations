@@ -286,7 +286,7 @@ func (h *StatusHandler) ListCustomerRequests(
 	// BATCH: ListByCustomerID — 2-query batch: count + rows.
 	requests, total, err := h.srRepo.ListByCustomerID(sctx.Ctx, req.CustomerID, page, pageSize)
 	if err != nil {
-		log.Error(sctx.Ctx, "ListCustomerRequests: failed for customer %s: %v", req.CustomerID, err)
+		log.Error(sctx.Ctx, "ListCustomerRequests: failed for customer %d: %v", req.CustomerID, err)
 		return nil, err
 	}
 

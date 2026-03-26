@@ -74,7 +74,7 @@ type AddressChangeDetail struct {
 // See: repo/postgres/address_change.go CreateAddressVersion()
 type AddressVersionHistory struct {
 	VersionID     string     `json:"version_id" db:"version_id"`
-	CustomerID    string     `json:"customer_id" db:"customer_id"`
+	CustomerID    int64      `json:"customer_id" db:"customer_id"`
 	RequestID     *string    `json:"request_id,omitempty" db:"request_id"`
 	AddressType   string     `json:"address_type" db:"address_type"`
 	AddressLine1  string     `json:"address_line1" db:"address_line1"`

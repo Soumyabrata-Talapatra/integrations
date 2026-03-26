@@ -36,7 +36,7 @@ type AuditTrailItem struct {
 type RequestDetailData struct {
 	RequestID    string  `json:"request_id"`
 	TicketNumber string  `json:"ticket_number"`
-	CustomerID   string  `json:"customer_id"`
+	CustomerID   int64   `json:"customer_id"`
 	PolicyNumber *string `json:"policy_number,omitempty"`
 	RequestType  string  `json:"request_type"`
 	Status       string  `json:"status"`
@@ -131,7 +131,7 @@ type CustomerRequestSummary struct {
 // ListCustomerRequestsData is the payload for ST-004.
 // BATCH: count + rows in single round-trip.
 type ListCustomerRequestsData struct {
-	CustomerID string                   `json:"customer_id"`
+	CustomerID int64                    `json:"customer_id"`
 	Total      int                      `json:"total"`
 	Page       int                      `json:"page"`
 	PageSize   int                      `json:"page_size"`
@@ -145,7 +145,7 @@ type ListCustomerRequestsResponse struct {
 }
 
 // NewListCustomerRequestsResponse constructs the ST-004 response.
-func NewListCustomerRequestsResponse(customerID string, total, page, pageSize int, requests []CustomerRequestSummary) *ListCustomerRequestsResponse {
+func NewListCustomerRequestsResponse(customerID int64, total, page, pageSize int, requests []CustomerRequestSummary) *ListCustomerRequestsResponse {
 	return &ListCustomerRequestsResponse{
 		StatusCodeAndMessage: port.ListSuccess,
 		Data: ListCustomerRequestsData{

@@ -16,7 +16,7 @@ import (
 type CPCQueueItem struct {
 	RequestID    string  `json:"request_id"`
 	TicketNumber string  `json:"ticket_number"`
-	CustomerID   string  `json:"customer_id"`
+	CustomerID   int64   `json:"customer_id"`
 	RequestType  string  `json:"request_type"`
 	Status       string  `json:"status"`
 	AuthMethod   string  `json:"auth_method"`

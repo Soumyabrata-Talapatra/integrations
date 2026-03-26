@@ -19,7 +19,10 @@
 //   - "withdrawal_approved" → used by WF-NFS-005
 package activities
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // ===========================================================================
 // Common Types
@@ -77,7 +80,7 @@ type CreateAuditLogResult struct {
 type GenerateAckReceiptInput struct {
 	RequestID    string `json:"request_id"`
 	TicketNumber string `json:"ticket_number"`
-	CustomerID   string `json:"customer_id"`
+	CustomerID   int64  `json:"customer_id"`
 	RequestType  string `json:"request_type"`
 }
 
@@ -93,7 +96,7 @@ type GenerateAckReceiptResult struct {
 // ValidateAddressRequestInput validates business rules before creating the
 // service request. BR-NFS-001..006, VR-NFS-001..005, VR-NFS-013, VR-NFS-015.
 type ValidateAddressRequestInput struct {
-	CustomerID       string  `json:"customer_id"`
+	CustomerID       int64   `json:"customer_id"`
 	PolicyNumber     *string `json:"policy_number,omitempty"`
 	AuthMethod       string  `json:"auth_method"`
 	AddressUpdateFor string  `json:"address_update_for"`
@@ -121,7 +124,7 @@ type ValidateAddressRequestResult struct {
 // CreateAddressServiceRequestInput creates the service_request + address_change_detail
 // + audit_log in a single batched TX. FR-NFS-001, BR-NFS-011, BR-NFS-016.
 type CreateAddressServiceRequestInput struct {
-	CustomerID       string     `json:"customer_id"`
+	CustomerID       int64      `json:"customer_id"`
 	PolicyNumber     *string    `json:"policy_number,omitempty"`
 	AuthMethod       string     `json:"auth_method"`
 	Channel          string     `json:"channel"`
@@ -155,7 +158,7 @@ type CreateAddressServiceRequestResult struct {
 // WF-NFS-001, WF-NFS-003. Only allowed via Portal and Mobile (VR-NFS-016).
 type AadhaarOTPRequestInput struct {
 	RequestID  string `json:"request_id"`
-	CustomerID string `json:"customer_id"`
+	CustomerID int64  `json:"customer_id"`
 	Channel    string `json:"channel"` // Must be Portal or Mobile
 }
 
@@ -170,7 +173,7 @@ type AadhaarOTPVerifyInput struct {
 	RequestID      string `json:"request_id"`
 	OTPReferenceID string `json:"otp_reference_id"`
 	OTPSubmitted   string `json:"otp_submitted"`
-	CustomerID     string `json:"customer_id"`
+	CustomerID     int64  `json:"customer_id"`
 }
 
 type AadhaarOTPVerifyResult struct {
@@ -184,7 +187,7 @@ type AadhaarOTPVerifyResult struct {
 // BR-NFS-001, BR-NFS-002
 type UpdateAddressDataInput struct {
 	RequestID   string `json:"request_id"`
-	CustomerID  string `json:"customer_id"`
+	CustomerID  int64  `json:"customer_id"`
 	AddressType string `json:"address_type"`
 	UpdatedBy   string `json:"updated_by"`
 	// If partial update succeeds, partial_processing_flag is set TRUE
@@ -228,7 +231,7 @@ type EscalateResult struct {
 // ValidateNameRequestInput validates name change request fields.
 // BR-NFS-007..010, VR-NFS-006..008, VR-NFS-014, VR-NFS-015.
 type ValidateNameRequestInput struct {
-	CustomerID   string  `json:"customer_id"`
+	CustomerID   int64   `json:"customer_id"`
 	PolicyNumber *string `json:"policy_number,omitempty"`
 	AuthMethod   string  `json:"auth_method"`
 	// New name
@@ -249,7 +252,7 @@ type ValidateNameRequestResult struct {
 // CreateNameServiceRequestInput creates service_request + name_change_detail + audit_log.
 // FR-NFS-007, BR-NFS-011, BR-NFS-016.
 type CreateNameServiceRequestInput struct {
-	CustomerID    string     `json:"customer_id"`
+	CustomerID    int64      `json:"customer_id"`
 	PolicyNumber  *string    `json:"policy_number,omitempty"`
 	AuthMethod    string     `json:"auth_method"`
 	Channel       string     `json:"channel"`
@@ -277,7 +280,7 @@ type CreateNameServiceRequestResult struct {
 // BR-NFS-007, BR-NFS-008, BR-NFS-009
 type UpdateNameDataInput struct {
 	RequestID  string `json:"request_id"`
-	CustomerID string `json:"customer_id"`
+	CustomerID int64  `json:"customer_id"`
 	UpdatedBy  string `json:"updated_by"`
 	// Cross-policy name update count returned from Policy Admin Service
 }
@@ -332,4 +335,25 @@ type DocumentsSubmittedPayload struct {
 	RequestID         string   `json:"request_id"`
 	UploadedDocuments []string `json:"uploaded_documents"`
 	SubmittedBy       string   `json:"submitted_by"`
+}
+
+// ===========================================================================
+// Policy Management Notification Types
+// ===========================================================================
+
+// NotifyPMInput is the input for the NotifyPolicyManagement activity.
+// Called at each terminal point (COMPLETED/REJECTED) in NFS workflows
+// to signal affected PolicyLifecycleWorkflows in Policy Management.
+type NotifyPMInput struct {
+	RequestID     string          `json:"request_id"`
+	CustomerID    int64           `json:"customer_id"`
+	RequestType   string          `json:"request_type"`    // ADDRESS_CHANGE, NAME_CHANGE, MOBILE_CHANGE, EMAIL_CHANGE
+	Outcome       string          `json:"outcome"`         // APPROVED, REJECTED
+	ChangePayload json.RawMessage `json:"change_payload"`
+}
+
+// NotifyPMResult is the result of the NotifyPolicyManagement activity.
+type NotifyPMResult struct {
+	PoliciesNotified int  `json:"policies_notified"`
+	Success          bool `json:"success"`
 }

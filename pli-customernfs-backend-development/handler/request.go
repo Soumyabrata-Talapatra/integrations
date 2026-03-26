@@ -19,9 +19,7 @@ import (
 type InitiateAddressChangeRequest struct {
 	// CustomerID is the unique identifier of the customer initiating the address change.
 	// VR-NFS-015: used for duplicate check.
-	// CustomerID string `json:"customer_id" validate:"required,min=1,max=50"`
-	// ✅ Fix InitiateAddressChangeRequest
-	CustomerID string `json:"customer_id" validate:"required,uuid"`
+	CustomerID int64 `json:"customer_id" validate:"required,gt=0"`
 	// PolicyNumber optionally restricts the address change to one policy.
 	PolicyNumber *string `json:"policy_number,omitempty" validate:"omitempty,min=1,max=30"`
 
@@ -180,7 +178,7 @@ type NewNamePayload struct {
 // BR-NFS-015: AADHAAR only from Portal and Mobile channels.
 // WF-NFS-003 (AADHAAR) / WF-NFS-004 (MANUAL)
 type InitiateNameChangeRequest struct {
-	CustomerID   string          `json:"customer_id" validate:"required,uuid"`
+	CustomerID   int64           `json:"customer_id" validate:"required,gt=0"`
 	PolicyNumber *string         `json:"policy_number,omitempty"`
 	AuthMethod   string          `json:"auth_method" validate:"required,oneof=AADHAAR MANUAL"`
 	NewName      *NewNamePayload `json:"new_name,omitempty"` // required for MANUAL; ignored for AADHAAR
@@ -462,7 +460,7 @@ type ValidateNameFieldsRequest struct {
 // DuplicateCheckRequest checks for a pending active request.
 // VR-NFS-015: only one active request of a given type per customer.
 type DuplicateCheckRequest struct {
-	CustomerID  string `uri:"customer_id" validate:"required,uuid"`
+	CustomerID  int64  `uri:"customer_id" validate:"required,gt=0"`
 	RequestType string `uri:"request_type" validate:"required,oneof=ADDRESS_CHANGE NAME_CHANGE"`
 }
 
@@ -495,7 +493,7 @@ type GetReceiptRequest struct {
 // ListCustomerRequestsRequest returns paginated list of requests for a customer.
 // BATCH: 2-query BATCH — count + paginated rows.
 type ListCustomerRequestsRequest struct {
-	CustomerID  string  `uri:"customer_id" validate:"required,uuid"`
+	CustomerID  int64   `uri:"customer_id" validate:"required,gt=0"`
 	RequestType *string `form:"request_type"` // ADDRESS_CHANGE | NAME_CHANGE
 	Status      *string `form:"status"`
 	Page        *int    `form:"page"`
@@ -505,4 +503,42 @@ type ListCustomerRequestsRequest struct {
 // GetRequestDocumentsRequest returns documents for a specific request.
 type GetRequestDocumentsRequest struct {
 	RequestID string `uri:"request_id" validate:"required,uuid"`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mobile Change Request DTOs
+// ─────────────────────────────────────────────────────────────────────────────
+
+// InitiateMobileChangeRequest is the request payload for mobile change initiation.
+// WF-NFS-006: OTP-based mobile number change.
+type InitiateMobileChangeRequest struct {
+	CustomerID      int64  `json:"customer_id" validate:"required,gt=0"`
+	NewMobileNumber string `json:"new_mobile_number" validate:"required,len=10,numeric"`
+	Channel         string `json:"channel" validate:"required,oneof=Portal Mobile PostOffice CallCenter AgentPortal"`
+}
+
+// VerifyMobileOTPRequest is the request payload for mobile change OTP verification.
+type VerifyMobileOTPRequest struct {
+	RequestID string `uri:"request_id" validate:"required"`
+	OTPCode   string `json:"otp_code" validate:"required,len=6,numeric"`
+	TxnID     string `json:"txn_id" validate:"required"`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Email Change Request DTOs
+// ─────────────────────────────────────────────────────────────────────────────
+
+// InitiateEmailChangeRequest is the request payload for email change initiation.
+// WF-NFS-007: OTP-based email change.
+type InitiateEmailChangeRequest struct {
+	CustomerID int64  `json:"customer_id" validate:"required,gt=0"`
+	NewEmail   string `json:"new_email" validate:"required,email,max=255"`
+	Channel    string `json:"channel" validate:"required,oneof=Portal Mobile PostOffice CallCenter AgentPortal"`
+}
+
+// VerifyEmailOTPRequest is the request payload for email change OTP verification.
+type VerifyEmailOTPRequest struct {
+	RequestID string `uri:"request_id" validate:"required"`
+	OTPCode   string `json:"otp_code" validate:"required,len=6,numeric"`
+	TxnID     string `json:"txn_id" validate:"required"`
 }

@@ -199,7 +199,7 @@ func (r *AddressChangeRepository) UpdateAadhaarTxnID(ctx context.Context, reques
 // ---------------------------------------------------------------------------
 func (r *AddressChangeRepository) CreateAddressVersion(
 	ctx context.Context,
-	customerID string,
+	customerID int64,
 	addressType string,
 	newVersion *domain.AddressVersionHistory,
 ) error {
@@ -258,7 +258,7 @@ func (r *AddressChangeRepository) CreateAddressVersion(
 // ---------------------------------------------------------------------------
 func (r *AddressChangeRepository) GetActiveVersion(
 	ctx context.Context,
-	customerID, addressType string,
+	customerID int64, addressType string,
 ) (*domain.AddressVersionHistory, error) {
 	timeout := r.cfg.GetDuration("db.QueryTimeoutLow")
 	ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -293,7 +293,7 @@ func (r *AddressChangeRepository) GetActiveVersion(
 // ---------------------------------------------------------------------------
 func (r *AddressChangeRepository) ListVersionHistory(
 	ctx context.Context,
-	customerID, addressType string,
+	customerID int64, addressType string,
 ) ([]domain.AddressVersionHistory, error) {
 	timeout := r.cfg.GetDuration("db.QueryTimeoutLow")
 	ctx, cancel := context.WithTimeout(ctx, timeout)

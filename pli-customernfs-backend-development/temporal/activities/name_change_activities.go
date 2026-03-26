@@ -91,7 +91,7 @@ func (a *NameChangeActivities) StoreWorkflowStateForName(ctx context.Context, in
 // BR-NFS-015: AADHAAR only from Portal and Mobile channels.
 func (a *NameChangeActivities) ValidateNameRequest(ctx context.Context, input ValidateNameRequestInput) (*ValidateNameRequestResult, error) {
 	logger := activity.GetLogger(ctx)
-	log.Info(ctx, "ValidateNameRequest: validating request for customer %s", input.CustomerID)
+	log.Info(ctx, "ValidateNameRequest: validating request for customer %d", input.CustomerID)
 
 	// VR-NFS-008: Allowed salutations.
 	allowedSalutations := map[string]bool{
@@ -227,7 +227,7 @@ func (a *NameChangeActivities) CreateNameServiceRequest(ctx context.Context, inp
 // STUB — calls KYC Service (INT-NFS-003).
 // FR-NFS-004: Aadhaar-based name change.
 func (a *NameChangeActivities) RequestNameOTP(ctx context.Context, input AadhaarOTPRequestInput) (*AadhaarOTPRequestResult, error) {
-	log.Info(ctx, "RequestNameOTP [STUB]: dispatching Aadhaar OTP for customer %s", input.CustomerID)
+	log.Info(ctx, "RequestNameOTP [STUB]: dispatching Aadhaar OTP for customer %d", input.CustomerID)
 	// TODO: call KYC Service: POST /kyc/aadhaar/otp { customer_id, request_id }
 	return &AadhaarOTPRequestResult{
 		OTPReferenceID: "stub-txn-" + input.RequestID,
@@ -275,7 +275,7 @@ func (a *NameChangeActivities) UpdateNameData(ctx context.Context, input UpdateA
 	}
 
 	// TODO: call Customer Core Service to update the canonical customer profile.
-	log.Info(ctx, "UpdateNameData: STUB calling Customer Core Service for customerID=%s", sr.CustomerID)
+	log.Info(ctx, "UpdateNameData: STUB calling Customer Core Service for customerID=%d", sr.CustomerID)
 
 	// Create a new name version history entry (deactivates old + inserts new in one TX batch).
 	// // BR-NFS-009: the version entry is the source of truth for cross-policy propagation.

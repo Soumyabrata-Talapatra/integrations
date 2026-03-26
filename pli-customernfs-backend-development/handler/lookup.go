@@ -362,7 +362,7 @@ func (h *LookupHandler) DuplicateCheck(
 ) (*resp.DuplicateCheckResponse, error) {
 	isDuplicate, existingTicket, err := h.srRepo.CheckDuplicateRequest(sctx.Ctx, req.CustomerID, req.RequestType)
 	if err != nil {
-		log.Error(sctx.Ctx, "DuplicateCheck: check failed for customer %s type %s: %v", req.CustomerID, req.RequestType, err)
+		log.Error(sctx.Ctx, "DuplicateCheck: check failed for customer %d type %s: %v", req.CustomerID, req.RequestType, err)
 		return nil, err
 	}
 

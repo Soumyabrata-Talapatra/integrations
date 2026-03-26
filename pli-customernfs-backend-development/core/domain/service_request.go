@@ -26,7 +26,7 @@ import "time"
 type ServiceRequest struct {
 	RequestID                string     `json:"request_id" db:"request_id"`
 	TicketNumber             string     `json:"ticket_number" db:"ticket_number"`
-	CustomerID               string     `json:"customer_id" db:"customer_id"`
+	CustomerID               int64      `json:"customer_id" db:"customer_id"`
 	PolicyNumber             *string    `json:"policy_number,omitempty" db:"policy_number"`
 	RequestType              string     `json:"request_type" db:"request_type"`
 	AuthMethod               string     `json:"auth_method" db:"auth_method"`

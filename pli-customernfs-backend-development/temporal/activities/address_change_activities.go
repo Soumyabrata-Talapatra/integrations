@@ -254,7 +254,7 @@ func (a *AddressChangeActivities) RequestAadhaarOTP(ctx context.Context, input A
 	// TODO: Call UIDAI Aadhaar OTP service (external integration)
 	// This is a STUB — replace with actual UIDAI client call
 	_ = allowedChannels
-	log.Info(ctx, "RequestAadhaarOTP: STUB for requestID=%s customerID=%s channel=%s",
+	log.Info(ctx, "RequestAadhaarOTP: STUB for requestID=%s customerID=%d channel=%s",
 		input.RequestID, input.CustomerID, input.Channel)
 
 	return &AadhaarOTPRequestResult{
@@ -300,11 +300,11 @@ func (a *AddressChangeActivities) UpdateAddressData(ctx context.Context, input U
 	if err != nil {
 		return nil, fmt.Errorf("fetch address details: %w", err)
 	}
-	log.Info(ctx, "UpdateAddressData: sr.CustomerID=%q sr.RequestID=%q addrDetail.AddressType=%q", sr.CustomerID, sr.RequestID, addrDetail.AddressType)
+	log.Info(ctx, "UpdateAddressData: sr.CustomerID=%d sr.RequestID=%q addrDetail.AddressType=%q", sr.CustomerID, sr.RequestID, addrDetail.AddressType)
 
 	// TODO: Call Customer Core Service to update address in customer profile
 	// This is the external integration point.
-	log.Info(ctx, "UpdateAddressData: STUB calling Customer Core Service for customerID=%s", sr.CustomerID)
+	log.Info(ctx, "UpdateAddressData: STUB calling Customer Core Service for customerID=%d", sr.CustomerID)
 
 	// Record the new address version in address_version_history
 	// BATCH: deactivate old version + insert new version in one TX batch

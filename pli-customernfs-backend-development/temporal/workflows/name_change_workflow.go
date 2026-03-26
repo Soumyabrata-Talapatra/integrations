@@ -42,7 +42,7 @@ import (
 type NameChangeWorkflowInput struct {
 	RequestID    string  `json:"request_id"`
 	TicketNumber string  `json:"ticket_number"`
-	CustomerID   string  `json:"customer_id"`
+	CustomerID   int64   `json:"customer_id"`
 	PolicyNumber *string `json:"policy_number,omitempty"`
 	AuthMethod   string  `json:"auth_method"` // AADHAAR or MANUAL
 	Channel      string  `json:"channel"`
@@ -55,7 +55,7 @@ type NameChangeWorkflowInput struct {
 type WithdrawalWorkflowInput struct {
 	RequestID             string `json:"request_id"`
 	TicketNumber          string `json:"ticket_number"`
-	CustomerID            string `json:"customer_id"`
+	CustomerID            int64  `json:"customer_id"`
 	WithdrawalReason      string `json:"withdrawal_reason"`
 	RequestedBy           string `json:"requested_by"`
 	PartialProcessingFlag bool   `json:"partial_processing_flag"`
@@ -193,6 +193,15 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 	}
 
 	logger.Info("WF-NFS-003 AadhaarNameChangeWorkflow COMPLETED", "requestID", input.RequestID)
+
+	// Notify Policy Management of completed name change.
+	_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
+		RequestID:   input.RequestID,
+		CustomerID:  input.CustomerID,
+		RequestType: "NAME_CHANGE",
+		Outcome:     "APPROVED",
+	}).Get(ctx, nil)
+
 	return nil
 }
 
@@ -390,6 +399,14 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 					RequestType: "NAME_CHANGE",
 				},
 			).Get(ctx, nil)
+			// Notify Policy Management of completed name change.
+			_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
+				RequestID:   input.RequestID,
+				CustomerID:  input.CustomerID,
+				RequestType: "NAME_CHANGE",
+				Outcome:     "APPROVED",
+			}).Get(ctx, nil)
+
 			// Terminal — exit loop.
 			logger.Info("WF-NFS-004 ManualNameChangeWorkflow COMPLETED", "requestID", input.RequestID)
 			return nil
@@ -410,6 +427,15 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 					Reason:    &rejReason,
 				},
 			).Get(ctx, nil)
+
+			// Notify Policy Management of rejected name change.
+			_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
+				RequestID:   input.RequestID,
+				CustomerID:  input.CustomerID,
+				RequestType: "NAME_CHANGE",
+				Outcome:     "REJECTED",
+			}).Get(ctx, nil)
+
 			// Terminal — exit loop.
 			return nil
 

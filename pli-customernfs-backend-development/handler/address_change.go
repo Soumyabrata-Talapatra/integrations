@@ -5,6 +5,7 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -110,7 +111,7 @@ func (h *AddressChangeHandler) InitiateAddressChange(
 		return nil, err
 	}
 	if isDuplicate {
-		log.Error(sctx.Ctx, "InitiateAddressChange: duplicate pending request %s for customer %s", existingTicket, req.CustomerID)
+		log.Error(sctx.Ctx, "InitiateAddressChange: duplicate pending request %s for customer %d", existingTicket, req.CustomerID)
 		return nil, &apierrors.AppError{Code: 409, Message: fmt.Sprintf("pending request exists: %s. Complete or withdraw it first", existingTicket)}
 	}
 
@@ -125,12 +126,13 @@ func (h *AddressChangeHandler) InitiateAddressChange(
 	sr, addr := req.ToDomain()
 	sr.TicketNumber = ticketNumber
 	sr.RequestID = uuid.New().String()
-	sr.InitiatedBy = req.CustomerID
-	sr.CreatedBy = req.CustomerID
+	customerIDStr := strconv.FormatInt(req.CustomerID, 10)
+	sr.InitiatedBy = customerIDStr
+	sr.CreatedBy = customerIDStr
 	addr.DetailID = uuid.New().String()
 	addr.RequestID = sr.RequestID
 	addr.AddressUpdateFor = req.AddressUpdateFor
-	addr.CreatedBy = req.CustomerID
+	addr.CreatedBy = customerIDStr
 
 	// Prepare initial audit log entry (BR-NFS-016: INSERT-only).
 	audit := domain.AuditLog{
@@ -138,7 +140,7 @@ func (h *AddressChangeHandler) InitiateAddressChange(
 		RequestID:     sr.RequestID,
 		ActionType:    "CREATED",
 		NewValueJSON:  fmt.Sprintf(`{"ticket_number":"%s","auth_method":"%s","channel":"%s"}`, ticketNumber, req.AuthMethod, req.Channel),
-		PerformedByID: req.CustomerID,
+		PerformedByID: customerIDStr,
 		IPAddress:     nil,
 		Notes:         strPtr("Request initiated"),
 	}
@@ -164,7 +166,7 @@ func (h *AddressChangeHandler) InitiateAddressChange(
 		AddressType:  req.AddressType,
 		Channel:      req.Channel,
 		OfficeCode:   strDeref(req.OfficeCode),
-		InitiatedBy:  req.CustomerID,
+		InitiatedBy:  customerIDStr,
 		SLADays:      slaDays,
 	}
 

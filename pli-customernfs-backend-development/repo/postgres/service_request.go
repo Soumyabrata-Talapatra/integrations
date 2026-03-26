@@ -101,7 +101,7 @@ func (r *ServiceRequestRepository) GenerateTicketNumber(ctx context.Context, req
 // CheckDuplicateRequest checks whether the customer already has an active
 // request of the same type. VR-NFS-015.
 // ---------------------------------------------------------------------------
-func (r *ServiceRequestRepository) CheckDuplicateRequest(ctx context.Context, customerID, requestType string) (bool, string, error) {
+func (r *ServiceRequestRepository) CheckDuplicateRequest(ctx context.Context, customerID int64, requestType string) (bool, string, error) {
 	timeout := r.cfg.GetDuration("db.QueryTimeoutLow")
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -491,7 +491,7 @@ func (r *ServiceRequestRepository) GetByTicketNumber(ctx context.Context, ticket
 // ---------------------------------------------------------------------------
 func (r *ServiceRequestRepository) ListByCustomerID(
 	ctx context.Context,
-	customerID string,
+	customerID int64,
 	skip, limit int,
 ) ([]domain.ServiceRequest, int64, error) {
 	timeout := r.cfg.GetDuration("db.QueryTimeoutMed")

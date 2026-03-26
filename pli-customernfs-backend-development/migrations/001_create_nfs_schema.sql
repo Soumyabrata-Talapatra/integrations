@@ -167,7 +167,7 @@ CREATE DOMAIN nfs.ticket_number AS VARCHAR(30)
 
 CREATE DOMAIN nfs.aadhaar_txn_id AS VARCHAR(50);
 CREATE DOMAIN nfs.policy_number   AS VARCHAR(20);
-CREATE DOMAIN nfs.customer_id     AS UUID;
+CREATE DOMAIN nfs.customer_id     AS BIGINT;
 CREATE DOMAIN nfs.office_code     AS VARCHAR(20);
 
 -- ===========================================================================

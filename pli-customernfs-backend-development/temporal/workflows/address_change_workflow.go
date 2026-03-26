@@ -419,6 +419,7 @@
 package workflows
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -443,7 +444,7 @@ const TaskQueue = "customer-nfs-tq"
 type OTPSignalPayload struct {
 	OTP            string `json:"otp"`
 	OTPReferenceID string `json:"otp_reference_id"`
-	CustomerID     string `json:"customer_id"`
+	CustomerID     int64  `json:"customer_id"`
 }
 
 // ApprovalDecisionPayload is the payload for the approval_decision signal.
@@ -459,7 +460,7 @@ type ApprovalDecisionPayload struct {
 type AddressChangeWorkflowInput struct {
 	RequestID    string  `json:"request_id"`
 	TicketNumber string  `json:"ticket_number"`
-	CustomerID   string  `json:"customer_id"`
+	CustomerID   int64   `json:"customer_id"`
 	PolicyNumber *string `json:"policy_number,omitempty"`
 	AuthMethod   string  `json:"auth_method"`
 	AddressType  string  `json:"address_type"`
@@ -595,6 +596,18 @@ func AadhaarAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkf
 	}
 
 	logger.Info("AadhaarAddressChangeWorkflow COMPLETED", "requestID", input.RequestID)
+
+	// Notify Policy Management of completed address change.
+	_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
+		RequestID:   input.RequestID,
+		CustomerID:  input.CustomerID,
+		RequestType: "ADDRESS_CHANGE",
+		Outcome:     "APPROVED",
+		ChangePayload: mustMarshalJSON(map[string]interface{}{
+			"address_type": input.AddressType,
+		}),
+	}).Get(ctx, nil)
+
 	return nil
 }
 
@@ -730,6 +743,18 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 				return fmt.Errorf("UpdateStatus COMPLETED: %w", err)
 			}
 			logger.Info("ManualAddressChangeWorkflow COMPLETED", "requestID", input.RequestID)
+
+			// Notify Policy Management of completed address change.
+			_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
+				RequestID:   input.RequestID,
+				CustomerID:  input.CustomerID,
+				RequestType: "ADDRESS_CHANGE",
+				Outcome:     "APPROVED",
+				ChangePayload: mustMarshalJSON(map[string]interface{}{
+					"address_type": input.AddressType,
+				}),
+			}).Get(ctx, nil)
+
 			return nil
 
 		case "REJECT":
@@ -744,6 +769,15 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 				return fmt.Errorf("UpdateStatus REJECTED: %w", err)
 			}
 			logger.Info("ManualAddressChangeWorkflow REJECTED", "requestID", input.RequestID)
+
+			// Notify Policy Management of rejected address change.
+			_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
+				RequestID:   input.RequestID,
+				CustomerID:  input.CustomerID,
+				RequestType: "ADDRESS_CHANGE",
+				Outcome:     "REJECTED",
+			}).Get(ctx, nil)
+
 			return nil
 
 		case "SEND_BACK":
@@ -781,3 +815,12 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 
 // strPtr is a helper to convert string literal to *string.
 func strPtr(s string) *string { return &s }
+
+// mustMarshalJSON marshals v to JSON, returning nil on error.
+func mustMarshalJSON(v interface{}) json.RawMessage {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil
+	}
+	return b
+}
