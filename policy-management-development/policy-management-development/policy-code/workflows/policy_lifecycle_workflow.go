@@ -522,6 +522,7 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 	conversionCompletedCh := workflow.GetSignalChannel(ctx, SignalConversionCompleted)
 	flcCompletedCh := workflow.GetSignalChannel(ctx, SignalFLCCompleted)
 	nfrCompletedCh := workflow.GetSignalChannel(ctx, SignalNFRCompleted)
+	customerNfrCompletedCh := workflow.GetSignalChannel(ctx, SignalCustomerNFRCompleted)
 	opCompletedCh := workflow.GetSignalChannel(ctx, SignalOperationCompleted)
 	premiumPaidCh := workflow.GetSignalChannel(ctx, SignalPremiumPaid)
 	paymentDishonoredCh := workflow.GetSignalChannel(ctx, SignalPaymentDishonored)
@@ -711,6 +712,16 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 			)
 
 			handleNFRCompleted(ctx, &state, sig)
+		})
+		sel.AddReceive(customerNfrCompletedCh, func(c workflow.ReceiveChannel, _ bool) {
+			var sig OperationCompletedSignal
+			c.Receive(ctx, &sig)
+			workflow.GetLogger(ctx).Info("Customer NFR Completed signal received",
+				"RequestID", sig.RequestID,
+				"RequestType", sig.RequestType,
+				"Outcome", sig.Outcome,
+			)
+			handleCustomerNFRCompleted(ctx, &state, sig)
 		})
 		sel.AddReceive(opCompletedCh, func(c workflow.ReceiveChannel, _ bool) {
 			var sig OperationCompletedSignal
@@ -1128,7 +1139,7 @@ func handleFinancialRequest(ctx workflow.Context, state *PolicyLifecycleState, s
 		TimeoutAt:        timeout,
 		MaturityDate:     state.MaturityDate,
 		ProductCode:      state.ProductCode,
-		PMWorkflowID: state.Metadata.WorkflowID, // plw-{policyNumber}
+		PMWorkflowID:     state.Metadata.WorkflowID, // plw-{policyNumber}
 	}
 	workflow.ExecuteChildWorkflow(childWFCtx(ctx, taskQueue, childID), wfType, childInput)
 
@@ -1529,6 +1540,99 @@ func filterNFRPayload(requestType string, payload map[string]interface{}) map[st
 		}
 	}
 	return filtered
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Signal Handler: customer-nfr-completed (from Customer NFS service)
+// Handles externally-initiated customer NFS changes (address/name/mobile/email).
+// Unlike handleNFRCompleted, this does NOT require a matching PendingRequest
+// because Customer NFS owns the request lifecycle — PM is only notified.
+// No policy state transition occurs; only metadata is updated.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// customerNFRMetadataAllowList defines safe outcome payload keys per Customer NFS change type.
+// Only these keys may be written to policy metadata; all others are silently discarded.
+var customerNFRMetadataAllowList = map[string]map[string]bool{
+	domain.RequestTypeAddressChange: {
+		"address_type": true,
+		"pin_code":     true,
+		"state":        true,
+		"district":     true,
+		"city":         true,
+	},
+	"NAME_CHANGE": {
+		"salutation":  true,
+		"first_name":  true,
+		"middle_name": true,
+		"last_name":   true,
+	},
+	"MOBILE_CHANGE": {
+		"mobile_number": true,
+	},
+	"EMAIL_CHANGE": {
+		"email": true,
+	},
+}
+
+// filterCustomerNFRPayload returns only allow-listed keys from payload for the given change type.
+// Returns nil when the type has no allow-list, suppressing the UpdatePolicyMetadataActivity call.
+func filterCustomerNFRPayload(requestType string, payload map[string]interface{}) map[string]interface{} {
+	allowed, ok := customerNFRMetadataAllowList[requestType]
+	if !ok {
+		return nil
+	}
+	filtered := make(map[string]interface{}, len(allowed))
+	for k, v := range payload {
+		if allowed[k] {
+			filtered[k] = v
+		}
+	}
+	if len(filtered) == 0 {
+		return nil
+	}
+	return filtered
+}
+
+func handleCustomerNFRCompleted(ctx workflow.Context, state *PolicyLifecycleState, sig OperationCompletedSignal) {
+	// Dedup check — use RequestID as dedup key.
+	if _, seen := state.ProcessedSignalIDs[sig.RequestID]; seen {
+		return
+	}
+
+	// Log signal received.
+	payload, _ := json.Marshal(sig)
+	stateBefore := state.CurrentStatus
+	_ = workflow.ExecuteActivity(shortActCtx(ctx),
+		policyActs.LogSignalReceivedActivity,
+		acts.SignalLogEntry{
+			PolicyID:      state.PolicyDBID,
+			SignalChannel: SignalCustomerNFRCompleted,
+			SignalPayload: payload,
+			RequestID:     sig.RequestID,
+			SourceService: "customer-nfs",
+			Status:        domain.SignalStatusProcessed,
+			StateBefore:   &stateBefore,
+		}).Get(ctx, nil)
+
+	// Update policy metadata if APPROVED and payload present.
+	// No state transition — customer NFS changes do not affect policy lifecycle status.
+	if sig.Outcome == domain.RequestOutcomeApproved && sig.OutcomePayload != nil {
+		var p map[string]interface{}
+		if json.Unmarshal(sig.OutcomePayload, &p) == nil {
+			filtered := filterCustomerNFRPayload(sig.RequestType, p)
+			if len(filtered) > 0 {
+				_ = workflow.ExecuteActivity(shortActCtx(ctx),
+					policyActs.UpdatePolicyMetadataActivity,
+					acts.MetadataUpdateParams{
+						PolicyID: state.PolicyDBID,
+						Updates:  filtered,
+					}).Get(ctx, nil)
+			}
+		}
+	}
+
+	// Mark as processed for dedup.
+	state.ProcessedSignalIDs[sig.RequestID] = workflow.Now(ctx)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

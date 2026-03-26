@@ -29,6 +29,8 @@ const (
 	RequestTypeAddressChange       = "ADDRESS_CHANGE"
 	RequestTypePremiumRefund       = "PREMIUM_REFUND"
 	RequestTypeDuplicateBond       = "DUPLICATE_BOND"
+	RequestTypeMobileChange = "MOBILE_CHANGE"
+	RequestTypeEmailChange  = "EMAIL_CHANGE"
 
 	// Internal types (not in Swagger — triggered internally or by other services)
 	RequestTypeForcedSurrender = "FORCED_SURRENDER" // Triggered by Loan Svc batch
@@ -181,7 +183,8 @@ func DownstreamTaskQueueForType(requestType string) string {
 	case RequestTypeFLC:
 		return "freelook-tq"
 	case RequestTypeNominationChange, RequestTypeBillingMethodChange,
-		RequestTypeAssignment, RequestTypeAddressChange, RequestTypeDuplicateBond:
+		RequestTypeAssignment, RequestTypeAddressChange, RequestTypeDuplicateBond,
+		RequestTypeMobileChange, RequestTypeEmailChange:
 		return "nfs-tq"
 	case RequestTypePremiumRefund:
 		return "billing-tq"

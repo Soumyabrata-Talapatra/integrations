@@ -65,6 +65,7 @@ const (
 	SignalDisputeResolved        = "dispute-resolved"         // Advisory flag clear
 	SignalBatchStateSync         = "batch-state-sync"         // In-memory only [§9.5.2]
 	SignalReopenRequest          = "reopen-request"           // Exit terminal cooling + CAN [§9.5.1]
+	SignalCustomerNFRCompleted = "customer-nfr-completed" // From Customer NFS service (address/name/mobile/email change)
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -420,7 +421,7 @@ func DownstreamWorkflowTypeForRequest(requestType string) string {
 		return "AssignmentProcessingWorkflow"
 	case "PREMIUM_REFUND":
 		return "PremiumRefundWorkflow"
-	default: // NOMINATION_CHANGE, ADDRESS_CHANGE, BILLING_METHOD_CHANGE, DUPLICATE_BOND
+	default: // NOMINATION_CHANGE, ADDRESS_CHANGE, BILLING_METHOD_CHANGE, DUPLICATE_BOND, MOBILE_CHANGE, EMAIL_CHANGE
 		return "NFRProcessingWorkflow"
 	}
 }
@@ -451,7 +452,7 @@ func DownstreamChildIDPrefix(requestType string) string {
 		return "cnv"
 	case "FLC":
 		return "flc"
-	default:
+	default: // NOMINATION_CHANGE, ADDRESS_CHANGE, BILLING_METHOD_CHANGE, DUPLICATE_BOND, MOBILE_CHANGE, EMAIL_CHANGE
 		return "nfr"
 	}
 }
