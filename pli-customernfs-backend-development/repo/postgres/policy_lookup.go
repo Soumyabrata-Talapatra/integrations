@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	dblib "gitlab.cept.gov.in/it-2.0-common/n-api-db"
 )
 
 // PolicyLookupRepository implements port.PolicyLookupRepository.
 // Queries a shared read-only view or the policy table to find active policies by customer.
 type PolicyLookupRepository struct {
-	db *pgxpool.Pool
+	db *dblib.DB
 }
 
 // NewPolicyLookupRepository creates a new PolicyLookupRepository.
-func NewPolicyLookupRepository(db *pgxpool.Pool) *PolicyLookupRepository {
+func NewPolicyLookupRepository(db *dblib.DB) *PolicyLookupRepository {
 	return &PolicyLookupRepository{db: db}
 }
 

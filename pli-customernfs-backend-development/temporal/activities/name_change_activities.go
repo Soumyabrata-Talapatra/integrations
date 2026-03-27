@@ -172,7 +172,7 @@ func (a *NameChangeActivities) CreateNameServiceRequest(ctx context.Context, inp
 		Status:       "CREATED",
 		Channel:      input.Channel,
 		OfficeCode:   input.OfficeCode,
-		InitiatedBy:  input.InitiatedBy,
+		InitiatedBy:  parseStringToInt64(input.InitiatedBy),
 		SLADeadline:  input.SLADeadline,
 		CreatedBy:    input.InitiatedBy,
 		CreatedAt:    now,
@@ -311,7 +311,7 @@ func (a *NameChangeActivities) UpdateNameData(ctx context.Context, input UpdateA
 		FirstName:  firstName,
 		MiddleName: nameDetail.NewMiddleName,
 		LastName:   lastName,
-		CreatedBy:  input.UpdatedBy,
+		CreatedBy:  parseStringToInt64(input.UpdatedBy),
 	}
 	created, err := a.nameRepo.CreateNameVersion(ctx, input.RequestID, versionEntry)
 	if err != nil {
@@ -446,3 +446,5 @@ func (a *NameChangeActivities) EscalateNameRequest(ctx context.Context, input Es
 
 // strPtrAct is a local helper returning a pointer to the given string.
 func strPtrAct(s string) *string { return &s }
+
+

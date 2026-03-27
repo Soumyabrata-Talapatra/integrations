@@ -127,7 +127,7 @@ func (h *AddressChangeHandler) InitiateAddressChange(
 	sr.TicketNumber = ticketNumber
 	sr.RequestID = uuid.New().String()
 	customerIDStr := strconv.FormatInt(req.CustomerID, 10)
-	sr.InitiatedBy = customerIDStr
+	sr.InitiatedBy = req.CustomerID
 	sr.CreatedBy = customerIDStr
 	addr.DetailID = uuid.New().String()
 	addr.RequestID = sr.RequestID
@@ -497,7 +497,7 @@ func (h *AddressChangeHandler) ApproveAddressChange(
 	// Signal WF-NFS-002 with the approval decision payload.
 	approvalPayload := workflows.ApprovalDecisionPayload{
 		Decision:         req.Decision,
-		ApprovedBy:       req.ApprovedBy,
+		ApprovedBy:       strconv.FormatInt(req.ApprovedBy, 10),
 		Reason:           strDeref(req.Remarks),
 		RejectionReason:  req.RejectionReason,
 		MissingDocuments: req.MissingDocuments,

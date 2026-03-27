@@ -130,7 +130,19 @@ func (h *StatusHandler) GetRequestDetail(
 					oldName += " " + strDeref(detail.OldLastName)
 				}
 			}
-			newName := fmt.Sprintf("%s %s %s", detail.NewSalutation, detail.NewFirstName, detail.NewLastName)
+			newSalutation := ""
+			if detail.NewSalutation != nil {
+				newSalutation = *detail.NewSalutation
+			}
+			newFirstName := ""
+			if detail.NewFirstName != nil {
+				newFirstName = *detail.NewFirstName
+			}
+			newLastName := ""
+			if detail.NewLastName != nil {
+				newLastName = *detail.NewLastName
+			}
+			newName := fmt.Sprintf("%s %s %s", newSalutation, newFirstName, newLastName)
 			r.Data.NameDetail = &resp.NameDetailSummary{
 				OldName:          oldName,
 				NewName:          newName,

@@ -366,6 +366,7 @@ func (a *PolicyActivities) UpdatePolicyMetadataActivity(ctx context.Context, p M
 	}
 	ctx, cancel := context.WithTimeout(ctx, a.cfg.GetDuration("db.QueryTimeoutHigh"))
 	defer cancel()
+	 
 
 	qb := dblib.Psql.Update(actPolicyTable).
 		Where(sq.Eq{"policy_id": p.PolicyID}).

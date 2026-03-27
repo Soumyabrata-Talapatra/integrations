@@ -76,7 +76,7 @@
     host: "localhost"
     port: "7233"
     namespace: "default"
-    taskqueue: "agent-commission"
+    taskqueue: "customer-nfs-tq"
 
   # Worker configuration
     # worker:
@@ -109,14 +109,14 @@
       path: "/health"   
     bodylimit: 5242880  # 5MB
     readbuffersize: 16384
-    addr: ":8080"
+    addr: ":8081"
     readtimeout: 15s
     writetimeout: 120s
     timeout: 60
     cors:       
       alloworigins:
         - "http://localhost:3000"
-        - "http://localhost:8080"        
+        - "http://localhost:8081"        
       allowheaders:
         - "Authorization"
         - "Content-Type"
@@ -135,7 +135,7 @@
     output: "stdout"
 
   client: 
-    baseurl: "http://localhost:8080"
+    baseurl: "http://localhost:8081"
 
   # External Service URLs (for future integration)
   external:

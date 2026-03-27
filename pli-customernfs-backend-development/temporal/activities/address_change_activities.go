@@ -31,6 +31,7 @@ package activities
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -190,7 +191,7 @@ func (a *AddressChangeActivities) CreateAddressServiceRequest(
 		Status:       "CREATED",
 		Channel:      input.Channel,
 		OfficeCode:   input.OfficeCode,
-		InitiatedBy:  input.InitiatedBy,
+		InitiatedBy:  parseStringToInt64(input.InitiatedBy),
 		SLADeadline:  input.SLADeadline,
 		CreatedBy:    input.InitiatedBy,
 		CreatedAt:    now,
@@ -320,7 +321,7 @@ func (a *AddressChangeActivities) UpdateAddressData(ctx context.Context, input U
 		State:         addrDetail.NewState,
 		Pincode:       addrDetail.NewPincode,
 		VersionNumber: 1, // Incremented in CreateAddressVersion
-		CreatedBy:     input.UpdatedBy,
+		CreatedBy:     parseStringToInt64(input.UpdatedBy),
 	}
 
 	if err := a.addrRepo.CreateAddressVersion(ctx, sr.CustomerID, addrDetail.AddressType, newVersion); err != nil {
@@ -435,4 +436,18 @@ func (a *AddressChangeActivities) Escalate(ctx context.Context, input EscalateIn
 // ---------------------------------------------------------------------------
 func newUUID() string {
 	return uuid.New().String()
+}
+
+// ---------------------------------------------------------------------------
+// parseStringToInt64 parses a string to int64, returns 0 if parsing fails
+// ---------------------------------------------------------------------------
+func parseStringToInt64(s string) int64 {
+	if s == "" {
+		return 0
+	}
+	val, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return val
 }

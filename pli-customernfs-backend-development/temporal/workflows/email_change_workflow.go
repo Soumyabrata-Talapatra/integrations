@@ -102,7 +102,7 @@ func EmailChangeWorkflow(ctx workflow.Context, input EmailChangeWorkflowInput) e
 	}
 
 	// Step 5: Update email data.
-	if err := workflow.ExecuteActivity(ctx, "UpdateEmailData", activities.UpdateAddressDataInput{
+	if err := workflow.ExecuteActivity(ctx, "UpdateEmailData", activities.UpdateEmailDataInput{
 		RequestID:  input.RequestID,
 		CustomerID: input.CustomerID,
 		UpdatedBy:  fmt.Sprintf("%d", input.CustomerID),

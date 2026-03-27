@@ -521,6 +521,7 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 	commutationCompletedCh := workflow.GetSignalChannel(ctx, SignalCommutationCompleted)
 	conversionCompletedCh := workflow.GetSignalChannel(ctx, SignalConversionCompleted)
 	flcCompletedCh := workflow.GetSignalChannel(ctx, SignalFLCCompleted)
+	//
 	nfrCompletedCh := workflow.GetSignalChannel(ctx, SignalNFRCompleted)
 	customerNfrCompletedCh := workflow.GetSignalChannel(ctx, SignalCustomerNFRCompleted)
 	opCompletedCh := workflow.GetSignalChannel(ctx, SignalOperationCompleted)

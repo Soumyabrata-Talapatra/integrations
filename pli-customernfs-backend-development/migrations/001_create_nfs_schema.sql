@@ -30,7 +30,9 @@ CREATE SCHEMA IF NOT EXISTS nfs;
 -- Request Type (BR-NFS-001, BR-NFS-007)
 CREATE TYPE nfs.request_type_enum AS ENUM (
     'ADDRESS_CHANGE',
-    'NAME_CHANGE'
+    'NAME_CHANGE',
+    'MOBILE_CHANGE',
+    'EMAIL_CHANGE'
 );
 
 -- Authentication Method (BR-NFS-001, BR-NFS-007)
@@ -717,7 +719,13 @@ DECLARE
     v_sequence     INTEGER;
     v_ticket       VARCHAR(30);
 BEGIN
-    v_type_code := CASE p_request_type WHEN 'ADDRESS_CHANGE' THEN 'ANC' WHEN 'NAME_CHANGE' THEN 'NMC' ELSE 'UNK' END;
+    v_type_code := CASE p_request_type 
+        WHEN 'ADDRESS_CHANGE' THEN 'ANC' 
+        WHEN 'NAME_CHANGE' THEN 'NMC'
+        WHEN 'MOBILE_CHANGE' THEN 'MCC'
+        WHEN 'EMAIL_CHANGE' THEN 'EMC'
+        ELSE 'UNK' 
+    END;
     v_date_part := TO_CHAR(CURRENT_DATE, 'YYYYMMDD');
     INSERT INTO nfs.ticket_sequence (sequence_date, request_type, sequence_value)
     VALUES (CURRENT_DATE, p_request_type, 1)

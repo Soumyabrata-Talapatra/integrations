@@ -84,8 +84,13 @@ func (r *ServiceRequestRepository) GenerateTicketNumber(ctx context.Context, req
 		}
 
 		typeCode := "ANC"
-		if requestType == "NAME_CHANGE" {
+		switch requestType {
+		case "NAME_CHANGE":
 			typeCode = "NMC"
+		case "MOBILE_CHANGE":
+			typeCode = "MCC"
+		case "EMAIL_CHANGE":
+			typeCode = "EMC"
 		}
 		ticketNumber = fmt.Sprintf("NFS-%s-%s-%06d", typeCode, today.Format("20060102"), seq)
 		return nil

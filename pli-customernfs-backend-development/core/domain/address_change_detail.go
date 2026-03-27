@@ -90,5 +90,5 @@ type AddressVersionHistory struct {
 	EffectiveFrom time.Time  `json:"effective_from" db:"effective_from"`
 	EffectiveTo   *time.Time `json:"effective_to,omitempty" db:"effective_to"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
-	CreatedBy     string     `json:"created_by" db:"created_by"`
+	CreatedBy     int64      `json:"created_by" db:"created_by"`
 }

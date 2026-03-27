@@ -60,7 +60,7 @@ func NewNameChangeHandler(
 		tc:       tc,
 		cfg:      cfg,
 	}
-}
+} 
 
 // Routes registers all name-change HTTP routes.
 func (h *NameChangeHandler) Routes() []serverRoute.Route {
@@ -114,7 +114,7 @@ func (h *NameChangeHandler) InitiateNameChange(
 	sr, nameDetail := req.ToDomain(ticketNumber, domain.SLADeadline{})
 	sr.RequestID = requestID
 	customerIDStr := strconv.FormatInt(req.CustomerID, 10)
-	sr.InitiatedBy = customerIDStr
+	sr.InitiatedBy = req.CustomerID
 	sr.CreatedBy = customerIDStr
 	nameDetail.RequestID = requestID
 	nameDetail.DetailID = uuid.New().String()
@@ -312,7 +312,7 @@ func (h *NameChangeHandler) ApproveNameChange(
 
 	approvalPayload := workflows.ApprovalDecisionPayload{
 		Decision:         req.Decision,
-		ApprovedBy:       req.ApprovedBy,
+		ApprovedBy:       strconv.FormatInt(req.ApprovedBy, 10),
 		Reason:           strDeref(req.Remarks),
 		RejectionReason:  req.RejectionReason,
 		MissingDocuments: req.MissingDocuments,

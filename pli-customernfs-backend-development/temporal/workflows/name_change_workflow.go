@@ -30,6 +30,7 @@ package workflows
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -766,7 +767,7 @@ func WithdrawalWorkflow(ctx workflow.Context, input WithdrawalWorkflowInput) err
 				WithdrawalType:   "MANUAL",
 				WithdrawalReason: input.WithdrawalReason,
 				RequestedBy:      input.RequestedBy,
-				ApprovedBy:       &withdrawPayload.ApprovedBy,
+				ApprovedBy:       parseStringToInt64Ptr(withdrawPayload.ApprovedBy),
 			},
 		).Get(ctx, nil); err != nil {
 			return err
@@ -777,4 +778,16 @@ func WithdrawalWorkflow(ctx workflow.Context, input WithdrawalWorkflowInput) err
 	}
 
 	return nil
+}
+
+// parseStringToInt64Ptr parses a string to *int64, returns nil if empty or parsing fails
+func parseStringToInt64Ptr(s string) *int64 {
+	if s == "" {
+		return nil
+	}
+	val, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return nil
+	}
+	return &val
 }

@@ -28,6 +28,8 @@ var FxRepo = fx.Module(
 		repo.NewAuditLogRepository,
 		// Phase 2 — Name Change
 		repo.NewNameChangeRepository,
+		// Phase 3 — Policy Lookup for PM Notification
+		repo.NewPolicyLookupRepository,
 	),
 )
 
@@ -68,6 +70,18 @@ var FxHandler = fx.Module(
 		// Phase 3 — CPC Operations (CPC-001..006)
 		fx.Annotate(
 			handler.NewCPCHandler,
+			fx.As(new(serverHandler.Handler)),
+			fx.ResultTags(serverHandler.ServerControllersGroupTag),
+		),
+		// Phase 3 — Mobile Change (WF-NFS-006)
+		fx.Annotate(
+			handler.NewMobileChangeHandler,
+			fx.As(new(serverHandler.Handler)),
+			fx.ResultTags(serverHandler.ServerControllersGroupTag),
+		),
+		// Phase 3 — Email Change (WF-NFS-007)
+		fx.Annotate(
+			handler.NewEmailChangeHandler,
 			fx.As(new(serverHandler.Handler)),
 			fx.ResultTags(serverHandler.ServerControllersGroupTag),
 		),
@@ -123,11 +137,12 @@ func NewTemporalWorker(
 	srRepo *repo.ServiceRequestRepository,
 	nameRepo *repo.NameChangeRepository,
 	addrRepo *repo.AddressChangeRepository, // ← add
+	policyRepo *repo.PolicyLookupRepository,
 
 	auditRepo *repo.AuditLogRepository,
 	cfg *config.Config,
 ) temporalworker.Worker {
-	w := temporalworker.New(tc, workflows.TaskQueue, temporalworker.Options{})
+	w := temporalworker.New(tc, cfg.GetString("temporal.taskqueue"), temporalworker.Options{})
 
 	// Register workflows
 	w.RegisterWorkflow(workflows.AadhaarNameChangeWorkflow)
@@ -135,10 +150,28 @@ func NewTemporalWorker(
 	w.RegisterWorkflow(workflows.WithdrawalWorkflow)
 	w.RegisterWorkflow(workflows.AadhaarAddressChangeWorkflow)
 	w.RegisterWorkflow(workflows.ManualAddressChangeWorkflow)
+	w.RegisterWorkflow(workflows.MobileChangeWorkflow)
+	w.RegisterWorkflow(workflows.EmailChangeWorkflow)
+	
 
 	// Register activities
 	nameAct := activities.NewNameChangeActivities(srRepo, nameRepo, auditRepo, *cfg, tc)
 	w.RegisterActivity(nameAct)
+	
+	// Register mobile change activities
+	mobileAct := activities.NewMobileChangeActivities(srRepo, cfg)
+	w.RegisterActivityWithOptions(mobileAct.RequestMobileOTP, activity.RegisterOptions{Name: "RequestMobileOTP"})
+	w.RegisterActivityWithOptions(mobileAct.VerifyMobileOTP, activity.RegisterOptions{Name: "VerifyMobileOTP"})
+	w.RegisterActivityWithOptions(mobileAct.MobileUpdateStatus, activity.RegisterOptions{Name: "MobileUpdateStatus"})
+	w.RegisterActivityWithOptions(mobileAct.UpdateMobileData, activity.RegisterOptions{Name: "UpdateMobileData"})
+	
+	// Register email change activities
+	emailAct := activities.NewEmailChangeActivities(srRepo, cfg)
+	w.RegisterActivityWithOptions(emailAct.RequestEmailOTP, activity.RegisterOptions{Name: "RequestEmailOTP"})
+	w.RegisterActivityWithOptions(emailAct.VerifyEmailOTP, activity.RegisterOptions{Name: "VerifyEmailOTP"})
+	w.RegisterActivityWithOptions(emailAct.EmailUpdateStatus, activity.RegisterOptions{Name: "EmailUpdateStatus"})
+	w.RegisterActivityWithOptions(emailAct.UpdateEmailData, activity.RegisterOptions{Name: "UpdateEmailData"})
+	
 	addrAct := activities.NewAddressChangeActivities(srRepo, addrRepo, auditRepo, cfg, &tc)
 	w.RegisterActivityWithOptions(addrAct.StoreWorkflowState, activity.RegisterOptions{Name: "StoreWorkflowState"})
 	w.RegisterActivityWithOptions(addrAct.ValidateAddressRequest, activity.RegisterOptions{Name: "ValidateAddressRequest"})
@@ -155,6 +188,9 @@ func NewTemporalWorker(
 	w.RegisterActivityWithOptions(withdrawAct.CheckWithdrawalEligibility, activity.RegisterOptions{Name: "CheckWithdrawalEligibility"})
 	w.RegisterActivityWithOptions(withdrawAct.ProcessWithdrawal, activity.RegisterOptions{Name: "ProcessWithdrawal"})
 	w.RegisterActivityWithOptions(withdrawAct.UpdateStatus, activity.RegisterOptions{Name: "WithdrawalUpdateStatus"})
+	pmAct := activities.NewPMNotificationActivities(tc, policyRepo)
+	w.RegisterActivityWithOptions(pmAct.LookupAffectedPolicies, activity.RegisterOptions{Name: "LookupAffectedPolicies"})
+	w.RegisterActivityWithOptions(pmAct.NotifyPolicyManagement, activity.RegisterOptions{Name: "NotifyPolicyManagement"})
 	return w
 }
 

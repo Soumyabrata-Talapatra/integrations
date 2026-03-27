@@ -34,9 +34,9 @@ type ServiceRequest struct {
 	PreviousStatus           *string    `json:"previous_status,omitempty" db:"previous_status"`
 	Channel                  string     `json:"channel" db:"channel"`
 	OfficeCode               *string    `json:"office_code,omitempty" db:"office_code"`
-	InitiatedBy              string     `json:"initiated_by" db:"initiated_by"`
-	AssignedTo               *string    `json:"assigned_to,omitempty" db:"assigned_to"`
-	ApprovedBy               *string    `json:"approved_by,omitempty" db:"approved_by"`
+	InitiatedBy              int64      `json:"initiated_by" db:"initiated_by"`
+	AssignedTo               *int64     `json:"assigned_to,omitempty" db:"assigned_to"`
+	ApprovedBy               *int64     `json:"approved_by,omitempty" db:"approved_by"`
 	CreatedAt                time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`
 	CompletedAt              *time.Time `json:"completed_at,omitempty" db:"completed_at"`
@@ -102,7 +102,7 @@ type WithdrawalRequest struct {
 	WithdrawalReason string     `json:"withdrawal_reason" db:"withdrawal_reason"`
 	WithdrawalType   string     `json:"withdrawal_type" db:"withdrawal_type"`
 	Status           string     `json:"status" db:"status"`
-	ApprovedBy       *string    `json:"approved_by,omitempty" db:"approved_by"`
+	ApprovedBy       *int64     `json:"approved_by,omitempty" db:"approved_by"`
 	ApprovedAt       *time.Time `json:"approved_at,omitempty" db:"approved_at"`
 	ApprovalRemarks  *string    `json:"approval_remarks,omitempty" db:"approval_remarks"`
 	RequestedBy      string     `json:"requested_by" db:"requested_by"`

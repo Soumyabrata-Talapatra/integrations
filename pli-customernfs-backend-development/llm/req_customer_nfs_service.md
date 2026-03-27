@@ -420,7 +420,7 @@ stateDiagram-v2
 | request_id | UUID | Yes | Primary key | System-generated |
 | ticket_number | VARCHAR(30) | Yes | Human-readable ID | Format: NFS-{TYPE}-{YYYYMMDD}-{SEQ6}, UNIQUE |
 | customer_id | UUID | Yes | FK to customer | Must exist in Customer Core |
-| request_type | VARCHAR(30) | Yes | NFS type | ENUM: ADDRESS_CHANGE, NAME_CHANGE |
+| request_type | VARCHAR(30) | Yes | NFS type | ENUM: ADDRESS_CHANGE, NAME_CHANGE, MOBILE_CHANGE, EMAIL_CHANGE |
 | auth_method | VARCHAR(20) | Yes | Verification method | ENUM: AADHAAR, MANUAL |
 | status | VARCHAR(30) | Yes | Current status | ENUM: CREATED, PENDING_DOCUMENTS, PENDING_APPROVAL, IN_PROGRESS, COMPLETED, REJECTED, WITHDRAWN, DOCUMENTS_EXPIRED |
 | channel | VARCHAR(20) | Yes | Initiation channel | ENUM: Portal, Mobile, PostOffice, CallCenter, AgentPortal |

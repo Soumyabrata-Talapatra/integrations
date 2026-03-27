@@ -198,6 +198,32 @@ type UpdateAddressDataResult struct {
 	NewVersionID string `json:"new_version_id"`
 }
 
+// UpdateMobileDataInput updates the customer's mobile number in the policy system.
+// WF-NFS-006: Called after successful OTP verification.
+type UpdateMobileDataInput struct {
+	RequestID  string `json:"request_id"`
+	CustomerID int64  `json:"customer_id"`
+	UpdatedBy  string `json:"updated_by"`
+}
+
+type UpdateMobileDataResult struct {
+	Updated      bool   `json:"updated"`
+	NewVersionID string `json:"new_version_id"`
+}
+
+// UpdateEmailDataInput updates the customer's email address in the policy system.
+// WF-NFS-007: Called after successful OTP verification.
+type UpdateEmailDataInput struct {
+	RequestID  string `json:"request_id"`
+	CustomerID int64  `json:"customer_id"`
+	UpdatedBy  string `json:"updated_by"`
+}
+
+type UpdateEmailDataResult struct {
+	Updated      bool   `json:"updated"`
+	NewVersionID string `json:"new_version_id"`
+}
+
 // AssignToCPCInput assigns a request to the CPC work queue. FR-NFS-008.
 type AssignToCPCInput struct {
 	RequestID   string     `json:"request_id"`
@@ -315,7 +341,7 @@ type ProcessWithdrawalInput struct {
 	WithdrawalType   string  `json:"withdrawal_type"` // AUTO or MANUAL
 	WithdrawalReason string  `json:"withdrawal_reason"`
 	RequestedBy      string  `json:"requested_by"`
-	ApprovedBy       *string `json:"approved_by,omitempty"`
+	ApprovedBy       *int64  `json:"approved_by,omitempty"`
 }
 
 type ProcessWithdrawalResult struct {

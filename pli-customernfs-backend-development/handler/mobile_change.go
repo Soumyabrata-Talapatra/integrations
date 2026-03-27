@@ -73,6 +73,12 @@ func (h *MobileChangeHandler) InitiateMobileChange(
 		return nil, &apierrors.AppError{Code: 409, Message: fmt.Sprintf("pending request exists: %s. Complete or withdraw it first", existingTicket)}
 	}
 
+	// Validate office code for PostOffice channel
+	if req.Channel == "PostOffice" && (req.OfficeCode == nil || *req.OfficeCode == "") {
+		log.Error(sctx.Ctx, "InitiateMobileChange: office code is required for PostOffice channel")
+		return nil, &apierrors.AppError{Code: 400, Message: "office_code is required when channel is PostOffice"}
+	}
+
 	// Generate ticket number.
 	ticketNumber, err := h.srRepo.GenerateTicketNumber(sctx.Ctx, "MOBILE_CHANGE")
 	if err != nil {
@@ -90,7 +96,8 @@ func (h *MobileChangeHandler) InitiateMobileChange(
 		AuthMethod:   "OTP",
 		Status:       "CREATED",
 		Channel:      req.Channel,
-		InitiatedBy:  customerIDStr,
+		OfficeCode:   req.OfficeCode,
+		InitiatedBy:  req.CustomerID,
 		CreatedBy:    customerIDStr,
 	}
 

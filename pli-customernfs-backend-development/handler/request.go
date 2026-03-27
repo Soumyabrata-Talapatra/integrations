@@ -143,7 +143,7 @@ type ApproveAddressChangeRequest struct {
 	Decision string `json:"decision" validate:"required,oneof=APPROVE REJECT SEND_BACK"`
 
 	// ApprovedBy is the CPC user ID submitting the decision.
-	ApprovedBy string `json:"approved_by" validate:"required,min=1,max=50"`
+	ApprovedBy int64 `json:"approved_by" validate:"required"`
 
 	// Remarks are optional general remarks from the CPC officer.
 	Remarks *string `json:"remarks,omitempty" validate:"omitempty,max=1000"`
@@ -257,7 +257,7 @@ type SubmitNameChangeRequest struct {
 type ApproveNameChangeRequest struct {
 	RequestID        string   `uri:"request_id" validate:"required,uuid"`
 	Decision         string   `json:"decision" validate:"required,oneof=APPROVE REJECT SEND_BACK"`
-	ApprovedBy       string   `json:"approved_by" validate:"required"`
+	ApprovedBy       int64    `json:"approved_by" validate:"required"`
 	Remarks          *string  `json:"remarks,omitempty"`
 	RejectionReason  *string  `json:"rejection_reason,omitempty"`  // required when Decision=REJECT
 	MissingDocuments []string `json:"missing_documents,omitempty"` // required when Decision=SEND_BACK
@@ -512,9 +512,10 @@ type GetRequestDocumentsRequest struct {
 // InitiateMobileChangeRequest is the request payload for mobile change initiation.
 // WF-NFS-006: OTP-based mobile number change.
 type InitiateMobileChangeRequest struct {
-	CustomerID      int64  `json:"customer_id" validate:"required,gt=0"`
-	NewMobileNumber string `json:"new_mobile_number" validate:"required,len=10,numeric"`
-	Channel         string `json:"channel" validate:"required,oneof=Portal Mobile PostOffice CallCenter AgentPortal"`
+	CustomerID      int64   `json:"customer_id" validate:"required,gt=0"`
+	NewMobileNumber string  `json:"new_mobile_number" validate:"required,len=10,numeric"`
+	Channel         string  `json:"channel" validate:"required,oneof=Portal Mobile PostOffice CallCenter AgentPortal"`
+	OfficeCode      *string `json:"office_code,omitempty" validate:"omitempty,max=20"`
 }
 
 // VerifyMobileOTPRequest is the request payload for mobile change OTP verification.
@@ -531,9 +532,10 @@ type VerifyMobileOTPRequest struct {
 // InitiateEmailChangeRequest is the request payload for email change initiation.
 // WF-NFS-007: OTP-based email change.
 type InitiateEmailChangeRequest struct {
-	CustomerID int64  `json:"customer_id" validate:"required,gt=0"`
-	NewEmail   string `json:"new_email" validate:"required,email,max=255"`
-	Channel    string `json:"channel" validate:"required,oneof=Portal Mobile PostOffice CallCenter AgentPortal"`
+	CustomerID int64   `json:"customer_id" validate:"required,gt=0"`
+	NewEmail   string  `json:"new_email" validate:"required,email,max=255"`
+	Channel    string  `json:"channel" validate:"required,oneof=Portal Mobile PostOffice CallCenter AgentPortal"`
+	OfficeCode *string `json:"office_code,omitempty" validate:"omitempty,max=20"`
 }
 
 // VerifyEmailOTPRequest is the request payload for email change OTP verification.

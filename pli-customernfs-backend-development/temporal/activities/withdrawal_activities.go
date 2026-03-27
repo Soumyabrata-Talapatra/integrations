@@ -14,6 +14,7 @@ package activities
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"go.temporal.io/sdk/activity"
@@ -119,7 +120,7 @@ func (a *WithdrawalActivities) ProcessWithdrawal(
 	// Determine the actor: approver if MANUAL, requester if AUTO.
 	performedBy := input.RequestedBy
 	if input.ApprovedBy != nil {
-		performedBy = *input.ApprovedBy
+		performedBy = strconv.FormatInt(*input.ApprovedBy, 10)
 	}
 
 	audit := &domain.AuditLog{

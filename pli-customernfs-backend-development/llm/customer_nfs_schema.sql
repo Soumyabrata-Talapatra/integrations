@@ -30,7 +30,9 @@ CREATE SCHEMA IF NOT EXISTS audit;
 -- Request Type Enumeration
 CREATE TYPE nfs.request_type_enum AS ENUM (
     'ADDRESS_CHANGE',
-    'NAME_CHANGE'
+    'NAME_CHANGE',
+    'MOBILE_CHANGE',
+    'EMAIL_CHANGE'
 );
 
 -- Authentication Method Enumeration
@@ -1027,7 +1029,9 @@ BEGIN
     -- Determine type code
     CASE p_request_type
         WHEN 'ADDRESS_CHANGE' THEN v_type_code := 'ANC';
-        WHEN 'NAME_CHANGE' THEN v_type_code := 'ANC';
+        WHEN 'NAME_CHANGE' THEN v_type_code := 'NMC';
+        WHEN 'MOBILE_CHANGE' THEN v_type_code := 'MCC';
+        WHEN 'EMAIL_CHANGE' THEN v_type_code := 'EMC';
         ELSE v_type_code := 'UNK';
     END CASE;
     

@@ -76,6 +76,7 @@ func (a *PMNotificationActivities) NotifyPolicyManagement(
 	}
 
 	if len(policies) == 0 {
+
 		return &NotifyPMResult{PoliciesNotified: 0, Success: true}, nil
 	}
 

@@ -76,7 +76,7 @@ temporal:
   host:
   port:
   namespace: "default"
-  taskqueue: "agent-commission"
+  taskqueue: "customer-nfs-tq"
 
 # Worker configuration
 # worker:

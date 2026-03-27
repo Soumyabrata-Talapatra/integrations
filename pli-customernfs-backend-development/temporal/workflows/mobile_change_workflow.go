@@ -102,7 +102,7 @@ func MobileChangeWorkflow(ctx workflow.Context, input MobileChangeWorkflowInput)
 	}
 
 	// Step 5: Update mobile number data.
-	if err := workflow.ExecuteActivity(ctx, "UpdateMobileData", activities.UpdateAddressDataInput{
+	if err := workflow.ExecuteActivity(ctx, "UpdateMobileData", activities.UpdateMobileDataInput{
 		RequestID:  input.RequestID,
 		CustomerID: input.CustomerID,
 		UpdatedBy:  fmt.Sprintf("%d", input.CustomerID),
