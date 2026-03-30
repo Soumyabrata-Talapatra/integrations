@@ -522,7 +522,7 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 	conversionCompletedCh := workflow.GetSignalChannel(ctx, SignalConversionCompleted)
 	flcCompletedCh := workflow.GetSignalChannel(ctx, SignalFLCCompleted)
 	//
-	nfrCompletedCh := workflow.GetSignalChannel(ctx, SignalNFRCompleted)
+	//nfrCompletedCh := workflow.GetSignalChannel(ctx, SignalNFRCompleted)
 	customerNfrCompletedCh := workflow.GetSignalChannel(ctx, SignalCustomerNFRCompleted)
 	opCompletedCh := workflow.GetSignalChannel(ctx, SignalOperationCompleted)
 	premiumPaidCh := workflow.GetSignalChannel(ctx, SignalPremiumPaid)
@@ -704,16 +704,16 @@ func PolicyLifecycleWorkflow(ctx workflow.Context, initialState PolicyLifecycleS
 			sig.RequestType = domain.RequestTypeFLC
 			reachedTerminal = handleOperationCompleted(ctx, &state, sig)
 		})
-		sel.AddReceive(nfrCompletedCh, func(c workflow.ReceiveChannel, _ bool) {
-			var sig OperationCompletedSignal
-			c.Receive(ctx, &sig)
-			workflow.GetLogger(ctx).Info("NFR Completed signal received",
-				"RequestID", sig.RequestID,
-				"Outcome", sig.Outcome,
-			)
+		// sel.AddReceive(nfrCompletedCh, func(c workflow.ReceiveChannel, _ bool) {
+		// 	var sig OperationCompletedSignal
+		// 	c.Receive(ctx, &sig)
+		// 	workflow.GetLogger(ctx).Info("NFR Completed signal received",
+		// 		"RequestID", sig.RequestID,
+		// 		"Outcome", sig.Outcome,
+		// 	)
 
-			handleNFRCompleted(ctx, &state, sig)
-		})
+		// 	handleNFRCompleted(ctx, &state, sig)
+		// })
 		sel.AddReceive(customerNfrCompletedCh, func(c workflow.ReceiveChannel, _ bool) {
 			var sig OperationCompletedSignal
 			c.Receive(ctx, &sig)

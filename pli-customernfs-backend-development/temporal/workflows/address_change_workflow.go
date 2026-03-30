@@ -419,7 +419,6 @@
 package workflows
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -776,6 +775,9 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 				CustomerID:  input.CustomerID,
 				RequestType: "ADDRESS_CHANGE",
 				Outcome:     "REJECTED",
+				ChangePayload: mustMarshalJSON(map[string]interface{}{
+					"address_type": "rejected",
+				}),
 			}).Get(ctx, nil)
 
 			return nil
@@ -817,10 +819,10 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 func strPtr(s string) *string { return &s }
 
 // mustMarshalJSON marshals v to JSON, returning nil on error.
-func mustMarshalJSON(v interface{}) json.RawMessage {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return nil
-	}
-	return b
-}
+// func mustMarshalJSON(v interface{}) json.RawMessage {
+// 	b, err := json.Marshal(v)
+// 	if err != nil {
+// 		return nil
+// 	}
+// 	return b
+// }

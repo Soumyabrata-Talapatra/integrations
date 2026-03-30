@@ -265,7 +265,7 @@ func (a *NameChangeActivities) VerifyNameOTP(ctx context.Context, input AadhaarO
 // BR-NFS-009: emits customer.name.updated event for Policy Service consumption.
 // BR-NFS-010: DOB is never written here (immutable).
 // Called by WF-NFS-003 (after OTP verify) and WF-NFS-004 (after APPROVE signal).
-func (a *NameChangeActivities) UpdateNameData(ctx context.Context, input UpdateAddressDataInput) (*UpdateAddressDataResult, error) {
+func (a *NameChangeActivities) UpdateNameData(ctx context.Context, input UpdateNameDataInput) (*UpdateNameDataResult, error) {
 	log.Info(ctx, "UpdateNameData: applying name change for request %s", input.RequestID)
 
 	// Fetch service request + name detail to get customer data for the version entry.
@@ -337,7 +337,14 @@ func (a *NameChangeActivities) UpdateNameData(ctx context.Context, input UpdateA
 		return nil, fmt.Errorf("UpdateNameData: update status: %w", err)
 	}
 
-	return &UpdateAddressDataResult{Updated: true, NewVersionID: created.VersionID}, nil
+	return &UpdateNameDataResult{
+		Updated:          true,
+		NewVersionID:     created.VersionID,
+		NewSalutation:    nameDetail.NewSalutation,
+		NewFirstName:     nameDetail.NewFirstName,
+		NewMiddleName:    nameDetail.NewMiddleName,
+		NewLastName:      nameDetail.NewLastName,
+	}, nil
 }
 
 // AssignNameToCPC assigns a manual name change request to the CPC work queue.

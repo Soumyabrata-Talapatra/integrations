@@ -315,6 +315,11 @@ type UpdateNameDataResult struct {
 	Updated          bool   `json:"updated"`
 	NewVersionID     string `json:"new_version_id"`
 	PoliciesAffected int    `json:"policies_affected"`
+	// Name change details for Policy Management notification
+	NewSalutation *string `json:"new_salutation,omitempty"`
+	NewFirstName  *string `json:"new_first_name,omitempty"`
+	NewMiddleName *string `json:"new_middle_name,omitempty"`
+	NewLastName   *string `json:"new_last_name,omitempty"`
 }
 
 // ===========================================================================

@@ -29,6 +29,7 @@
 package workflows
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -174,12 +175,14 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 	// Step 5: Apply name change — create new version history entry.
 	// BR-NFS-007: UIDAI name is now authoritative.
 	// BR-NFS-009: UpdateNameData activity publishes customer.name.updated event.
+	var updateResult activities.UpdateNameDataResult
 	if err := workflow.ExecuteActivity(actCtx, act.UpdateNameData,
-		activities.UpdateAddressDataInput{
+		activities.UpdateNameDataInput{
 			RequestID: input.RequestID,
+			CustomerID: input.CustomerID,
 			UpdatedBy: input.InitiatedBy,
 		},
-	).Get(ctx, nil); err != nil {
+	).Get(ctx, &updateResult); err != nil {
 		return err
 	}
 
@@ -196,11 +199,26 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 	logger.Info("WF-NFS-003 AadhaarNameChangeWorkflow COMPLETED", "requestID", input.RequestID)
 
 	// Notify Policy Management of completed name change.
+	payload := map[string]interface{}{}
+	if updateResult.NewSalutation != nil {
+		payload["salutation"] = *updateResult.NewSalutation
+	}
+	if updateResult.NewFirstName != nil {
+		payload["first_name"] = *updateResult.NewFirstName
+	}
+	if updateResult.NewMiddleName != nil {
+		payload["middle_name"] = *updateResult.NewMiddleName
+	}
+	if updateResult.NewLastName != nil {
+		payload["last_name"] = *updateResult.NewLastName
+	}
+	
 	_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
 		RequestID:   input.RequestID,
 		CustomerID:  input.CustomerID,
 		RequestType: "NAME_CHANGE",
 		Outcome:     "APPROVED",
+		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 
 	return nil
@@ -294,7 +312,6 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 		logger.Info("WF-NFS-004: withdrawal signal received — exiting", "requestID", input.RequestID)
 		return nil
 	}
-	docsCh.Receive(ctx, &docsPayload)
 	if input.SLADays == 0 {
 		input.SLADays = 15
 	}
@@ -385,12 +402,14 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 			logger.Info("WF-NFS-004: CPC approved", "requestID", input.RequestID, "by", approvalPayload.ApprovedBy)
 			// BR-NFS-009: UpdateNameData → publishes customer.name.updated event.
 			// BR-NFS-010: DOB is never modified.
+			var updateResult activities.UpdateNameDataResult
 			if err := workflow.ExecuteActivity(actCtx, act.UpdateNameData,
-				activities.UpdateAddressDataInput{
+				activities.UpdateNameDataInput{
 					RequestID: input.RequestID,
+					CustomerID: input.CustomerID,
 					UpdatedBy: approvalPayload.ApprovedBy,
 				},
-			).Get(ctx, nil); err != nil {
+			).Get(ctx, &updateResult); err != nil {
 				return err
 			}
 			// Generate receipt.
@@ -401,11 +420,26 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 				},
 			).Get(ctx, nil)
 			// Notify Policy Management of completed name change.
+			payload := map[string]interface{}{}
+			if updateResult.NewSalutation != nil {
+				payload["salutation"] = *updateResult.NewSalutation
+			}
+			if updateResult.NewFirstName != nil {
+				payload["first_name"] = *updateResult.NewFirstName
+			}
+			if updateResult.NewMiddleName != nil {
+				payload["middle_name"] = *updateResult.NewMiddleName
+			}
+			if updateResult.NewLastName != nil {
+				payload["last_name"] = *updateResult.NewLastName
+			}
+			
 			_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
 				RequestID:   input.RequestID,
 				CustomerID:  input.CustomerID,
 				RequestType: "NAME_CHANGE",
 				Outcome:     "APPROVED",
+				ChangePayload: mustMarshalJSON(payload),
 			}).Get(ctx, nil)
 
 			// Terminal — exit loop.
@@ -435,6 +469,12 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 				CustomerID:  input.CustomerID,
 				RequestType: "NAME_CHANGE",
 				Outcome:     "REJECTED",
+				ChangePayload: mustMarshalJSON(map[string]interface{}{
+					"salutation":  "",
+					"first_name":  "",
+					"middle_name": "",
+					"last_name":   "",
+				}),
 			}).Get(ctx, nil)
 
 			// Terminal — exit loop.
@@ -471,7 +511,6 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 				logger.Info("WF-NFS-004: withdrawal signal received during SEND_BACK — exiting", "requestID", input.RequestID)
 				return nil
 			}
-			resubmitCh.Receive(ctx, &resubmitPayload)
 
 			// Re-assign to CPC with fresh context.
 			_ = workflow.ExecuteActivity(actCtx, act.AssignNameToCPC,
@@ -790,4 +829,13 @@ func parseStringToInt64Ptr(s string) *int64 {
 		return nil
 	}
 	return &val
+}
+
+// mustMarshalJSON marshals v to JSON, returning nil on error.
+func mustMarshalJSON(v interface{}) json.RawMessage {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil
+	}
+	return b
 }
