@@ -1560,6 +1560,9 @@ var customerNFRMetadataAllowList = map[string]map[string]bool{
 		"state":        true,
 		"district":     true,
 		"city":         true,
+		"address_line1": true,
+		"address_line2": true,
+		
 	},
 	"NAME_CHANGE": {
 		"salutation":  true,

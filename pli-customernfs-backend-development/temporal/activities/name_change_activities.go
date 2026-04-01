@@ -338,12 +338,12 @@ func (a *NameChangeActivities) UpdateNameData(ctx context.Context, input UpdateN
 	}
 
 	return &UpdateNameDataResult{
-		Updated:          true,
-		NewVersionID:     created.VersionID,
-		NewSalutation:    nameDetail.NewSalutation,
-		NewFirstName:     nameDetail.NewFirstName,
-		NewMiddleName:    nameDetail.NewMiddleName,
-		NewLastName:      nameDetail.NewLastName,
+		Updated:       true,
+		NewVersionID:  created.VersionID,
+		NewSalutation: nameDetail.NewSalutation,
+		NewFirstName:  nameDetail.NewFirstName,
+		NewMiddleName: nameDetail.NewMiddleName,
+		NewLastName:   nameDetail.NewLastName,
 	}, nil
 }
 
@@ -411,14 +411,20 @@ func (a *NameChangeActivities) AssignNameToCPC(ctx context.Context, input Assign
 func (a *NameChangeActivities) UpdateNameStatus(ctx context.Context, input UpdateStatusInput) (*UpdateStatusResult, error) {
 	log.Info(ctx, "UpdateNameStatus: request %s → %s", input.RequestID, input.NewStatus)
 
+	auditID := uuid.New().String()
+	now := time.Now().UTC()
+	newValueJSON := fmt.Sprintf(`{"status":"%s"}`, input.NewStatus)
+
 	audit := &domain.AuditLog{
-		// ActionType:    input.NewStatus,
-		// input.NewStatus is a status value not an audit action — fix:
-		ActionType:    "STATUS_CHANGE", // was input.NewStatus
+		AuditID:       auditID,
+		RequestID:     input.RequestID,
+		ActionType:    "STATUS_CHANGE",
+		NewValueJSON:  newValueJSON,
 		PerformedByID: input.UpdatedBy,
+		PerformedAt:   now,
 		Notes:         input.Reason,
 	}
-	updated, err := a.srRepo.UpdateStatus(ctx, input.RequestID, input.NewStatus, &input.UpdatedBy, nil, nil, audit)
+	updated, err := a.srRepo.UpdateStatus(ctx, input.RequestID, input.NewStatus, &input.UpdatedBy, input.Reason, nil, audit)
 	if err != nil {
 		return nil, fmt.Errorf("UpdateNameStatus: %w", err)
 	}
@@ -452,6 +458,3 @@ func (a *NameChangeActivities) EscalateNameRequest(ctx context.Context, input Es
 }
 
 // strPtrAct is a local helper returning a pointer to the given string.
-func strPtrAct(s string) *string { return &s }
-
-

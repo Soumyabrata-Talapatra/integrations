@@ -102,11 +102,12 @@ func MobileChangeWorkflow(ctx workflow.Context, input MobileChangeWorkflowInput)
 	}
 
 	// Step 5: Update mobile number data.
+	var updateResult activities.UpdateMobileDataResult
 	if err := workflow.ExecuteActivity(ctx, "UpdateMobileData", activities.UpdateMobileDataInput{
 		RequestID:  input.RequestID,
 		CustomerID: input.CustomerID,
 		UpdatedBy:  fmt.Sprintf("%d", input.CustomerID),
-	}).Get(ctx, nil); err != nil {
+	}).Get(ctx, &updateResult); err != nil {
 		return fmt.Errorf("UpdateMobileData: %w", err)
 	}
 
@@ -131,14 +132,17 @@ func MobileChangeWorkflow(ctx workflow.Context, input MobileChangeWorkflowInput)
 	logger.Info("MobileChangeWorkflow COMPLETED", "requestID", input.RequestID)
 
 	// Step 8: Notify Policy Management.
+	payload := map[string]interface{}{}
+	if updateResult.NewMobileNumber != nil {
+		payload["mobile_number"] = *updateResult.NewMobileNumber
+	}
+	
 	_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
 		RequestID:   input.RequestID,
 		CustomerID:  input.CustomerID,
 		RequestType: "MOBILE_CHANGE",
 		Outcome:     "APPROVED",
-		ChangePayload: mustMarshalJSON(map[string]interface{}{
-			"mobile_number": "updated",
-		}),
+		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 
 	return nil

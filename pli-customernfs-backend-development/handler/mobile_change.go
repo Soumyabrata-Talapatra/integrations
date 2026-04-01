@@ -27,14 +27,16 @@ import (
 type MobileChangeHandler struct {
 	*serverHandler.Base
 
-	srRepo *repo.ServiceRequestRepository
-	tc     client.Client
-	cfg    *config.Config
+	srRepo  *repo.ServiceRequestRepository
+	mcRepo  *repo.MobileChangeRepository
+	tc      client.Client
+	cfg     *config.Config
 }
 
 // NewMobileChangeHandler constructs the handler and wires dependencies via Uber FX.
 func NewMobileChangeHandler(
 	srRepo *repo.ServiceRequestRepository,
+	mcRepo *repo.MobileChangeRepository,
 	tc client.Client,
 	cfg *config.Config,
 ) *MobileChangeHandler {
@@ -44,6 +46,7 @@ func NewMobileChangeHandler(
 	return &MobileChangeHandler{
 		Base:   base,
 		srRepo: srRepo,
+		mcRepo: mcRepo,
 		tc:     tc,
 		cfg:    cfg,
 	}
@@ -112,6 +115,28 @@ func (h *MobileChangeHandler) InitiateMobileChange(
 
 	if err := h.srRepo.Create(sctx.Ctx, &sr, &audit); err != nil {
 		log.Error(sctx.Ctx, "InitiateMobileChange: failed to create service request: %v", err)
+		return nil, err
+	}
+
+	// Create mobile change detail
+	mobileDetail := domain.MobileChangeDetail{
+		DetailID:        uuid.New().String(),
+		RequestID:       sr.RequestID,
+		NewMobileNumber: req.NewMobileNumber,
+		CreatedBy:       customerIDStr,
+	}
+
+	detailAudit := domain.AuditLog{
+		AuditID:       uuid.New().String(),
+		RequestID:     sr.RequestID,
+		ActionType:    "CREATED",
+		NewValueJSON:  fmt.Sprintf(`{"new_mobile_number":"%s"}`, req.NewMobileNumber),
+		PerformedByID: customerIDStr,
+		Notes:         strPtr("Mobile change detail created"),
+	}
+
+	if err := h.mcRepo.CreateMobileChangeDetail(sctx.Ctx, &mobileDetail, &detailAudit); err != nil {
+		log.Error(sctx.Ctx, "InitiateMobileChange: failed to create mobile change detail: %v", err)
 		return nil, err
 	}
 

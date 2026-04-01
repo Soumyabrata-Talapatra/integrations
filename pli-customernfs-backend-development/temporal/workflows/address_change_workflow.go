@@ -563,12 +563,13 @@ func AadhaarAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkf
 	}
 
 	// Step 5: Apply new address data
+	var updateResult activities.UpdateAddressDataResult
 	if err := workflow.ExecuteActivity(ctx, "UpdateAddressData", activities.UpdateAddressDataInput{
 		RequestID:   input.RequestID,
 		CustomerID:  input.CustomerID,
 		AddressType: "COMMUNICATION",
 		UpdatedBy:   input.InitiatedBy,
-	}).Get(ctx, nil); err != nil {
+	}).Get(ctx, &updateResult); err != nil {
 		logger.Error("UpdateAddressData failed (partial)", "error", err)
 		return fmt.Errorf("UpdateAddressData: %w", err)
 	}
@@ -597,14 +598,35 @@ func AadhaarAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkf
 	logger.Info("AadhaarAddressChangeWorkflow COMPLETED", "requestID", input.RequestID)
 
 	// Notify Policy Management of completed address change.
+	payload := map[string]interface{}{}
+	if updateResult.AddressType != nil {
+		payload["address_type"] = *updateResult.AddressType
+	}
+	if updateResult.NewAddressLine1 != nil {
+		payload["address_line1"] = *updateResult.NewAddressLine1
+	}
+	if updateResult.NewAddressLine2 != nil {
+		payload["address_line2"] = *updateResult.NewAddressLine2
+	}
+	if updateResult.NewCity != nil {
+		payload["city"] = *updateResult.NewCity
+	}
+	if updateResult.NewDistrict != nil {
+		payload["district"] = *updateResult.NewDistrict
+	}
+	if updateResult.NewState != nil {
+		payload["state"] = *updateResult.NewState
+	}
+	if updateResult.NewPincode != nil {
+		payload["pincode"] = *updateResult.NewPincode
+	}
+	
 	_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
 		RequestID:   input.RequestID,
 		CustomerID:  input.CustomerID,
 		RequestType: "ADDRESS_CHANGE",
 		Outcome:     "APPROVED",
-		ChangePayload: mustMarshalJSON(map[string]interface{}{
-			"address_type": input.AddressType,
-		}),
+		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 
 	return nil
@@ -630,7 +652,28 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 		return fmt.Errorf("StoreWorkflowState: %w", err)
 	}
 
-	// Step 2: Status → PENDING_APPROVAL
+	// Step 2: Wait for documents_submitted signal from CORE-003.
+	// This allows the customer to upload documents before CPC assignment.
+	docsCh := workflow.GetSignalChannel(ctx, SignalDocumentsSubmitted)
+	withdrawCh := workflow.GetSignalChannel(ctx, "withdrawal_requested")
+
+	var docsPayload activities.DocumentsSubmittedPayload
+	var withdrawn bool
+	sel := workflow.NewSelector(ctx)
+	sel.AddReceive(docsCh, func(c workflow.ReceiveChannel, _ bool) {
+		c.Receive(ctx, &docsPayload)
+	})
+	sel.AddReceive(withdrawCh, func(c workflow.ReceiveChannel, _ bool) {
+		c.Receive(ctx, nil)
+		withdrawn = true
+	})
+	sel.Select(ctx)
+	if withdrawn {
+		logger.Info("WF-NFS-002: withdrawal signal received — exiting", "requestID", input.RequestID)
+		return nil
+	}
+
+	// Step 3: Status → PENDING_APPROVAL
 	if err := workflow.ExecuteActivity(ctx, "AddressUpdateStatus", activities.UpdateStatusInput{
 		RequestID:  input.RequestID,
 		NewStatus:  "PENDING_APPROVAL",
@@ -642,7 +685,7 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 		return fmt.Errorf("UpdateStatus PENDING_APPROVAL: %w", err)
 	}
 
-	// Step 3: Assign to CPC queue
+	// Step 4: Assign to CPC queue
 	slaDays := input.SLADays
 	if slaDays == 0 {
 		slaDays = 15
@@ -718,12 +761,13 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 			}).Get(ctx, nil); err != nil {
 				return fmt.Errorf("UpdateStatus IN_PROGRESS: %w", err)
 			}
+			var updateResult activities.UpdateAddressDataResult
 			if err := workflow.ExecuteActivity(ctx, "UpdateAddressData", activities.UpdateAddressDataInput{
 				RequestID:   input.RequestID,
 				CustomerID:  input.CustomerID,
 				AddressType: "COMMUNICATION",
 				UpdatedBy:   approvalPayload.ApprovedBy,
-			}).Get(ctx, nil); err != nil {
+			}).Get(ctx, &updateResult); err != nil {
 				return fmt.Errorf("UpdateAddressData: %w", err)
 			}
 			_ = workflow.ExecuteActivity(ctx, "GenerateAckReceipt", activities.GenerateAckReceiptInput{
@@ -744,25 +788,49 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 			logger.Info("ManualAddressChangeWorkflow COMPLETED", "requestID", input.RequestID)
 
 			// Notify Policy Management of completed address change.
+			payload := map[string]interface{}{}
+			if updateResult.AddressType != nil {
+				payload["address_type"] = *updateResult.AddressType
+			}
+			if updateResult.NewAddressLine1 != nil {
+				payload["address_line1"] = *updateResult.NewAddressLine1
+			}
+			if updateResult.NewAddressLine2 != nil {
+				payload["address_line2"] = *updateResult.NewAddressLine2
+			}
+			if updateResult.NewCity != nil {
+				payload["city"] = *updateResult.NewCity
+			}
+			if updateResult.NewDistrict != nil {
+				payload["district"] = *updateResult.NewDistrict
+			}
+			if updateResult.NewState != nil {
+				payload["state"] = *updateResult.NewState
+			}
+			if updateResult.NewPincode != nil {
+				payload["pincode"] = *updateResult.NewPincode
+			}
+			
 			_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
 				RequestID:   input.RequestID,
 				CustomerID:  input.CustomerID,
 				RequestType: "ADDRESS_CHANGE",
 				Outcome:     "APPROVED",
-				ChangePayload: mustMarshalJSON(map[string]interface{}{
-					"address_type": input.AddressType,
-				}),
+				ChangePayload: mustMarshalJSON(payload),
 			}).Get(ctx, nil)
 
 			return nil
 
 		case "REJECT":
+			if approvalPayload.RejectionReason == nil || *approvalPayload.RejectionReason == "" {
+				return fmt.Errorf("rejection reason is required for REJECT decision")
+			}
 			if err := workflow.ExecuteActivity(ctx, "AddressUpdateStatus", activities.UpdateStatusInput{
 				RequestID:  input.RequestID,
 				NewStatus:  "REJECTED",
 				FromStatus: "PENDING_APPROVAL",
 				UpdatedBy:  approvalPayload.ApprovedBy,
-				Reason:     &approvalPayload.Reason,
+				Reason:     approvalPayload.RejectionReason,
 				Channel:    input.Channel,
 			}).Get(ctx, nil); err != nil {
 				return fmt.Errorf("UpdateStatus REJECTED: %w", err)
@@ -776,7 +844,13 @@ func ManualAddressChangeWorkflow(ctx workflow.Context, input AddressChangeWorkfl
 				RequestType: "ADDRESS_CHANGE",
 				Outcome:     "REJECTED",
 				ChangePayload: mustMarshalJSON(map[string]interface{}{
-					"address_type": "rejected",
+					"address_type": "",
+					"address_line1": "",
+					"address_line2": "",
+					"city": "",
+					"district": "",
+					"state": "",
+					"pincode": "",
 				}),
 			}).Get(ctx, nil)
 

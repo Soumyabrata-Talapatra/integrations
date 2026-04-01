@@ -450,10 +450,10 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 			// BR-NFS-012: IN_PROGRESS → REJECTED (terminal).
 			// BR-NFS-016: audit log created.
 			logger.Info("WF-NFS-004: CPC rejected", "requestID", input.RequestID, "by", approvalPayload.ApprovedBy)
-			rejReason := ""
-			if approvalPayload.RejectionReason != nil {
-				rejReason = *approvalPayload.RejectionReason
+			if approvalPayload.RejectionReason == nil || *approvalPayload.RejectionReason == "" {
+				return fmt.Errorf("rejection reason is required for REJECT decision")
 			}
+			rejReason := *approvalPayload.RejectionReason
 			_ = workflow.ExecuteActivity(actCtx, act.UpdateNameStatus,
 				activities.UpdateStatusInput{
 					RequestID: input.RequestID,

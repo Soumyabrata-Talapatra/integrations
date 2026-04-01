@@ -27,14 +27,16 @@ import (
 type EmailChangeHandler struct {
 	*serverHandler.Base
 
-	srRepo *repo.ServiceRequestRepository
-	tc     client.Client
-	cfg    *config.Config
+	srRepo  *repo.ServiceRequestRepository
+	ecRepo  *repo.EmailChangeRepository
+	tc      client.Client
+	cfg     *config.Config
 }
 
 // NewEmailChangeHandler constructs the handler and wires dependencies via Uber FX.
 func NewEmailChangeHandler(
 	srRepo *repo.ServiceRequestRepository,
+	ecRepo *repo.EmailChangeRepository,
 	tc client.Client,
 	cfg *config.Config,
 ) *EmailChangeHandler {
@@ -44,6 +46,7 @@ func NewEmailChangeHandler(
 	return &EmailChangeHandler{
 		Base:   base,
 		srRepo: srRepo,
+		ecRepo: ecRepo,
 		tc:     tc,
 		cfg:    cfg,
 	}
@@ -112,6 +115,28 @@ func (h *EmailChangeHandler) InitiateEmailChange(
 
 	if err := h.srRepo.Create(sctx.Ctx, &sr, &audit); err != nil {
 		log.Error(sctx.Ctx, "InitiateEmailChange: failed to create service request: %v", err)
+		return nil, err
+	}
+
+	// Create email change detail
+	emailDetail := domain.EmailChangeDetail{
+		DetailID:  uuid.New().String(),
+		RequestID: sr.RequestID,
+		NewEmail:  req.NewEmail,
+		CreatedBy: customerIDStr,
+	}
+
+	detailAudit := domain.AuditLog{
+		AuditID:       uuid.New().String(),
+		RequestID:     sr.RequestID,
+		ActionType:    "CREATED",
+		NewValueJSON:  fmt.Sprintf(`{"new_email":"%s"}`, req.NewEmail),
+		PerformedByID: customerIDStr,
+		Notes:         strPtr("Email change detail created"),
+	}
+
+	if err := h.ecRepo.CreateEmailChangeDetail(sctx.Ctx, &emailDetail, &detailAudit); err != nil {
+		log.Error(sctx.Ctx, "InitiateEmailChange: failed to create email change detail: %v", err)
 		return nil, err
 	}
 

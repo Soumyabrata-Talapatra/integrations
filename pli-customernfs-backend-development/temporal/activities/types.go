@@ -196,6 +196,14 @@ type UpdateAddressDataInput struct {
 type UpdateAddressDataResult struct {
 	Updated      bool   `json:"updated"`
 	NewVersionID string `json:"new_version_id"`
+	// Address change details for Policy Management notification
+	NewAddressLine1 *string `json:"new_address_line1,omitempty"`
+	NewAddressLine2 *string `json:"new_address_line2,omitempty"`
+	NewCity         *string `json:"new_city,omitempty"`
+	NewDistrict     *string `json:"new_district,omitempty"`
+	NewState        *string `json:"new_state,omitempty"`
+	NewPincode      *string `json:"new_pincode,omitempty"`
+	AddressType     *string `json:"address_type,omitempty"`
 }
 
 // UpdateMobileDataInput updates the customer's mobile number in the policy system.
@@ -209,6 +217,8 @@ type UpdateMobileDataInput struct {
 type UpdateMobileDataResult struct {
 	Updated      bool   `json:"updated"`
 	NewVersionID string `json:"new_version_id"`
+	// Mobile change details for Policy Management notification
+	NewMobileNumber *string `json:"new_mobile_number,omitempty"`
 }
 
 // UpdateEmailDataInput updates the customer's email address in the policy system.
@@ -222,6 +232,8 @@ type UpdateEmailDataInput struct {
 type UpdateEmailDataResult struct {
 	Updated      bool   `json:"updated"`
 	NewVersionID string `json:"new_version_id"`
+	// Email change details for Policy Management notification
+	NewEmail *string `json:"new_email,omitempty"`
 }
 
 // AssignToCPCInput assigns a request to the CPC work queue. FR-NFS-008.

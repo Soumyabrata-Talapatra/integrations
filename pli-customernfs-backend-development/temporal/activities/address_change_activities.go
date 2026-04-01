@@ -329,8 +329,15 @@ func (a *AddressChangeActivities) UpdateAddressData(ctx context.Context, input U
 	}
 
 	return &UpdateAddressDataResult{
-		Updated:      true,
-		NewVersionID: versionID,
+		Updated:          true,
+		NewVersionID:     versionID,
+		NewAddressLine1:  &addrDetail.NewAddressLine1,
+		NewAddressLine2:  addrDetail.NewAddressLine2,
+		NewCity:          &addrDetail.NewCity,
+		NewDistrict:      &addrDetail.NewDistrict,
+		NewState:         &addrDetail.NewState,
+		NewPincode:       &addrDetail.NewPincode,
+		AddressType:      &addrDetail.AddressType,
 	}, nil
 }
 

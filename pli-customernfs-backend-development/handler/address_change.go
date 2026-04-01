@@ -268,8 +268,9 @@ func (h *AddressChangeHandler) VerifyOTP(
 // ─── CORE-003 ─────────────────────────────────────────────────────────────────
 
 // SubmitAddressChange finalises the manual address change request after document upload.
-// Validates documents are present, signals the running WF-NFS-002 workflow, and transitions
-// the request status to PENDING_APPROVAL.
+// Validates documents are present and signals the running WF-NFS-002 workflow.
+// For PENDING_DOCUMENTS status (SEND_BACK scenario): transitions status to PENDING_APPROVAL
+// For CREATED status: workflow will transition status to PENDING_APPROVAL after receiving signal
 //
 // FR-NFS-002: Manual path — submission after document upload.
 // BR-NFS-002: status → PENDING_APPROVAL; SLA clock starts.
@@ -371,10 +372,10 @@ func (h *AddressChangeHandler) SubmitAddressChange(
 		return nil, err
 	}
 
-	// BR-NFS-012: only CREATED requests can be submitted.
+	// BR-NFS-012: only CREATED or PENDING_DOCUMENTS requests can be submitted.
 	if sr.Status != "CREATED" && sr.Status != "PENDING_DOCUMENTS" {
 		log.Error(sctx.Ctx, "SubmitAddressChange: invalid status %s for request %s", sr.Status, req.RequestID)
-		return nil, &apierrors.AppError{Code: 422, Message: fmt.Sprintf("request %s is in status %s; only CREATED requests can be submitted", req.RequestID, sr.Status)}
+		return nil, &apierrors.AppError{Code: 422, Message: fmt.Sprintf("request %s is in status %s; only CREATED or PENDING_DOCUMENTS requests can be submitted", req.RequestID, sr.Status)}
 	}
 
 	// ERR-NFS-ANC-004: At least one document (Address Proof) is required.
@@ -389,28 +390,38 @@ func (h *AddressChangeHandler) SubmitAddressChange(
 		slaDays = 15
 	}
 	dl := time.Now().AddDate(0, 0, slaDays)
-	if sr.Status == "CREATED" {
+	// Only set SLA deadline for PENDING_DOCUMENTS (re-submission after SEND_BACK)
+	// For CREATED, workflow will set SLA deadline in AssignToCPC activity
+	if sr.Status == "PENDING_DOCUMENTS" {
 		if err := h.srRepo.UpdateSLADeadline(sctx.Ctx, req.RequestID, dl); err != nil {
 			log.Error(sctx.Ctx, "SubmitAddressChange: failed to set SLA deadline for %s: %v", req.RequestID, err)
 			return nil, err
 		}
 	}
 
-	// Build audit log for status transition (BR-NFS-016: INSERT-only).
-	audit := domain.AuditLog{
-		AuditID:       uuid.New().String(),
-		RequestID:     req.RequestID,
-		ActionType:    "STATUS_CHANGE", // ← fix
-		NewValueJSON:  fmt.Sprintf(`{"documents_count":%d,"submitted_by":"%s"}`, len(req.UploadedDocuments), req.SubmittedBy),
-		PerformedByID: req.SubmittedBy,
-		Notes:         strPtr("Manual submission with documents"),
-	}
+	// For PENDING_DOCUMENTS status (SEND_BACK scenario), we need to update status
+	// For CREATED status, workflow will update status after receiving signal
+	var updatedSR *domain.ServiceRequest
+	if sr.Status == "PENDING_DOCUMENTS" {
+		// Build audit log for status transition (BR-NFS-016: INSERT-only).
+		audit := domain.AuditLog{
+			AuditID:       uuid.New().String(),
+			RequestID:     req.RequestID,
+			ActionType:    "STATUS_CHANGE",
+			NewValueJSON:  fmt.Sprintf(`{"documents_count":%d,"submitted_by":"%s"}`, len(req.UploadedDocuments), req.SubmittedBy),
+			PerformedByID: req.SubmittedBy,
+			Notes:         strPtr("Manual submission with documents"),
+		}
 
-	// BATCH: UpdateStatus performs TX batch: UPDATE service_request + INSERT status_transition + INSERT audit_log.
-	updatedSR, err := h.srRepo.UpdateStatus(sctx.Ctx, req.RequestID, "PENDING_APPROVAL", strPtr(req.SubmittedBy), nil, nil, &audit)
-	if err != nil {
-		log.Error(sctx.Ctx, "SubmitAddressChange: failed to update status for %s: %v", req.RequestID, err)
-		return nil, err
+		// BATCH: UpdateStatus performs TX batch: UPDATE service_request + INSERT status_transition + INSERT audit_log.
+		updatedSR, err = h.srRepo.UpdateStatus(sctx.Ctx, req.RequestID, "PENDING_APPROVAL", strPtr(req.SubmittedBy), nil, nil, &audit)
+		if err != nil {
+			log.Error(sctx.Ctx, "SubmitAddressChange: failed to update status for %s: %v", req.RequestID, err)
+			return nil, err
+		}
+	} else {
+		// For CREATED status, just get the request for response
+		updatedSR = sr
 	}
 
 	// WORKFLOW STATE: Signal WF-NFS-002 so it can proceed to AssignToCPC.
@@ -437,11 +448,18 @@ func (h *AddressChangeHandler) SubmitAddressChange(
 
 	log.Info(sctx.Ctx, "SubmitAddressChange: request %s moved to PENDING_APPROVAL, workflow %s signaled", req.RequestID, wfID)
 
+	// For CREATED, workflow will set SLA deadline, so use empty string
+	// For PENDING_DOCUMENTS, we set SLA deadline above
+	slaDeadlineStr := ""
+	if sr.Status == "PENDING_DOCUMENTS" {
+		slaDeadlineStr = dl.Format("2006-01-02")
+	}
+
 	r := resp.NewAddressSubmitResponse(
 		updatedSR.RequestID,
 		updatedSR.TicketNumber,
 		updatedSR.UpdatedAt.Format(time.RFC3339),
-		dl.Format("2006-01-02"),
+		slaDeadlineStr,
 	)
 	return r, nil
 }
@@ -479,7 +497,7 @@ func (h *AddressChangeHandler) ApproveAddressChange(
 		return nil, err
 	}
 	if sr.Status != "IN_PROGRESS" {
-		log.Error(sctx.Ctx, "ApproveNameChange: invalid status %s for request %s", sr.Status, req.RequestID)
+		log.Error(sctx.Ctx, "ApproveAddressChange: invalid status %s for request %s", sr.Status, req.RequestID)
 		return nil, &apierrors.AppError{Code: 422, Message: fmt.Sprintf("request %s is in status %s; only IN_PROGRESS requests can be approved", req.RequestID, sr.Status)}
 	}
 

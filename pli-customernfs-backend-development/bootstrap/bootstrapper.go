@@ -30,6 +30,10 @@ var FxRepo = fx.Module(
 		repo.NewNameChangeRepository,
 		// Phase 3 — Policy Lookup for PM Notification
 		repo.NewPolicyLookupRepository,
+		// Phase 3 — Mobile Change
+		repo.NewMobileChangeRepository,
+		// Phase 3 — Email Change
+		repo.NewEmailChangeRepository,
 	),
 )
 
@@ -138,7 +142,8 @@ func NewTemporalWorker(
 	nameRepo *repo.NameChangeRepository,
 	addrRepo *repo.AddressChangeRepository, // ← add
 	policyRepo *repo.PolicyLookupRepository,
-
+	mcRepo *repo.MobileChangeRepository,
+	ecRepo *repo.EmailChangeRepository,
 	auditRepo *repo.AuditLogRepository,
 	cfg *config.Config,
 ) temporalworker.Worker {
@@ -159,14 +164,14 @@ func NewTemporalWorker(
 	w.RegisterActivity(nameAct)
 	
 	// Register mobile change activities
-	mobileAct := activities.NewMobileChangeActivities(srRepo, cfg)
+	mobileAct := activities.NewMobileChangeActivities(srRepo, mcRepo, cfg)
 	w.RegisterActivityWithOptions(mobileAct.RequestMobileOTP, activity.RegisterOptions{Name: "RequestMobileOTP"})
 	w.RegisterActivityWithOptions(mobileAct.VerifyMobileOTP, activity.RegisterOptions{Name: "VerifyMobileOTP"})
 	w.RegisterActivityWithOptions(mobileAct.MobileUpdateStatus, activity.RegisterOptions{Name: "MobileUpdateStatus"})
 	w.RegisterActivityWithOptions(mobileAct.UpdateMobileData, activity.RegisterOptions{Name: "UpdateMobileData"})
 	
 	// Register email change activities
-	emailAct := activities.NewEmailChangeActivities(srRepo, cfg)
+	emailAct := activities.NewEmailChangeActivities(srRepo, ecRepo, cfg)
 	w.RegisterActivityWithOptions(emailAct.RequestEmailOTP, activity.RegisterOptions{Name: "RequestEmailOTP"})
 	w.RegisterActivityWithOptions(emailAct.VerifyEmailOTP, activity.RegisterOptions{Name: "VerifyEmailOTP"})
 	w.RegisterActivityWithOptions(emailAct.EmailUpdateStatus, activity.RegisterOptions{Name: "EmailUpdateStatus"})

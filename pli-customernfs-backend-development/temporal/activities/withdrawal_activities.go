@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"go.temporal.io/sdk/activity"
@@ -155,14 +156,19 @@ func (a *WithdrawalActivities) UpdateStatus(
 	log.Info(ctx, "WithdrawalActivities.UpdateStatus: request %s → %s", input.RequestID, input.NewStatus)
 
 	notes := input.Reason
+	now := time.Now().UTC()
+	newValueJSON := fmt.Sprintf(`{"status":"%s"}`, input.NewStatus)
 	audit := &domain.AuditLog{
-		ActionType: "STATUS_CHANGE", // was input.NewStatus
-		// ActionType:    input.NewStatus,
+		AuditID:       uuid.New().String(),
+		RequestID:     input.RequestID,
+		ActionType:    "STATUS_CHANGE",
+		NewValueJSON:  newValueJSON,
 		PerformedByID: input.UpdatedBy,
+		PerformedAt:   now,
 		Notes:         notes,
 	}
 
-	updated, err := a.srRepo.UpdateStatus(ctx, input.RequestID, input.NewStatus, &input.UpdatedBy, nil, nil, audit)
+	updated, err := a.srRepo.UpdateStatus(ctx, input.RequestID, input.NewStatus, &input.UpdatedBy, input.Reason, nil, audit)
 	if err != nil {
 		return nil, fmt.Errorf("WithdrawalActivities.UpdateStatus: %w", err)
 	}

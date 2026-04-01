@@ -107,7 +107,7 @@ func (r *ServiceRequestRepository) GenerateTicketNumber(ctx context.Context, req
 // request of the same type. VR-NFS-015.
 // ---------------------------------------------------------------------------
 func (r *ServiceRequestRepository) CheckDuplicateRequest(ctx context.Context, customerID int64, requestType string) (bool, string, error) {
-	timeout := r.cfg.GetDuration("db.QueryTimeoutLow")
+	timeout := r.cfg.GetDuration("db.QueryTimeoutMed")
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -691,7 +691,19 @@ func (r *ServiceRequestRepository) UpdateStatus(
 			Suffix("RETURNING request_id, ticket_number, customer_id, policy_number, request_type, status, updated_at, version")
 
 		if rejectionReason != nil {
+			if newStatus == "REJECTED" && *rejectionReason == "" {
+				// BR-NFS-012: rejection_reason cannot be empty when status is REJECTED
+				return fmt.Errorf("rejection_reason cannot be empty when status is REJECTED")
+			}
 			updateBuilder = updateBuilder.Set("rejection_reason", *rejectionReason)
+		} else if newStatus == "REJECTED" {
+			// BR-NFS-012: rejection_reason is required when status is REJECTED
+			return fmt.Errorf("rejection_reason is required when status is REJECTED")
+		}
+		// Set approved_by and approval_date for terminal statuses
+		if newStatus == "COMPLETED" || newStatus == "REJECTED" {
+			updateBuilder = updateBuilder.Set("approved_by", actor).
+				Set("approval_date", sq.Expr("NOW()"))
 		}
 		if newStatus == "COMPLETED" {
 			updateBuilder = updateBuilder.Set("completed_at", sq.Expr("NOW()"))

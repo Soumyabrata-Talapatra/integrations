@@ -228,7 +228,7 @@ func (h *CPCHandler) RejectRequest(
 	}
 
 	// BATCH: UpdateStatus — TX batch: UPDATE service_request + INSERT status_transition + INSERT audit.
-	_, err = h.srRepo.UpdateStatus(sctx.Ctx, req.RequestID, "REJECTED", &req.RejectedBy, nil, nil, &audit)
+	_, err = h.srRepo.UpdateStatus(sctx.Ctx, req.RequestID, "REJECTED", &req.RejectedBy, &req.RejectionReason, nil, &audit)
 	if err != nil {
 		log.Error(sctx.Ctx, "RejectRequest: failed to update status for %s: %v", req.RequestID, err)
 		return nil, err

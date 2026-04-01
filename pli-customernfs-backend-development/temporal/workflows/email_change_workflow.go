@@ -102,11 +102,12 @@ func EmailChangeWorkflow(ctx workflow.Context, input EmailChangeWorkflowInput) e
 	}
 
 	// Step 5: Update email data.
+	var updateResult activities.UpdateEmailDataResult
 	if err := workflow.ExecuteActivity(ctx, "UpdateEmailData", activities.UpdateEmailDataInput{
 		RequestID:  input.RequestID,
 		CustomerID: input.CustomerID,
 		UpdatedBy:  fmt.Sprintf("%d", input.CustomerID),
-	}).Get(ctx, nil); err != nil {
+	}).Get(ctx, &updateResult); err != nil {
 		return fmt.Errorf("UpdateEmailData: %w", err)
 	}
 
@@ -131,14 +132,17 @@ func EmailChangeWorkflow(ctx workflow.Context, input EmailChangeWorkflowInput) e
 	logger.Info("EmailChangeWorkflow COMPLETED", "requestID", input.RequestID)
 
 	// Step 8: Notify Policy Management.
+	payload := map[string]interface{}{}
+	if updateResult.NewEmail != nil {
+		payload["email"] = *updateResult.NewEmail
+	}
+	
 	_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
 		RequestID:   input.RequestID,
 		CustomerID:  input.CustomerID,
 		RequestType: "EMAIL_CHANGE",
 		Outcome:     "APPROVED",
-		ChangePayload: mustMarshalJSON(map[string]interface{}{
-			"email": "updated",
-		}),
+		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 
 	return nil
