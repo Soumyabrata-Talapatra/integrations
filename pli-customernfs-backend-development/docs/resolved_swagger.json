@@ -1357,7 +1357,41 @@
             "type": "string"
           },
           "stats": {
-            "$ref": "#/components/schemas/CPCQueueStats"
+            "properties": {
+              "address_changes": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "name_changes": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "sla_amber": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "sla_green": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "sla_red": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "total_in_progress": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "total_overdue": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "total_pending": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
           }
         },
         "type": "object"
@@ -1373,7 +1407,41 @@
                 "type": "string"
               },
               "stats": {
-                "$ref": "#/components/schemas/CPCQueueStats"
+                "properties": {
+                  "address_changes": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "name_changes": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "sla_amber": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "sla_green": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "sla_red": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "total_in_progress": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "total_overdue": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "total_pending": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
               }
             },
             "type": "object"
@@ -1430,41 +1498,7 @@
             "type": "string"
           },
           "summary": {
-            "properties": {
-              "address_changes": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "name_changes": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "sla_amber": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "sla_green": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "sla_red": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "total_in_progress": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "total_overdue": {
-                "format": "int64",
-                "type": "integer"
-              },
-              "total_pending": {
-                "format": "int64",
-                "type": "integer"
-              }
-            },
-            "type": "object"
+            "$ref": "#/components/schemas/CPCQueueStats"
           }
         },
         "type": "object"
@@ -1510,41 +1544,7 @@
                 "type": "string"
               },
               "summary": {
-                "properties": {
-                  "address_changes": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "name_changes": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "sla_amber": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "sla_green": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "sla_red": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "total_in_progress": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "total_overdue": {
-                    "format": "int64",
-                    "type": "integer"
-                  },
-                  "total_pending": {
-                    "format": "int64",
-                    "type": "integer"
-                  }
-                },
-                "type": "object"
+                "$ref": "#/components/schemas/CPCQueueStats"
               }
             },
             "type": "object"
@@ -2482,7 +2482,7 @@
             "type": "string"
           },
           "sla_deadline": {
-            "example": "2026-03-30T18:06:03.8827953+05:30",
+            "example": "2026-04-02T11:47:33.6509645+05:30",
             "type": "string"
           },
           "status": {
@@ -2526,7 +2526,7 @@
                 "type": "string"
               },
               "sla_deadline": {
-                "example": "2026-03-30T18:06:03.8827953+05:30",
+                "example": "2026-04-02T11:47:33.6509645+05:30",
                 "type": "string"
               },
               "status": {
@@ -2850,7 +2850,27 @@
           },
           "audit_trail": {
             "items": {
-              "$ref": "#/components/schemas/AuditTrailItem"
+              "properties": {
+                "action_type": {
+                  "type": "string"
+                },
+                "new_value": {
+                  "type": "string"
+                },
+                "notes": {
+                  "type": "string"
+                },
+                "old_value": {
+                  "type": "string"
+                },
+                "performed_at": {
+                  "type": "string"
+                },
+                "performed_by": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -2869,7 +2889,28 @@
           },
           "documents": {
             "items": {
-              "$ref": "#/components/schemas/RequestDetailDocumentItem"
+              "properties": {
+                "document_id": {
+                  "type": "string"
+                },
+                "document_type": {
+                  "type": "string"
+                },
+                "file_name": {
+                  "type": "string"
+                },
+                "file_size_bytes": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "uploaded_at": {
+                  "type": "string"
+                },
+                "verification_status": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
             },
             "type": "array"
           },
@@ -2968,7 +3009,27 @@
               },
               "audit_trail": {
                 "items": {
-                  "$ref": "#/components/schemas/AuditTrailItem"
+                  "properties": {
+                    "action_type": {
+                      "type": "string"
+                    },
+                    "new_value": {
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "old_value": {
+                      "type": "string"
+                    },
+                    "performed_at": {
+                      "type": "string"
+                    },
+                    "performed_by": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -2987,7 +3048,28 @@
               },
               "documents": {
                 "items": {
-                  "$ref": "#/components/schemas/RequestDetailDocumentItem"
+                  "properties": {
+                    "document_id": {
+                      "type": "string"
+                    },
+                    "document_type": {
+                      "type": "string"
+                    },
+                    "file_name": {
+                      "type": "string"
+                    },
+                    "file_size_bytes": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "uploaded_at": {
+                      "type": "string"
+                    },
+                    "verification_status": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -3050,28 +3132,7 @@
         "properties": {
           "documents": {
             "items": {
-              "properties": {
-                "document_id": {
-                  "type": "string"
-                },
-                "document_type": {
-                  "type": "string"
-                },
-                "file_name": {
-                  "type": "string"
-                },
-                "file_size_bytes": {
-                  "format": "int64",
-                  "type": "integer"
-                },
-                "uploaded_at": {
-                  "type": "string"
-                },
-                "verification_status": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/RequestDetailDocumentItem"
             },
             "type": "array"
           },
@@ -3091,28 +3152,7 @@
             "properties": {
               "documents": {
                 "items": {
-                  "properties": {
-                    "document_id": {
-                      "type": "string"
-                    },
-                    "document_type": {
-                      "type": "string"
-                    },
-                    "file_name": {
-                      "type": "string"
-                    },
-                    "file_size_bytes": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "uploaded_at": {
-                      "type": "string"
-                    },
-                    "verification_status": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/RequestDetailDocumentItem"
                 },
                 "type": "array"
               },
@@ -3503,27 +3543,7 @@
           },
           "timeline": {
             "items": {
-              "properties": {
-                "action_type": {
-                  "type": "string"
-                },
-                "new_value": {
-                  "type": "string"
-                },
-                "notes": {
-                  "type": "string"
-                },
-                "old_value": {
-                  "type": "string"
-                },
-                "performed_at": {
-                  "type": "string"
-                },
-                "performed_by": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/AuditTrailItem"
             },
             "type": "array"
           }
@@ -3542,27 +3562,7 @@
               },
               "timeline": {
                 "items": {
-                  "properties": {
-                    "action_type": {
-                      "type": "string"
-                    },
-                    "new_value": {
-                      "type": "string"
-                    },
-                    "notes": {
-                      "type": "string"
-                    },
-                    "old_value": {
-                      "type": "string"
-                    },
-                    "performed_at": {
-                      "type": "string"
-                    },
-                    "performed_by": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/AuditTrailItem"
                 },
                 "type": "array"
               }
@@ -4324,53 +4324,7 @@
                   "success": false
                 },
                 "schema": {
-                  "properties": {
-                    "error": {
-                      "properties": {
-                        "code": {
-                          "format": "int64",
-                          "type": "integer"
-                        },
-                        "field_errors": {
-                          "items": {
-                            "properties": {
-                              "field": {
-                                "type": "string"
-                              },
-                              "message": {
-                                "type": "string"
-                              },
-                              "value": {
-                                "type": "object"
-                              }
-                            },
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "id": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "status_code": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "success": {
-                      "default": false,
-                      "example": false,
-                      "type": "boolean"
-                    }
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/APIErrorResponse"
                 }
               }
             },
@@ -5003,7 +4957,53 @@
                   "success": false
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/APIErrorResponse"
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "field_errors": {
+                          "items": {
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "success": {
+                      "default": false,
+                      "example": false,
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
                 }
               }
             },
@@ -7136,7 +7136,41 @@
                               "type": "string"
                             },
                             "stats": {
-                              "$ref": "#/components/schemas/CPCQueueStats"
+                              "properties": {
+                                "address_changes": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "name_changes": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "sla_amber": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "sla_green": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "sla_red": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "total_in_progress": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "total_overdue": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "total_pending": {
+                                  "format": "int64",
+                                  "type": "integer"
+                                }
+                              },
+                              "type": "object"
                             }
                           },
                           "type": "object"
@@ -7397,41 +7431,7 @@
                               "type": "string"
                             },
                             "summary": {
-                              "properties": {
-                                "address_changes": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "name_changes": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "sla_amber": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "sla_green": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "sla_red": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "total_in_progress": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "total_overdue": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                },
-                                "total_pending": {
-                                  "format": "int64",
-                                  "type": "integer"
-                                }
-                              },
-                              "type": "object"
+                              "$ref": "#/components/schemas/CPCQueueStats"
                             }
                           },
                           "type": "object"
@@ -9373,7 +9373,7 @@
                               "type": "string"
                             },
                             "sla_deadline": {
-                              "example": "2026-03-30T18:06:03.8827953+05:30",
+                              "example": "2026-04-02T11:47:33.6509645+05:30",
                               "type": "string"
                             },
                             "status": {
@@ -10375,7 +10375,27 @@
                             },
                             "audit_trail": {
                               "items": {
-                                "$ref": "#/components/schemas/AuditTrailItem"
+                                "properties": {
+                                  "action_type": {
+                                    "type": "string"
+                                  },
+                                  "new_value": {
+                                    "type": "string"
+                                  },
+                                  "notes": {
+                                    "type": "string"
+                                  },
+                                  "old_value": {
+                                    "type": "string"
+                                  },
+                                  "performed_at": {
+                                    "type": "string"
+                                  },
+                                  "performed_by": {
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -10394,7 +10414,28 @@
                             },
                             "documents": {
                               "items": {
-                                "$ref": "#/components/schemas/RequestDetailDocumentItem"
+                                "properties": {
+                                  "document_id": {
+                                    "type": "string"
+                                  },
+                                  "document_type": {
+                                    "type": "string"
+                                  },
+                                  "file_name": {
+                                    "type": "string"
+                                  },
+                                  "file_size_bytes": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "uploaded_at": {
+                                    "type": "string"
+                                  },
+                                  "verification_status": {
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -10879,28 +10920,7 @@
                           "properties": {
                             "documents": {
                               "items": {
-                                "properties": {
-                                  "document_id": {
-                                    "type": "string"
-                                  },
-                                  "document_type": {
-                                    "type": "string"
-                                  },
-                                  "file_name": {
-                                    "type": "string"
-                                  },
-                                  "file_size_bytes": {
-                                    "format": "int64",
-                                    "type": "integer"
-                                  },
-                                  "uploaded_at": {
-                                    "type": "string"
-                                  },
-                                  "verification_status": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/RequestDetailDocumentItem"
                               },
                               "type": "array"
                             },
@@ -12094,27 +12114,7 @@
                             },
                             "timeline": {
                               "items": {
-                                "properties": {
-                                  "action_type": {
-                                    "type": "string"
-                                  },
-                                  "new_value": {
-                                    "type": "string"
-                                  },
-                                  "notes": {
-                                    "type": "string"
-                                  },
-                                  "old_value": {
-                                    "type": "string"
-                                  },
-                                  "performed_at": {
-                                    "type": "string"
-                                  },
-                                  "performed_by": {
-                                    "type": "string"
-                                  }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/AuditTrailItem"
                               },
                               "type": "array"
                             }

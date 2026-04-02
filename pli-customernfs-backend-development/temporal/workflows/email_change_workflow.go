@@ -79,7 +79,7 @@ func EmailChangeWorkflow(ctx workflow.Context, input EmailChangeWorkflowInput) e
 		_ = workflow.ExecuteActivity(ctx, "EmailUpdateStatus", activities.UpdateStatusInput{
 			RequestID: input.RequestID,
 			NewStatus: "DOCUMENTS_EXPIRED",
-			UpdatedBy: "SYSTEM",
+			UpdatedBy: "000000",
 			Channel:   input.Channel,
 		}).Get(ctx, nil)
 	})
@@ -136,12 +136,12 @@ func EmailChangeWorkflow(ctx workflow.Context, input EmailChangeWorkflowInput) e
 	if updateResult.NewEmail != nil {
 		payload["email"] = *updateResult.NewEmail
 	}
-	
+
 	_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
-		RequestID:   input.RequestID,
-		CustomerID:  input.CustomerID,
-		RequestType: "EMAIL_CHANGE",
-		Outcome:     "APPROVED",
+		RequestID:     input.RequestID,
+		CustomerID:    input.CustomerID,
+		RequestType:   "EMAIL_CHANGE",
+		Outcome:       "APPROVED",
 		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 

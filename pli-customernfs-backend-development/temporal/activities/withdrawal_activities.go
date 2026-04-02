@@ -103,6 +103,8 @@ func (a *WithdrawalActivities) CheckWithdrawalEligibility(
 	return &CheckWithdrawalEligibilityResult{
 		Eligible:     true,
 		ApprovalType: approvalType,
+		RequestType:  string(sr.RequestType),
+		AuthMethod:   sr.AuthMethod,
 	}, nil
 }
 

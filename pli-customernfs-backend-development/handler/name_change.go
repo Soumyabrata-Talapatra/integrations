@@ -60,7 +60,7 @@ func NewNameChangeHandler(
 		tc:       tc,
 		cfg:      cfg,
 	}
-} 
+}
 
 // Routes registers all name-change HTTP routes.
 func (h *NameChangeHandler) Routes() []serverRoute.Route {

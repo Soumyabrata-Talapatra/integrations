@@ -152,7 +152,7 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 			activities.UpdateStatusInput{
 				RequestID: input.RequestID,
 				NewStatus: "DOCUMENTS_EXPIRED",
-				UpdatedBy: "system",
+				UpdatedBy: "000000",
 			},
 		).Get(ctx, nil)
 		return nil
@@ -178,9 +178,9 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 	var updateResult activities.UpdateNameDataResult
 	if err := workflow.ExecuteActivity(actCtx, act.UpdateNameData,
 		activities.UpdateNameDataInput{
-			RequestID: input.RequestID,
+			RequestID:  input.RequestID,
 			CustomerID: input.CustomerID,
-			UpdatedBy: input.InitiatedBy,
+			UpdatedBy:  input.InitiatedBy,
 		},
 	).Get(ctx, &updateResult); err != nil {
 		return err
@@ -212,12 +212,12 @@ func AadhaarNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInp
 	if updateResult.NewLastName != nil {
 		payload["last_name"] = *updateResult.NewLastName
 	}
-	
+
 	_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
-		RequestID:   input.RequestID,
-		CustomerID:  input.CustomerID,
-		RequestType: "NAME_CHANGE",
-		Outcome:     "APPROVED",
+		RequestID:     input.RequestID,
+		CustomerID:    input.CustomerID,
+		RequestType:   "NAME_CHANGE",
+		Outcome:       "APPROVED",
 		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 
@@ -405,9 +405,9 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 			var updateResult activities.UpdateNameDataResult
 			if err := workflow.ExecuteActivity(actCtx, act.UpdateNameData,
 				activities.UpdateNameDataInput{
-					RequestID: input.RequestID,
+					RequestID:  input.RequestID,
 					CustomerID: input.CustomerID,
-					UpdatedBy: approvalPayload.ApprovedBy,
+					UpdatedBy:  approvalPayload.ApprovedBy,
 				},
 			).Get(ctx, &updateResult); err != nil {
 				return err
@@ -433,12 +433,12 @@ func ManualNameChangeWorkflow(ctx workflow.Context, input NameChangeWorkflowInpu
 			if updateResult.NewLastName != nil {
 				payload["last_name"] = *updateResult.NewLastName
 			}
-			
+
 			_ = workflow.ExecuteActivity(actCtx, "NotifyPolicyManagement", activities.NotifyPMInput{
-				RequestID:   input.RequestID,
-				CustomerID:  input.CustomerID,
-				RequestType: "NAME_CHANGE",
-				Outcome:     "APPROVED",
+				RequestID:     input.RequestID,
+				CustomerID:    input.CustomerID,
+				RequestType:   "NAME_CHANGE",
+				Outcome:       "APPROVED",
 				ChangePayload: mustMarshalJSON(payload),
 			}).Get(ctx, nil)
 
@@ -760,10 +760,24 @@ func WithdrawalWorkflow(ctx workflow.Context, input WithdrawalWorkflowInput) err
 			return err
 		}
 		logger.Info("WF-NFS-005: auto-withdrawal completed", "requestID", input.RequestID)
-		// Signal parent ManualNameChangeWorkflow to exit.
-		parentWfID := fmt.Sprintf("nfs-name-MANUAL-%s", input.RequestID)
-		if err := workflow.SignalExternalWorkflow(ctx, parentWfID, "", "withdrawal_requested", nil).Get(ctx, nil); err != nil {
-			logger.Warn("WF-NFS-005: could not signal parent workflow", "parentWfID", parentWfID, "error", err)
+
+		// Signal parent workflow to exit.
+		var parentWfID string
+		switch eligResult.RequestType {
+		case "ADDRESS_CHANGE":
+			parentWfID = fmt.Sprintf("nfs-address-%s-%s", eligResult.AuthMethod, input.RequestID)
+		case "NAME_CHANGE":
+			parentWfID = fmt.Sprintf("nfs-name-%s-%s", eligResult.AuthMethod, input.RequestID)
+		case "MOBILE_CHANGE":
+			parentWfID = fmt.Sprintf("nfs-mobile-%s", input.RequestID)
+		case "EMAIL_CHANGE":
+			parentWfID = fmt.Sprintf("nfs-email-%s", input.RequestID)
+		}
+
+		if parentWfID != "" {
+			if err := workflow.SignalExternalWorkflow(ctx, parentWfID, "", "withdrawal_requested", nil).Get(ctx, nil); err != nil {
+				logger.Warn("WF-NFS-005: could not signal parent workflow", "parentWfID", parentWfID, "error", err)
+			}
 		}
 		return nil
 	}

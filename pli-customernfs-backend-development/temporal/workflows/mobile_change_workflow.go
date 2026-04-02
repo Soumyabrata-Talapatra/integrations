@@ -26,7 +26,8 @@ type MobileChangeWorkflowInput struct {
 
 // MobileChangeWorkflow handles mobile number change via OTP verification.
 // Flow: Initiate -> Send OTP to new mobile -> Signal: otp_submitted -> Verify OTP
-//       -> Update mobile -> COMPLETED -> Notify Policy Management
+//
+//	-> Update mobile -> COMPLETED -> Notify Policy Management
 func MobileChangeWorkflow(ctx workflow.Context, input MobileChangeWorkflowInput) error {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("MobileChangeWorkflow start", "requestID", input.RequestID)
@@ -79,7 +80,7 @@ func MobileChangeWorkflow(ctx workflow.Context, input MobileChangeWorkflowInput)
 		_ = workflow.ExecuteActivity(ctx, "MobileUpdateStatus", activities.UpdateStatusInput{
 			RequestID: input.RequestID,
 			NewStatus: "DOCUMENTS_EXPIRED",
-			UpdatedBy: "SYSTEM",
+			UpdatedBy: "000000",
 			Channel:   input.Channel,
 		}).Get(ctx, nil)
 	})
@@ -136,12 +137,12 @@ func MobileChangeWorkflow(ctx workflow.Context, input MobileChangeWorkflowInput)
 	if updateResult.NewMobileNumber != nil {
 		payload["mobile_number"] = *updateResult.NewMobileNumber
 	}
-	
+
 	_ = workflow.ExecuteActivity(ctx, "NotifyPolicyManagement", activities.NotifyPMInput{
-		RequestID:   input.RequestID,
-		CustomerID:  input.CustomerID,
-		RequestType: "MOBILE_CHANGE",
-		Outcome:     "APPROVED",
+		RequestID:     input.RequestID,
+		CustomerID:    input.CustomerID,
+		RequestType:   "MOBILE_CHANGE",
+		Outcome:       "APPROVED",
 		ChangePayload: mustMarshalJSON(payload),
 	}).Get(ctx, nil)
 

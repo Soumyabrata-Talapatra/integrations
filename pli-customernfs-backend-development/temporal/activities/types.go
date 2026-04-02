@@ -348,6 +348,8 @@ type CheckWithdrawalEligibilityInput struct {
 type CheckWithdrawalEligibilityResult struct {
 	Eligible     bool   `json:"eligible"`
 	ApprovalType string `json:"approval_type"` // "AUTO" or "MANUAL"
+	RequestType  string `json:"request_type"`
+	AuthMethod   string `json:"auth_method"`
 	Reason       string `json:"reason"`
 }
 
